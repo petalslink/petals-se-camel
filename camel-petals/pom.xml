@@ -61,7 +61,7 @@
          <scope>test</scope>
       </dependency>
    </dependencies>
-   
+
    <dependencyManagement>
       <dependencies>
          <dependency>
@@ -71,4 +71,9 @@
          </dependency>
       </dependencies>
    </dependencyManagement>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
 </project>

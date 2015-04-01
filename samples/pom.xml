@@ -27,4 +27,9 @@
       </plugins>
    </build>
 
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+
 </project>

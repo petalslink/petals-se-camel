@@ -92,7 +92,7 @@
    </dependencyManagement>
 
    <scm>
-      <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-camel/parent</connection>
+      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
    </scm>
 </project>

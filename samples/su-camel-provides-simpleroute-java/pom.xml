@@ -51,8 +51,7 @@
    </build>
 
    <scm>
-      <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/petals-samples/petals-samples-camel/su-camel-provides-simpleroute
-      </connection>
+      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
    </scm>
 </project>
