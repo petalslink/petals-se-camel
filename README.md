@@ -2,12 +2,18 @@
 
 ## Specifications and User Documentation
 
-See https://doc.petalslink.com/display/petalscomponents/Petals-SE-Camel+1.0.0-SNAPSHOT.
+See the Petals Wiki [page on the component](https://doc.petalslink.com/display/petalscomponents/Petals-SE-Camel+1.0.0-SNAPSHOT).
 
 ## Continuous Integration
 
-* http://jenkins.petalslink.com/job/Petals%20Components%20-%20SE%20Camel/
-* http://jenkins.petalslink.com/job/SE_Camel_integration_tests/
+* [Component](http://jenkins.petalslink.com/job/Petals%20Components%20-%20SE%20Camel/)
+* [Integration Tests](http://jenkins.petalslink.com/job/SE_Camel_integration_tests/)
+
+## Issues Reporting
+
+* [Bug](https://jira.petalslink.com/secure/CreateIssue.jspa?pid=10230&issuetype=1)
+* [New Feature](https://jira.petalslink.com/secure/CreateIssue.jspa?pid=10230&issuetype=2)
+* [Improvement Request](https://jira.petalslink.com/secure/CreateIssue.jspa?pid=10230&issuetype=4)
 
 ## Architecture
 
