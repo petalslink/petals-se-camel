@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
-import org.ow2.petals.camel.component.utils.Pair;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;

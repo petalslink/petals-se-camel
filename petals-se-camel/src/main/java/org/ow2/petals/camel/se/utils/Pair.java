@@ -15,15 +15,15 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.camel.component.utils;
+package org.ow2.petals.camel.se.utils;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 public class Pair<A, B> {
 
-    public final A a;
+    private final A a;
 
-    public final B b;
+    private final B b;
 
     public Pair(final A a, final B b) {
         this.a = a;
@@ -61,4 +61,11 @@ public class Pair<A, B> {
         return "(" + a + "," + b + ")";
     }
 
+    public A getA() {
+        return a;
+    }
+
+    public B getB() {
+        return b;
+    }
 }

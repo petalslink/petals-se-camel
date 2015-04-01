@@ -23,11 +23,13 @@ import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RoutesDefinition;
-import org.eclipse.jdt.annotation.NonNull;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 
 public class CamelRoutesHelper {
+
+    private CamelRoutesHelper() {
+    }
 
     public static RouteBuilder loadRoutesFromClass(ClassLoader classLoader, String className)
             throws InvalidJBIConfigurationException {
@@ -36,9 +38,7 @@ public class CamelRoutesHelper {
             if (!RouteBuilder.class.isAssignableFrom(clazz)) {
                 throw new InvalidJBIConfigurationException(className + " is not a subclass of camel RouteBuilder");
             }
-            @SuppressWarnings("null")
-            final @NonNull RouteBuilder instance = (RouteBuilder) clazz.newInstance();
-            return instance;
+            return (RouteBuilder) clazz.newInstance();
         } catch (ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
         } catch (InstantiationException | IllegalAccessException e) {
@@ -54,17 +54,13 @@ public class CamelRoutesHelper {
                 throw new InvalidJBIConfigurationException("Can't find xml routes definition " + xmlName);
             }
             try {
-                /*
-                 * @SuppressWarnings("null") final @NonNull RoutesDefinition defs = context.loadRoutesDefinition(xml);
-                 * return defs;
-                 */
                 return context.loadRoutesDefinition(xml);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName, e);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             // TODO should that happen?! shouldn't we just log a warning?!
-            throw new InvalidJBIConfigurationException("Can't close xml routes definition " + xmlName);
+            throw new InvalidJBIConfigurationException("Can't close xml routes definition " + xmlName, e);
         }
     }
 }

@@ -33,7 +33,6 @@ import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLReader;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.camel.component.utils.Pair;
 import org.ow2.petals.camel.se.CamelSE;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
@@ -77,6 +76,9 @@ public class PetalsCamelJBIHelper {
 
     private static final String PETALS_CAMEL_WSDL_OPERATION_SERVICEID = "service-id";
 
+    private PetalsCamelJBIHelper() {
+    }
+
     /**
      * returns a Map of service-id <-> service/endpoint/operation
      * 
@@ -110,12 +112,13 @@ public class PetalsCamelJBIHelper {
             }
 
             for (Pair<Pair<QName, URI>, String> pair : seos) {
-                final String serviceId = pair.b;
+                final String serviceId = pair.getB();
                 if (sid2seo.containsKey(serviceId)) {
                     throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + serviceId
-                            + ") in the operation " + pair.a.a);
+                            + ") in the operation " + pair.getA().getA());
                 }
-                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(pair.a.a, pair.a.b,
+                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(pair.getA().getA(), pair
+                        .getA().getB(),
                         new PetalsCamelSender(component, p));
                 if (sid2seo.containsValue(seo)) {
                     throw new InvalidJBIConfigurationException("Duplicate service " + seo);
@@ -130,7 +133,7 @@ public class PetalsCamelJBIHelper {
             final ServiceEndpointOperation seo = new ServiceEndpointOperationConsumes(new PetalsCamelSender(component,
                     c));
 
-            final String serviceId = getServiceId(c, suDH, seo);
+            final String serviceId = getServiceId(c, suDH);
 
             if (sid2seo.containsKey(serviceId)) {
                 throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + serviceId
@@ -214,13 +217,13 @@ public class PetalsCamelJBIHelper {
                 && e.getLocalName().equals(name.getLocalPart());
     }
 
-    public static String getServiceId(final Consumes s, final ServiceUnitDataHandler suDH,
-            final ServiceEndpointOperation seo) throws InvalidJBIConfigurationException {
+    public static String getServiceId(final Consumes s, final ServiceUnitDataHandler suDH)
+            throws InvalidJBIConfigurationException {
 
         final ConfigurationExtensions extensions = suDH.getConfigurationExtensions(s);
         final String serviceId = extensions.get(SERVICE_ID_PROPERTY);
 
-        if (StringUtils.isEmpty(serviceId)) {
+        if (serviceId == null || serviceId.isEmpty()) {
             throw new InvalidJBIConfigurationException("No " + SERVICE_ID_PROPERTY + " defined for the consumes "
                     + s.getServiceName());
         }

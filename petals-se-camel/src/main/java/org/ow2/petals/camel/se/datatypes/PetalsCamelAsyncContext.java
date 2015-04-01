@@ -17,20 +17,20 @@
  */
 package org.ow2.petals.camel.se.datatypes;
 
+import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
 
 public class PetalsCamelAsyncContext extends AsyncContext {
 
-    private final Runnable callback;
+    private final SendAsyncCallback callback;
 
     public PetalsCamelAsyncContext(final org.ow2.petals.component.framework.api.message.Exchange originalExchange,
-            final long ttl, final Runnable callback) {
+            final long ttl, final SendAsyncCallback callback) {
         super(originalExchange, ttl);
         this.callback = callback;
     }
 
-    public Runnable getCallback() {
+    public SendAsyncCallback getCallback() {
         return callback;
     }
-
 }

@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.util.logging.Level;
+
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.AsyncCallback;
@@ -69,6 +71,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
             endProcess(camelExchange, exchange);
         } else {
             getAsyncProcessor().process(camelExchange, new AsyncCallback() {
+                @Override
                 public void done(boolean doneSync) {
                     endProcess(camelExchange, exchange);
                 }
@@ -78,8 +81,6 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
 
     /**
      * TODO in the future we should refactor the CDK to be able to leverage the existing logic.
-     * 
-     * TODO this make the assumption there is an out message if it's a inout or a inoptionalout!!
      */
     private void endProcess(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
@@ -95,14 +96,13 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
             this.provides.send(exchange);
             // TODO and actually, shouldn't I WAIT for it before letting other continue... which others? maybe not then!
         } catch (final MessagingException e) {
-            // TODO log?
+            provides.getLogger().log(Level.SEVERE, "An exchange (" + exchange + ") couldn't be sent back", e);
         }
     }
 
+    @SuppressWarnings("null")
     @Override
     public PetalsCamelEndpoint getEndpoint() {
-        @SuppressWarnings("null")
-        final @NonNull PetalsCamelEndpoint endpoint = (PetalsCamelEndpoint) super.getEndpoint();
-        return endpoint;
+        return (PetalsCamelEndpoint) super.getEndpoint();
     }
 }

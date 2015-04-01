@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.camel;
 
+import java.util.logging.Logger;
+
 import javax.jbi.messaging.MessagingException;
 
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -33,6 +35,13 @@ import org.ow2.petals.component.framework.api.message.Exchange;
 public interface PetalsChannel {
     
     /**
+     * This logger may be the same for all channels coming from a given {@link PetalsCamelContext}.
+     * 
+     * @return
+     */
+    public Logger getLogger();
+
+    /**
      * If timeout is less than 0 then we use the consumes or provides default timeout value, if equals to 0 then no
      * timeout.
      * 
@@ -48,7 +57,7 @@ public interface PetalsChannel {
      * @throws MessagingException
      * 
      */
-    public void sendAsync(Exchange exchange, long timeout, Runnable callback) throws MessagingException;
+    public void sendAsync(Exchange exchange, long timeout, SendAsyncCallback callback) throws MessagingException;
 
     public void send(Exchange exchange) throws MessagingException;
 
@@ -60,5 +69,10 @@ public interface PetalsChannel {
 
     public interface PetalsProvidesChannel extends PetalsChannel {
 
+    }
+
+    public interface SendAsyncCallback {
+
+        public void done();
     }
 }

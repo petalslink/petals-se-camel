@@ -102,7 +102,7 @@ public class CamelJBIListener extends AbstractJBIListener {
         } else {
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
             // let's call the callback, the one that sent this message will take care of doing what it has to do
-            context.getCallback().run();
+            context.getCallback().done();
         }
 
         // always return false, we will take care of answering
@@ -125,7 +125,7 @@ public class CamelJBIListener extends AbstractJBIListener {
 
             originalExchange.setError(new TimeoutException(originalExchange));
 
-            context.getCallback().run();
+            context.getCallback().done();
         }
 
         // always return false, we will take care of answering

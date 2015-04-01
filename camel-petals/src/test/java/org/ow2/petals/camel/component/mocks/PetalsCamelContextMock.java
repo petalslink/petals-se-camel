@@ -18,6 +18,7 @@
 package org.ow2.petals.camel.component.mocks;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.camel.CamelContext;
 import org.easymock.EasyMock;
@@ -46,13 +47,15 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     private final CamelContext context;
 
+    private final Logger logger = Logger.getLogger(PetalsCamelContextMock.class.getName());
+
     public PetalsCamelContextMock(final CamelContext context) {
         this.context = context;
     }
 
     public void addMockService(final String serviceId, final ServiceEndpointOperation seo) {
         this.addMockService(serviceId, seo,
-                EasyMock.createMock(seo.getType() == ServiceType.Consumes ? PetalsConsumesChannel.class
+                EasyMock.createMock(seo.getType() == ServiceType.CONSUMES ? PetalsConsumesChannel.class
                         : PetalsProvidesChannel.class));
     }
 
@@ -118,6 +121,11 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     @Override
     public CamelContext getCamelContext() {
         return this.context;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return this.logger;
     }
 
 }

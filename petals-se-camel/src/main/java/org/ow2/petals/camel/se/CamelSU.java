@@ -19,6 +19,7 @@ package org.ow2.petals.camel.se;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.logging.Logger;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -169,5 +170,10 @@ public class CamelSU implements PetalsCamelContext {
     @Override
     public CamelContext getCamelContext() {
         return this.context;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return this.manager.getLogger();
     }
 }

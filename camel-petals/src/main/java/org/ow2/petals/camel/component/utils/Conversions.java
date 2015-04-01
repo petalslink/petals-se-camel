@@ -33,7 +33,20 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Utils to convert between petals exchange and camel exchange.
+ * 
+ * Important: Some of this code makes the assumption that an inoptionalout camel exchange MUST have an out message, even
+ * though camel allows for modifying inline the message. This is needed because we can't know if an inoutoptional has no
+ * out because it's in is modified or because the exchange is finished!
+ * 
+ * @author vnoel
+ *
+ */
 public class Conversions {
+
+    private Conversions() {
+    }
 
     /**
      * To populate a new camel exchange with an exchange coming from petals
@@ -96,7 +109,6 @@ public class Conversions {
 
         // Normally, it is an empty message that is populated...
 
-        // TODO is that correct?!
         @SuppressWarnings("unchecked")
         final Set<String> props = message.getPropertyNames();
         for (String prop : props) {

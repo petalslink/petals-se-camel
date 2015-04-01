@@ -30,6 +30,6 @@ public class ServiceEndpointOperationProvides extends AbstractServiceEndpointOpe
     public ServiceEndpointOperationProvides(final QName operation, final URI mep, final PetalsCamelSender sender)
             throws InvalidJBIConfigurationException {
         super(sender.getProvides().getServiceName(), sender.getProvides().getInterfaceName(), sender.getProvides()
-                .getEndpointName(), operation, ServiceType.Provides, mep, sender);
+                .getEndpointName(), operation, ServiceType.PROVIDES, mep, sender);
     }
 }

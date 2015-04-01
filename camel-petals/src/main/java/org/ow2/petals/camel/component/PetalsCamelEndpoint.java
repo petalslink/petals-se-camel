@@ -28,7 +28,6 @@ import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
@@ -77,7 +76,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         // this will setup some specific properties...
         super.configureProperties(options);
         // timeout is only supported if this is a to() (i.e. a consumes in the SU)
-        if (this.seo.getType() == ServiceType.Consumes) {
+        if (this.seo.getType() == ServiceType.CONSUMES) {
             final String s = (String) options.remove(PARAMETER_TIMEOUT);
             if (s != null) {
                 this.timeout = Long.parseLong(s);
@@ -106,8 +105,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
      */
     @Override
     public Producer createProducer() throws Exception {
-        if (this.seo.getType() != ServiceType.Consumes) {
-            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.Provides);
+        if (this.seo.getType() != ServiceType.CONSUMES) {
+            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
         }
         return new PetalsCamelProducer(this);
     }
@@ -122,8 +121,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
         Preconditions.checkNotNull(processor);
 
-        if (this.seo.getType() != ServiceType.Provides) {
-            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.Provides);
+        if (this.seo.getType() != ServiceType.PROVIDES) {
+            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
         }
 
         // create the consumer for our JBI provides
@@ -143,10 +142,27 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         return false;
     }
 
+    @SuppressWarnings("null")
     @Override
     public PetalsCamelComponent getComponent() {
-        @SuppressWarnings("null")
-        final @NonNull PetalsCamelComponent component = (PetalsCamelComponent) super.getComponent();
-        return component;
+        return (PetalsCamelComponent) super.getComponent();
+    }
+
+    /**
+     * This methods is overridden to not forgot that the superclass redefines equals and thus that we must stay
+     * consistent with the equals contract.
+     */
+    @Override
+    public boolean equals(@Nullable Object object) {
+        return super.equals(object);
+    }
+
+    /**
+     * This methods is overridden to not forgot that the superclass redefines hashCode and thus that we must stay
+     * consistent with the hashCode contract.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

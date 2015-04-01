@@ -30,7 +30,7 @@ import javax.xml.namespace.QName;
 public interface ServiceEndpointOperation {
 
     public static enum ServiceType {
-        Provides, Consumes
+        PROVIDES, CONSUMES
     }
 
     public QName getService();

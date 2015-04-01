@@ -18,6 +18,7 @@
 package org.ow2.petals.camel.se.impl;
 
 import java.net.URI;
+import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
@@ -74,7 +75,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     }
 
     @Override
-    public void sendAsync(final Exchange exchange, final long timeout, final Runnable callback)
+    public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
             throws MessagingException {
         sender.sendAsync(exchange, new PetalsCamelAsyncContext(exchange, timeout, callback));
     }
@@ -91,7 +92,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
 
     @Override
     public QName getInterface() {
-        return this.interfaceName;
+        return interfaceName;
     }
 
     @Override
@@ -112,5 +113,11 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     @Override
     public URI getMEP() {
         return mep;
+    }
+
+    @SuppressWarnings("null")
+    @Override
+    public Logger getLogger() {
+        return sender.getLogger();
     }
 }

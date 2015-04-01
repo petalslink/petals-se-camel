@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.camel;
 
+import java.util.logging.Logger;
+
 import org.apache.camel.CamelContext;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
@@ -49,5 +51,7 @@ public interface PetalsCamelContext {
     public void unregisterPPO(ServiceEndpointOperation seo) throws UnknownRegisteredServiceException;
 
     public CamelContext getCamelContext();
+
+    public Logger getLogger();
 
 }

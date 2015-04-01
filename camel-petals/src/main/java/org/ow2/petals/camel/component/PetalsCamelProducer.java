@@ -22,9 +22,9 @@ import javax.jbi.messaging.MessagingException;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultAsyncProducer;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
+import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.camel.exceptions.TimeoutException;
 
@@ -86,7 +86,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
         if (callback == null) {
-            boolean timedout = this.consumes.sendSync(exchange, timeout);
+            final boolean timedout = this.consumes.sendSync(exchange, timeout);
             if (timedout) {
                 camelExchange.setException(new TimeoutException(exchange));
             } else {
@@ -95,9 +95,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             return true;
         } else {
             // if sendAsync fails an exception will be thrown
-            this.consumes.sendAsync(exchange, timeout, new Runnable() {
+            this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
                 @Override
-                public void run() {
+                public void done() {
                     try {
                         Conversions.populateAnswerCamelExchange(camelExchange, exchange);
                     } catch (final MessagingException e) {
@@ -111,9 +111,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         }
     }
 
+    @SuppressWarnings("null")
+    @Override
     public PetalsCamelEndpoint getEndpoint() {
-        @SuppressWarnings("null")
-        final @NonNull PetalsCamelEndpoint endpoint = (PetalsCamelEndpoint) super.getEndpoint();
-        return endpoint;
+        return (PetalsCamelEndpoint) super.getEndpoint();
     }
 }

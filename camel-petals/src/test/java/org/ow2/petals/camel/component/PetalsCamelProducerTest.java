@@ -27,6 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
+import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
@@ -54,7 +55,7 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
         this.channel = easyMock.createMock(PetalsConsumesChannel.class);
 
-        pcc().addMockService("serviceId1", createMockSEO(ServiceType.Consumes), channel());
+        pcc().addMockService("serviceId1", createMockSEO(ServiceType.CONSUMES), channel());
         final PetalsCamelEndpoint endpoint = createEndpoint("serviceId1");
         this.producer = (PetalsCamelProducer) endpoint.createProducer();
 
@@ -69,7 +70,7 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
         final Exchange petalsExchange = easyMock.createNiceMock(Exchange.class);
         final AsyncCallback callback = easyMock.createNiceMock(AsyncCallback.class);
         expect(channel().newExchange()).andReturn(petalsExchange);
-        channel().sendAsync(eq(petalsExchange), eq(-1), anyObject(Runnable.class));
+        channel().sendAsync(eq(petalsExchange), eq(-1), anyObject(SendAsyncCallback.class));
         expectLastCall();
 
         easyMock.replayAll();

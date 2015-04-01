@@ -53,11 +53,11 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
     }
 
     protected void addMockConsumes(final String serviceId) {
-        pcc().addMockService(serviceId, createMockSEO(ServiceType.Consumes));
+        pcc().addMockService(serviceId, createMockSEO(ServiceType.CONSUMES));
     }
 
     protected void addMockProvides(final String serviceId) {
-        pcc().addMockService(serviceId, createMockSEO(ServiceType.Provides));
+        pcc().addMockService(serviceId, createMockSEO(ServiceType.PROVIDES));
     }
 
     protected ServiceEndpointOperation createMockSEO(final ServiceType type) {

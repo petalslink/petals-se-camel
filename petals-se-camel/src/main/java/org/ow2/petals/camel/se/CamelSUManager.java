@@ -22,6 +22,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsProvidesOperation;
@@ -186,6 +187,11 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         }
 
         ppo.process(exchange);
+    }
+
+    @SuppressWarnings("null")
+    public Logger getLogger() {
+        return this.logger;
     }
 
     private EndpointOperationKey buildEOK(final ServiceEndpointOperation seo) {
