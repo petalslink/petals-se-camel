@@ -1,8 +1,13 @@
 # Petals and Apache Camel
 
-See https://doc.petalslink.com/display/petalscomponents/Petals-SE-Camel+1.0.0-SNAPSHOT for Specifications and User Documentation.
+## Specifications and User Documentation
 
-The integration tests are in the Petals SVN and accessible at http://jenkins.petalslink.org.
+See https://doc.petalslink.com/display/petalscomponents/Petals-SE-Camel+1.0.0-SNAPSHOT.
+
+## Continuous Integration
+
+* http://jenkins.petalslink.com/job/Petals%20Components%20-%20SE%20Camel/
+* http://jenkins.petalslink.com/job/SE_Camel_integration_tests/
 
 ## Architecture
 
