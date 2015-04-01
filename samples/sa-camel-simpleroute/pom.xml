@@ -10,6 +10,7 @@
    </parent>
 
    <artifactId>sa-camel-simpleroute</artifactId>
+   <name>Petals ESB - Samples - SE Camel - SA Simple Route</name>
    <packaging>jbi-service-assembly</packaging>
 
    <properties>

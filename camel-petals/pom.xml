@@ -10,6 +10,7 @@
    </parent>
 
    <artifactId>camel-petals</artifactId>
+   <name>Petals ESB - Components - Petals Component for Camel</name>
 
    <dependencies>
       <dependency>

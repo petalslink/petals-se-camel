@@ -10,6 +10,7 @@
    </parent>
 
    <artifactId>su-camel-provides-simpleroute-xml</artifactId>
+   <name>Petals ESB - Samples - SE Camel - SU Simple Route XML</name>
    <packaging>jbi-service-unit</packaging>
 
    <properties>
