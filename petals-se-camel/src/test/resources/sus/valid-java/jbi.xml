@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi:jbi version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-camel="http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0"
+   xmlns:hello="http://petals.ow2.org">
+
+   <jbi:services binding-component="false">
+
+      <jbi:provides interface-name="hello:HelloInterface" service-name="hello:HelloService" endpoint-name="autogenerate">
+         <petalsCDK:wsdl>service.wsdl</petalsCDK:wsdl>
+      </jbi:provides>
+
+      <jbi:consumes interface-name="hello:HelloInterface" service-name="hello:HelloService">
+         
+         <!-- CDK specific elements -->
+         <petalsCDK:operation>hello:sayHello</petalsCDK:operation>
+         <petalsCDK:mep>InOut</petalsCDK:mep>
+
+         <!-- Component specific elements -->
+         <petals-se-camel:service-id>theConsumesId</petals-se-camel:service-id>
+      </jbi:consumes>
+
+      <petals-se-camel:routes>
+         <petals-se-camel:java-class>org.ow2.petals.samples.camel.tests.TestRouteOK</petals-se-camel:java-class>
+      </petals-se-camel:routes>
+
+   </jbi:services>
+</jbi:jbi>

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<wsdl:description xmlns:wsdl="http://www.w3.org/ns/wsdl" xmlns:hello="http://petals.ow2.org"
+   targetNamespace="http://petals.ow2.org" xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0">
+
+   <wsdl:types>
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://petals.ow2.org"
+         xmlns:hello="http://petals.ow2.org">
+         <xsd:element name="sayHello" type="hello:sayHello" />
+         <xsd:element name="sayHelloResponse" type="hello:sayHelloResponse" />
+         <xsd:complexType name="sayHello">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="arg0" type="xs:string" />
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="sayHelloResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="xs:string" />
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:interface name="HelloInterface">
+      <wsdl:operation name="sayHello" pattern="http://www.w3.org/ns/wsdl/in-out" style="http://www.w3.org/ns/wsdl/style/iri">
+         <wsdl:input messageLabel="In" element="hello:sayHello" />
+         <wsdl:output messageLabel="Out" element="hello:sayHelloResponse" />
+      </wsdl:operation>
+   </wsdl:interface>
+
+   <wsdl:binding name="HelloBinding" interface="hello:HelloInterface">
+      <wsdl:operation ref="hello:sayHello">
+         <petals-camel-wsdl:operation service-id="theProvidesId" />
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="HelloService" interface="hello:HelloInterface">
+      <wsdl:endpoint name="autogenerate" binding="hello:helloBinding" address="" />
+   </wsdl:service>
+
+</wsdl:description>

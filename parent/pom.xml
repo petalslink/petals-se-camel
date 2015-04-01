@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <relativePath />
+      <version>1.0.0-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>petals-camel-parent</artifactId>
+   <name>Petals ESB - Components - SE Camel - Parent</name>
+   <version>1.0.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <properties>
+      <findbugs.version>3.0.0</findbugs.version>
+      <camel.version>2.15.0</camel.version>
+      <!-- it is set to fals in the parent pom -->
+      <maven-dependency-plugin.failOnWarning>true</maven-dependency-plugin.failOnWarning>
+   </properties>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-message-exchange</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-commons-log</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+         </dependency>
+         <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+            <version>1.1.0</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-cdk-api</artifactId>
+            <version>2.4.1-SNAPSHOT</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-cdk-jbidescriptor</artifactId>
+            <version>2.4.1-SNAPSHOT</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version}</version>
+            <exclusions>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-core</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test</artifactId>
+            <version>${camel.version}</version>
+            <scope>test</scope>
+            <exclusions>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-core</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <scm>
+      <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-camel/parent</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-camel-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <relativePath>../parent/pom.xml</relativePath>
+      <version>1.0.0-SNAPSHOT</version>
+   </parent>
+	
+	<!-- ============== -->
+	<!-- Identification -->
+	<!-- ============== -->
+   <name>Petals ESB - Components - SE Camel</name>
+   <artifactId>petals-se-camel</artifactId>
+   <packaging>jbi-component</packaging>
+   <description>Service Engine based on Apache Camel</description>
+
+   <dependencies>
+      <!-- JBI and CDK dependencies -->
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-jbi</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-jbidescriptor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-commons-log</artifactId>
+      </dependency>
+      <!-- Petals Camel dependencies -->
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>camel-petals</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <!-- Other dependencies -->
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-wsdl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-ext-wsdl4complexwsdl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-schema</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-lang</groupId>
+         <artifactId>commons-lang</artifactId>
+      </dependency>
+      <!-- Code quality dependencies -->
+      <dependency>
+         <groupId>org.eclipse.jdt</groupId>
+         <artifactId>org.eclipse.jdt.annotation</artifactId>
+         <!-- Must be optional because it's not used at runtime -->
+         <optional>true</optional>
+      </dependency>
+      <!-- CDK Test dependencies -->
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-junit-external-resources</artifactId>
+         <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Let's use the version brought by camel-core -->
+               <artifactId>slf4j-api</artifactId>
+               <groupId>org.slf4j</groupId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+   </dependencies>
+
+   <scm>
+      <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-camel/petals-se-camel
+      </connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi:jbi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0">
+	<jbi:service-assembly>
+		<jbi:identification>
+			<jbi:name>sa-camel-simpleroute</jbi:name>
+			<jbi:description>sa-camel-simpleroute description</jbi:description>
+		</jbi:identification>
+	</jbi:service-assembly>
+</jbi:jbi>

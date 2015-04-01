@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2015 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://petals.ow2.org/components/petals-se-camel/version-1.0"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-camel="http://petals.ow2.org/components/petals-se-camel/version-1.0"
+   elementFormDefault="qualified">
+   
+   <xs:import namespace="http://petals.ow2.org/components/extensions/version-5" schemaLocation="CDKextensions.xsd" />
+
+   <!-- SU configuration -->
+    <!-- Camel provide configuration -->
+   <xs:element name="service-id" type="petalsCDK:settablestring" default="">
+      <xs:annotation>
+         <xs:documentation>A unique id to identify the service in Camel routes</xs:documentation>
+      </xs:annotation>
+   </xs:element>
+   
+   <xs:element name="routes" type="petals-se-camel:CamelRoutes">
+      <xs:annotation>
+         <xs:documentation>Routes that will be instantiated in the Camel Service Engine</xs:documentation>
+      </xs:annotation>
+   </xs:element>
+   
+   <!-- TYPES -->
+   <xs:complexType name="CamelRoutes">
+      <xs:sequence>
+         <xs:element minOccurs="0" maxOccurs="unbounded" name="java-class" type="xs:string" />
+         <xs:element minOccurs="0" maxOccurs="unbounded" name="xml-file" type="petalsCDK:File" />
+      </xs:sequence>
+   </xs:complexType>
+
+</xs:schema>

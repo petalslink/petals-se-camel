@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-camel-samples-parent</artifactId>
+      <groupId>org.ow2.petals.samples</groupId>
+      <version>5.0.0-SNAPSHOT</version>
+      <relativePath>../parent/pom.xml</relativePath>
+   </parent>
+
+   <artifactId>su-camel-provides-simpleroute-xml</artifactId>
+   <packaging>jbi-service-unit</packaging>
+
+   <properties>
+      <!-- Skip dependency check for service unit. -->
+      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-camel</artifactId>
+         <type>jbi-component</type>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>maven-petals-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/petals-samples/petals-samples-camel/su-camel-provides-simpleroute
+      </connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>
