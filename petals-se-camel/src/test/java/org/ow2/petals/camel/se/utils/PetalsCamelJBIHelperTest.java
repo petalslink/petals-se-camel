@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
-import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
@@ -60,7 +59,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
                 new QName("http://petals.ow2.org", "HelloInterface"));
 
         assertEquals(res.size(), 1);
-        assertEquals(res.get(0).b, "theProvidesId");
+        assertEquals(res.get(0).getB(), "theProvidesId");
 
     }
 
@@ -73,7 +72,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
                 new QName("http://petals.ow2.org", "HelloInterface"));
 
         assertEquals(res.size(), 1);
-        assertEquals(res.get(0).b, "theProvidesId");
+        assertEquals(res.get(0).getB(), "theProvidesId");
 
     }
 
