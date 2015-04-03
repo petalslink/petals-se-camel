@@ -40,7 +40,7 @@ public class PetalsCamelComponent extends UriEndpointComponent {
 
     @NonNullByDefault(false)
     @Override
-    protected Endpoint createEndpoint(final String uri, final String remaining, Map<String, Object> parameters)
+    protected Endpoint createEndpoint(final String uri, final String remaining, final Map<String, Object> parameters)
             throws Exception {
 
         // remaining can ONLY be the unique id attributed either in the WSDL for provides (consumers)

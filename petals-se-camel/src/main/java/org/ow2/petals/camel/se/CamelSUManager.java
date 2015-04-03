@@ -125,7 +125,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         final URLClassLoader classLoader = ClassLoaderUtil.createClassLoader(suDH.getInstallRoot(), getClass()
                 .getClassLoader());
 
-        return new CamelSU(suDH.getName(), ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
+        return new CamelSU(ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
                 ImmutableList.copyOf(xmlNames), classLoader, this);
     }
 

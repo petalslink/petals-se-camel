@@ -29,7 +29,7 @@ public class InvalidURIException extends Exception {
 
     private static final String MESSAGE_PATTERN = "Invalid URI, it must match \"petals:serviceId[?options]\": %s";
 
-    public InvalidURIException(String invalidURI) {
+    public InvalidURIException(final String invalidURI) {
         super(String.format(MESSAGE_PATTERN, invalidURI));
     }
 

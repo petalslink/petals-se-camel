@@ -75,10 +75,9 @@ public class CamelSU implements PetalsCamelContext {
 
     private final CamelSUManager manager;
 
-    public CamelSU(final String su, final ImmutableMap<String, ServiceEndpointOperation> sid2seo,
+    public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo,
             final ImmutableList<String> classNames, final ImmutableList<String> xmlNames,
             final URLClassLoader classLoader, final CamelSUManager manager) throws PetalsCamelSEException {
-
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
         this.manager = manager;

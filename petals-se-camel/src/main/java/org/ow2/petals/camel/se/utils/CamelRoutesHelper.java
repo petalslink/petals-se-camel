@@ -27,6 +27,7 @@ import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RoutesDefinition;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 
 public class CamelRoutesHelper {
 
@@ -50,8 +51,7 @@ public class CamelRoutesHelper {
     }
 
     public static RoutesDefinition loadRoutesFromXML(final String xmlName, final ModelCamelContext context,
-            final ClassLoader classLoader, final Logger logger) throws InvalidCamelRouteDefinitionException,
-            InvalidJBIConfigurationException {
+            final ClassLoader classLoader, final Logger logger) throws PetalsCamelSEException {
 
         final InputStream xml = classLoader.getResourceAsStream(xmlName);
 

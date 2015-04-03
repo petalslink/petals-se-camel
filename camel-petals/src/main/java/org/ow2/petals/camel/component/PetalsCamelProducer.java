@@ -54,7 +54,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                 // nothing to do
             }
         });
-        assert sync == true;
+        assert sync;
     }
 
     @NonNullByDefault(false)
@@ -62,7 +62,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     public boolean process(final Exchange camelExchange, final AsyncCallback callback) {
         if (getEndpoint().isSynchronous()) {
             final boolean sync = this.process(camelExchange, true, callback);
-            assert sync == true;
+            assert sync;
             return sync;
         } else {
             return this.process(camelExchange, false, callback);
