@@ -107,11 +107,11 @@ public class PetalsCamelJBIHelper {
             final List<OperationData> seos;
             try {
                 seos = getOperationsAndServiceId(wsdlDoc, p.getInterfaceName());
-            } catch (URISyntaxException | XmlException e) {
+            } catch (final URISyntaxException | XmlException e) {
                 throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
             }
 
-            for (OperationData od : seos) {
+            for (final OperationData od : seos) {
                 if (sid2seo.containsKey(od.serviceId)) {
                     throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + od.serviceId
                             + ") in the operation " + od.operation);
@@ -228,6 +228,7 @@ public class PetalsCamelJBIHelper {
         return serviceId;
     }
 
+    @SuppressWarnings("all")
     public static class OperationData {
 
         public final QName operation;
