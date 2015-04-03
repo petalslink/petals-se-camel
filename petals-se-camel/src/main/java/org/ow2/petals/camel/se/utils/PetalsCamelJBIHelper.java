@@ -104,26 +104,24 @@ public class PetalsCamelJBIHelper {
 
             final Document wsdlDoc = suDH.getEpServiceDesc().get(key);
 
-            final List<Pair<Pair<QName, URI>, String>> seos;
+            final List<OperationData> seos;
             try {
                 seos = getOperationsAndServiceId(wsdlDoc, p.getInterfaceName());
             } catch (URISyntaxException | XmlException e) {
                 throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
             }
 
-            for (Pair<Pair<QName, URI>, String> pair : seos) {
-                final String serviceId = pair.getB();
-                if (sid2seo.containsKey(serviceId)) {
-                    throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + serviceId
-                            + ") in the operation " + pair.getA().getA());
+            for (OperationData od : seos) {
+                if (sid2seo.containsKey(od.serviceId)) {
+                    throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + od.serviceId
+                            + ") in the operation " + od.operation);
                 }
-                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(pair.getA().getA(), pair
-                        .getA().getB(),
+                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep,
                         new PetalsCamelSender(component, p));
                 if (sid2seo.containsValue(seo)) {
                     throw new InvalidJBIConfigurationException("Duplicate service " + seo);
                 }
-                sid2seo.put(serviceId, seo);
+                sid2seo.put(od.serviceId, seo);
             }
         }
 
@@ -165,10 +163,10 @@ public class PetalsCamelJBIHelper {
         }
     }
 
-    public static List<Pair<Pair<QName, URI>, String>> getOperationsAndServiceId(final Document doc,
+    public static List<OperationData> getOperationsAndServiceId(final Document doc,
             final QName interfaceName) throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
 
-        final List<Pair<Pair<QName, URI>, String>> results = Lists.newArrayList();
+        final List<OperationData> results = Lists.newArrayList();
 
         final WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
 
@@ -183,7 +181,6 @@ public class PetalsCamelJBIHelper {
             for (final BindingOperation operation : binding.getBindingOperations()) {
                 final QName qName = operation.getQName();
                 final MEPPatternConstants mep = binding.getInterface().getOperation(qName).getPattern();
-                final Pair<QName, URI> pair = new Pair<>(qName, mep.value());
 
                 Element camelOperation = null;
                 for (final Element e : operation.getOtherElements()) {
@@ -206,7 +203,7 @@ public class PetalsCamelJBIHelper {
                     throw new InvalidJBIConfigurationException("No " + PETALS_CAMEL_WSDL_OPERATION_SERVICEID
                             + " attribute for the operation " + qName);
                 }
-                results.add(new Pair<>(pair, serviceId));
+                results.add(new OperationData(qName, mep.value(), serviceId));
             }
         }
         return results;
@@ -229,5 +226,20 @@ public class PetalsCamelJBIHelper {
         }
 
         return serviceId;
+    }
+
+    public static class OperationData {
+
+        public final QName operation;
+
+        public final URI mep;
+
+        public final String serviceId;
+
+        public OperationData(final QName operation, final URI mep, final String serviceId) {
+            this.operation = operation;
+            this.mep = mep;
+            this.serviceId = serviceId;
+        }
     }
 }

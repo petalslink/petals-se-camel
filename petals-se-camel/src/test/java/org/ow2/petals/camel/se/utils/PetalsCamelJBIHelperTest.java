@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.camel.se.utils;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -27,6 +26,7 @@ import org.junit.Test;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
+import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper.OperationData;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
@@ -55,11 +55,11 @@ public class PetalsCamelJBIHelperTest extends Assert {
 
         final Document doc = getWSDL("/sus/valid-xml-wsdl-1.1/service.wsdl", WSDLVersionConstants.WSDL11);
 
-        final List<Pair<Pair<QName, URI>, String>> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
+        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
                 new QName("http://petals.ow2.org", "HelloInterface"));
 
         assertEquals(res.size(), 1);
-        assertEquals(res.get(0).getB(), "theProvidesId");
+        assertEquals(res.get(0).serviceId, "theProvidesId");
 
     }
 
@@ -68,11 +68,11 @@ public class PetalsCamelJBIHelperTest extends Assert {
 
         final Document doc = getWSDL("/sus/valid-xml-wsdl-2.0/service.wsdl", WSDLVersionConstants.WSDL20);
 
-        final List<Pair<Pair<QName, URI>, String>> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
+        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
                 new QName("http://petals.ow2.org", "HelloInterface"));
 
         assertEquals(res.size(), 1);
-        assertEquals(res.get(0).getB(), "theProvidesId");
+        assertEquals(res.get(0).serviceId, "theProvidesId");
 
     }
 
