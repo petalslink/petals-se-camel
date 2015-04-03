@@ -28,12 +28,11 @@ import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
-import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
-
-import com.google.common.base.Preconditions;
+import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
 @UriEndpoint(scheme = "petals", syntax = "petals:serviceId", consumerClass = PetalsCamelConsumer.class)
 public class PetalsCamelEndpoint extends DefaultEndpoint {
@@ -54,7 +53,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     private final ServiceEndpointOperation seo;
 
     public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String serviceId)
-            throws Exception {
+            throws UnknownServiceException {
 
         super(endpointUri, component);
 
@@ -68,13 +67,13 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     /**
      * If there is parameters left in options, then Camel will complain, this serves as syntax checking
      */
+    @NonNullByDefault(false)
     @Override
-    public void configureProperties(final @Nullable Map<String, Object> options) {
-
-        Preconditions.checkNotNull(options);
+    public void configureProperties(final Map<String, Object> options) {
 
         // this will setup some specific properties...
         super.configureProperties(options);
+
         // timeout is only supported if this is a to() (i.e. a consumes in the SU)
         if (this.seo.getType() == ServiceType.CONSUMES) {
             final String s = (String) options.remove(PARAMETER_TIMEOUT);
@@ -104,7 +103,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
      * It can be one of our jbi-consumes
      */
     @Override
-    public Producer createProducer() throws Exception {
+    public Producer createProducer() throws IncompatibleEndpointUsageException {
         if (this.seo.getType() != ServiceType.CONSUMES) {
             throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
         }
@@ -116,10 +115,9 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
      * 
      * It can be one of our jbi-provides
      */
+    @NonNullByDefault(false)
     @Override
-    public Consumer createConsumer(final @Nullable Processor processor) throws Exception {
-
-        Preconditions.checkNotNull(processor);
+    public Consumer createConsumer(final Processor processor) throws IncompatibleEndpointUsageException {
 
         if (this.seo.getType() != ServiceType.PROVIDES) {
             throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
@@ -146,23 +144,5 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @Override
     public PetalsCamelComponent getComponent() {
         return (PetalsCamelComponent) super.getComponent();
-    }
-
-    /**
-     * This methods is overridden to not forgot that the superclass redefines equals and thus that we must stay
-     * consistent with the equals contract.
-     */
-    @Override
-    public boolean equals(@Nullable Object object) {
-        return super.equals(object);
-    }
-
-    /**
-     * This methods is overridden to not forgot that the superclass redefines hashCode and thus that we must stay
-     * consistent with the hashCode contract.
-     */
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 }

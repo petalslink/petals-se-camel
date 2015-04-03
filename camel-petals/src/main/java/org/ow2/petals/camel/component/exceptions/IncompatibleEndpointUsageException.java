@@ -20,6 +20,13 @@ package org.ow2.petals.camel.component.exceptions;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 
+/**
+ * An exception thrown when a petals endpoint is used to create a camel producer for a petals provides or a camel
+ * consumer for a petals consumes.
+ * 
+ * @author vnoel
+ *
+ */
 public class IncompatibleEndpointUsageException extends Exception {
 
     private static final long serialVersionUID = 4627238751624577968L;

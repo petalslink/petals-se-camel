@@ -19,17 +19,16 @@ package org.ow2.petals.camel.se;
 
 import java.util.logging.Logger;
 
+import javax.jbi.JBIException;
 import javax.jbi.messaging.MessagingException;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.ow2.petals.camel.exceptions.TimeoutException;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.se.datatypes.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
-
-import com.google.common.base.Preconditions;
 
 /**
  * This class plays the role of the bridge between the SE and the rest of Petals
@@ -41,17 +40,18 @@ import com.google.common.base.Preconditions;
  */
 public class CamelJBIListener extends AbstractJBIListener {
 
+    @NonNullByDefault(false)
     @Override
-    public boolean onJBIMessage(final @Nullable Exchange exchange) {
+    public boolean onJBIMessage(final Exchange exchange) {
         final Logger logger = this.getLogger();
 
-        Preconditions.checkNotNull(exchange);
-
         logger.fine("Start CamelJBIListener.onJBIMessage()");
+
+        final String logHint = "Exchange " + exchange.getExchangeId();
+
         try {
             if (exchange.isActiveStatus()) {
 
-                final String logHint = "Exchange " + exchange.getExchangeId();
 
                 try {
                     if (!exchange.isProviderRole()) {
@@ -71,17 +71,19 @@ public class CamelJBIListener extends AbstractJBIListener {
                         logger.fine("Pattern " + exchange.getPattern());
                     }
                     
-                    getCamelSE().getCamelSUManager().process(exchange);
+                    final PetalsProvidesOperation ppo = getCamelSE().getCamelSUManager().getPPO(exchange);
 
-                    // we always take care of answering things in the camel consumer (except if an exception happens
-                    // during execution of process)
+                    ppo.process(exchange);
+
+                    // we always take care of answering things in the processing!
                     return false;
-                } catch (final Exception e) {
-                    logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
+                } catch (final JBIException e) {
+                    // This concerns all exceptions but the processing of the message itself!
+                    logger.log(Level.SEVERE, logHint + " encountered a problem.", e);
                     exchange.setError(e);
                 }
             } else if (exchange.isErrorStatus()) {
-                logger.warning("Exchange " + exchange.getExchangeId() + " received with a status 'ERROR'. Skipped !");
+                logger.warning(logHint + " received with a status 'ERROR'. Skipped !");
             }
 
             // something bad happened, let the CDK handle the response!
@@ -91,47 +93,34 @@ public class CamelJBIListener extends AbstractJBIListener {
         }
     }
 
+    @NonNullByDefault(false)
     @Override
-    public boolean onAsyncJBIMessage(final @Nullable Exchange exchange, final @Nullable AsyncContext asyncContext) {
+    public boolean onAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext) {
+        // let's call the callback, the one that sent this message will take care of doing what it has to do
+        return handleAsyncJBIMessage(asyncContext, false);
+    }
 
-        Preconditions.checkNotNull(exchange);
-        Preconditions.checkNotNull(asyncContext);
+    @NonNullByDefault(false)
+    @Override
+    public boolean onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
+        // this is when I sent something asynchronously but it timeouted!
+        // let's call the callback, the one that sent this message will take care of doing what it has to do
+        return handleAsyncJBIMessage(asyncContext, true);
+    }
 
+    private boolean handleAsyncJBIMessage(final AsyncContext asyncContext, final boolean timedOut) {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
             this.getLogger().warning("Got an async context not from me!!! " + asyncContext);
         } else {
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
-            // let's call the callback, the one that sent this message will take care of doing what it has to do
-            context.getCallback().done();
+            context.getCallback().done(timedOut);
         }
 
         // always return false, we will take care of answering
         return false;
     }
 
-    @Override
-    public boolean onExpiredAsyncJBIMessage(final @Nullable Exchange originalExchange,
-            final @Nullable AsyncContext asyncContext) {
-
-        Preconditions.checkNotNull(originalExchange);
-        Preconditions.checkNotNull(asyncContext);
-
-        if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
-            this.getLogger().warning("Got an async context not from me!!! " + asyncContext);
-            return false;
-        } else {
-            // this is when I sent something asynchronously but it timeouted!
-            final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
-
-            originalExchange.setError(new TimeoutException(originalExchange));
-
-            context.getCallback().done();
-        }
-
-        // always return false, we will take care of answering
-        return false;
-    }
-
+    @SuppressWarnings("null")
     public CamelSE getCamelSE() {
         return (CamelSE) super.component;
     }

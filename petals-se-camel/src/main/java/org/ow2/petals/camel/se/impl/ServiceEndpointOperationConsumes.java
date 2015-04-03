@@ -19,13 +19,12 @@ package org.ow2.petals.camel.se.impl;
 
 import java.net.URI;
 
-import javax.jbi.messaging.MessagingException;
+import javax.jbi.JBIException;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
@@ -43,7 +42,7 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     }
 
     @Override
-    public Exchange newExchange() throws MessagingException, PEtALSCDKException {
+    public Exchange newExchange() throws JBIException {
         return sender.createConsumeExchange(sender.getConsumes());
     }
 

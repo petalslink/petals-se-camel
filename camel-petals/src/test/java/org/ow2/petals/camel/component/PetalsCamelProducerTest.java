@@ -31,8 +31,6 @@ import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
-import com.google.common.base.Preconditions;
-
 public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
     private @Nullable PetalsConsumesChannel channel;
@@ -40,12 +38,12 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
     private @Nullable PetalsCamelProducer producer;
 
     protected PetalsConsumesChannel channel() {
-        Preconditions.checkNotNull(channel);
+        assert channel != null;
         return channel;
     }
 
     protected PetalsCamelProducer producer() {
-        Preconditions.checkNotNull(producer);
+        assert producer != null;
         return producer;
     }
 

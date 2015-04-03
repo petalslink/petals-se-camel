@@ -22,11 +22,9 @@ import java.util.regex.Pattern;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
-import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
-
-import com.google.common.base.Preconditions;
 
 public class PetalsCamelComponent extends UriEndpointComponent {
 
@@ -40,13 +38,10 @@ public class PetalsCamelComponent extends UriEndpointComponent {
         this.pcc = pcc;
     }
 
+    @NonNullByDefault(false)
     @Override
-    protected Endpoint createEndpoint(final @Nullable String uri, final @Nullable String remaining,
-            @Nullable Map<String, Object> parameters) throws Exception {
-
-        Preconditions.checkNotNull(remaining);
-        Preconditions.checkNotNull(uri);
-        Preconditions.checkNotNull(parameters);
+    protected Endpoint createEndpoint(final String uri, final String remaining, Map<String, Object> parameters)
+            throws Exception {
 
         // remaining can ONLY be the unique id attributed either in the WSDL for provides (consumers)
         // or in the JBI for consumes (providers)!!

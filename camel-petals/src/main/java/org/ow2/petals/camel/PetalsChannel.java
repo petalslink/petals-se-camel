@@ -19,9 +19,9 @@ package org.ow2.petals.camel;
 
 import java.util.logging.Logger;
 
+import javax.jbi.JBIException;
 import javax.jbi.messaging.MessagingException;
 
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 /**
@@ -54,6 +54,8 @@ public interface PetalsChannel {
      * If timeout is less than 0 then we use the consumes or provides default timeout value, if equals to 0 then no
      * timeout.
      * 
+     * If an exception is thrown, then the callback will never be called.
+     * 
      * @throws MessagingException
      * 
      */
@@ -63,7 +65,7 @@ public interface PetalsChannel {
 
     public interface PetalsConsumesChannel extends PetalsChannel {
 
-        public Exchange newExchange() throws MessagingException, PEtALSCDKException;
+        public Exchange newExchange() throws JBIException;
 
     }
 
@@ -73,6 +75,11 @@ public interface PetalsChannel {
 
     public interface SendAsyncCallback {
 
-        public void done();
+        /**
+         * 
+         * @param timedOut
+         *            is true if the send async timed out
+         */
+        public void done(boolean timedOut);
     }
 }

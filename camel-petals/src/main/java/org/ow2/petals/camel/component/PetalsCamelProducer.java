@@ -17,18 +17,18 @@
  */
 package org.ow2.petals.camel.component;
 
-import javax.jbi.messaging.MessagingException;
+import java.util.logging.Level;
+
+import javax.jbi.JBIException;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultAsyncProducer;
-import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
+import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.component.utils.Conversions;
-import org.ow2.petals.camel.exceptions.TimeoutException;
-
-import com.google.common.base.Preconditions;
 
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
@@ -45,70 +45,96 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         this.consumes = endpoint.getComponent().getContext().getConsumesChannel(endpoint.getSEO());
     }
 
+    @NonNullByDefault(false)
     @Override
-    public void process(final @Nullable Exchange camelExchange) throws Exception {
-        Preconditions.checkNotNull(camelExchange);
-        this.processSyncOrNot(camelExchange, null);
+    public void process(final Exchange camelExchange) {
+        final boolean sync = this.process(camelExchange, true, new AsyncCallback() {
+            @Override
+            public void done(final boolean doneSync) {
+                // nothing to do
+            }
+        });
+        assert sync == true;
     }
 
+    @NonNullByDefault(false)
     @Override
-    public boolean process(final @Nullable Exchange camelExchange, final @Nullable AsyncCallback callback) {
-        Preconditions.checkNotNull(camelExchange);
-        Preconditions.checkNotNull(callback);
-
-        try {
-            if (getEndpoint().isSynchronous()) {
-                this.processSyncOrNot(camelExchange, null);
-
-                callback.done(true);
-
-                return true;
-            } else {
-                return this.processSyncOrNot(camelExchange, callback);
-            }
-
-        } catch (Exception e) {
-            camelExchange.setException(e);
-            // true because we did that synchronously and things are finished
-            callback.done(true);
-            // true because we called done with true
-            return true;
+    public boolean process(final Exchange camelExchange, final AsyncCallback callback) {
+        if (getEndpoint().isSynchronous()) {
+            final boolean sync = this.process(camelExchange, true, callback);
+            assert sync == true;
+            return sync;
+        } else {
+            return this.process(camelExchange, false, callback);
         }
     }
 
-    private boolean processSyncOrNot(final Exchange camelExchange, final @Nullable AsyncCallback callback)
-            throws Exception {
+    /**
+     * There is three possible ways of doing the processing:
+     * <ul>
+     * <li>Asynchronously with a callback</li>
+     * <li>Synchronously with a callback</li>
+     * <li>Synchronously and no callback</li>
+     * </ul>
+     * 
+     * @param camelExchange
+     * @param doSync
+     *            if this processing must be done synchronously
+     * @param callback
+     *            a callback to call after, can be null
+     * 
+     * @return <code>true</code> if the processing was done synchronously
+     * @throws JBIException
+     */
+    private boolean process(final Exchange camelExchange, final boolean doSync, final AsyncCallback callback) {
+
         final long timeout = getEndpoint().getTimeout();
 
-        // TODO add checks that operation is set, and all the rest?
-        final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
+        try {
+            final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
 
-        Conversions.populateNewPetalsExchange(exchange, camelExchange);
+            Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
-        if (callback == null) {
-            final boolean timedout = this.consumes.sendSync(exchange, timeout);
-            if (timedout) {
-                camelExchange.setException(new TimeoutException(exchange));
+            if (doSync) {
+                final boolean timedOut = this.consumes.sendSync(exchange, timeout);
+                // this has been done sync
+                final boolean doneSync = true;
+                handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
+                return doneSync;
             } else {
-                Conversions.populateAnswerCamelExchange(camelExchange, exchange);
-            }
-            return true;
-        } else {
-            // if sendAsync fails an exception will be thrown
-            this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
-                @Override
-                public void done() {
-                    try {
-                        Conversions.populateAnswerCamelExchange(camelExchange, exchange);
-                    } catch (final MessagingException e) {
-                        camelExchange.setException(e);
-                        // TODO should I call the callback with true in that case?!
+                // this is done async (except if the send fail, but then the value of this variable won't be used
+                // because the callback will never be called)
+                final boolean doneSync = false;
+                this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
+                    @Override
+                    public void done(final boolean timedOut) {
+                        handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                     }
-                    callback.done(false);
-                }
-            });
-            return false;
+                });
+                return doneSync;
+            }
+        } catch (final JBIException e) {
+            // these exceptions can only happens before the message is sent (or if the send fails), so before
+            // handleAnswer could be called, thus this is done synchronously in either case of doSync and the callback
+            // must be called
+            final boolean doneSync = true;
+            this.consumes.getLogger().log(Level.SEVERE,
+                    "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
+            camelExchange.setException(e);
+            callback.done(doneSync);
+            return doneSync;
         }
+    }
+
+    private void handleAnswer(final Exchange camelExchange,
+            final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
+            final boolean doneSync, final AsyncCallback callback) {
+        if (timedOut) {
+            camelExchange.setException(new TimeoutException(exchange));
+        } else {
+            Conversions.populateAnswerCamelExchange(camelExchange, exchange);
+        }
+        callback.done(doneSync);
     }
 
     @SuppressWarnings("null")

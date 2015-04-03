@@ -32,8 +32,6 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock;
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 
-import com.google.common.base.Preconditions;
-
 public class PetalsCamelTestSupport extends ExchangeTestSupport {
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
@@ -41,7 +39,7 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
     private @Nullable PetalsCamelContextMock pcc;
 
     protected PetalsCamelContextMock pcc() {
-        Preconditions.checkNotNull(pcc);
+        assert pcc != null;
         return pcc;
     }
 

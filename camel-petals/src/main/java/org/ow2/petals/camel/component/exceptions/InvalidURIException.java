@@ -17,7 +17,12 @@
  */
 package org.ow2.petals.camel.component.exceptions;
 
-
+/**
+ * An exception thrown when an endpoint is created with a wrong URI.
+ * 
+ * @author vnoel
+ *
+ */
 public class InvalidURIException extends Exception {
 
     private static final long serialVersionUID = -1843668412870545275L;

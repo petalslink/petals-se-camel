@@ -19,6 +19,7 @@ package org.ow2.petals.camel.se;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.camel.CamelContext;
@@ -36,10 +37,10 @@ import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
+import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
 import org.ow2.petals.camel.se.utils.CamelRoutesHelper;
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -76,7 +77,7 @@ public class CamelSU implements PetalsCamelContext {
 
     public CamelSU(final String su, final ImmutableMap<String, ServiceEndpointOperation> sid2seo,
             final ImmutableList<String> classNames, final ImmutableList<String> xmlNames,
-            final URLClassLoader classLoader, final CamelSUManager manager) throws InvalidCamelRouteDefinitionException {
+            final URLClassLoader classLoader, final CamelSUManager manager) throws PetalsCamelSEException {
 
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
@@ -86,50 +87,54 @@ public class CamelSU implements PetalsCamelContext {
         context.addComponent("petals", new PetalsCamelComponent(this));
 
         for (final String className : classNames) {
+            final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
+
             try {
-                final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
                 context.addRoutes(routes);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new InvalidCamelRouteDefinitionException("Can't add routes from class " + className
                         + " to Camel context", e);
             }
         }
 
         for (final String xmlName : xmlNames) {
+            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
+                    getLogger());
+
             try {
-                final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader);
                 context.addRouteDefinitions(routes.getRoutes());
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new InvalidCamelRouteDefinitionException("Can't add routes from xml file " + xmlName
                         + " to Camel context", e);
             }
         }
     }
 
-    public void stop() throws PEtALSCDKException {
+    public void stop() throws PetalsCamelSEException {
         // TODO other things?
         try {
             context.stop();
-        } catch (Exception e) {
-            throw new PEtALSCDKException("Problem stopping the Camel context", e);
+        } catch (final Exception e) {
+            throw new PetalsCamelSEException("Problem stopping the Camel context", e);
         }
     }
 
-    public void start() throws PEtALSCDKException {
+    public void start() throws PetalsCamelSEException {
         // TODO other things?
         try {
             context.start();
-        } catch (Exception e) {
-            throw new PEtALSCDKException("Problem starting the Camel context", e);
+        } catch (final Exception e) {
+            throw new PetalsCamelSEException("Problem starting the Camel context", e);
         }
     }
 
-    public void undeploy() throws PEtALSCDKException {
+    public void undeploy() {
         // TODO other things?
         try {
             this.classLoader.close();
-        } catch (IOException e) {
-            throw new PEtALSCDKException("Problem closing the classloader", e);
+        } catch (final IOException e) {
+            // let's log it, it is severe because it uses memory!
+            getLogger().log(Level.SEVERE, "Can't close the classloader of the SU", e);
         }
     }
 

@@ -56,41 +56,47 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
 
 
     @Override
-    public void process(final org.ow2.petals.component.framework.api.message.Exchange exchange) throws Exception {
+    public boolean process(final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
         @SuppressWarnings("null")
         final @NonNull Exchange camelExchange = getEndpoint().createExchange();
 
         Conversions.populateNewCamelExchange(camelExchange, exchange);
 
-        // TODO should we have a set of "normalized" headers such as jbi.operation or things like that?
-        // (TODO when should we set a fault? how to differentiate business fault from technical error?)
-
         if (getEndpoint().isSynchronous()) {
-            getProcessor().process(camelExchange);
-            endProcess(camelExchange, exchange);
+            try {
+                getProcessor().process(camelExchange);
+            } catch (final Exception e) {
+                this.provides.getLogger().log(Level.SEVERE,
+                        "Just set an error on the Petals Exchange " + exchange.getExchangeId(), e);
+                exchange.setError(e);
+            }
+            handleAnswer(camelExchange, exchange);
+            return true;
         } else {
             getAsyncProcessor().process(camelExchange, new AsyncCallback() {
                 @Override
-                public void done(boolean doneSync) {
-                    endProcess(camelExchange, exchange);
+                public void done(final boolean doneSync) {
+                    handleAnswer(camelExchange, exchange);
                 }
             });
+            return false;
         }
     }
 
-    /**
-     * TODO in the future we should refactor the CDK to be able to leverage the existing logic.
-     */
-    private void endProcess(final Exchange camelExchange,
+    private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
+        // this must be caught before sending to be sure that if an error happens here it is sent back!
         try {
             Conversions.populateAnswerPetalsExchange(exchange, camelExchange);
         } catch (final MessagingException e) {
+            this.provides.getLogger().log(Level.SEVERE,
+                    "Just set an error on the Petals Exchange " + exchange.getExchangeId(), e);
             exchange.setError(e);
         }
 
+        // if the send fails, there is nothing we can do except logging the error
         try {
             // TODO shouldn't we use sendAsync so that we can handle received done or fault or error messages?
             this.provides.send(exchange);

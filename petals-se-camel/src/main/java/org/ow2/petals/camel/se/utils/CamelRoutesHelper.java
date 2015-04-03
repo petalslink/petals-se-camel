@@ -19,6 +19,8 @@ package org.ow2.petals.camel.se.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
@@ -35,10 +37,11 @@ public class CamelRoutesHelper {
             throws InvalidJBIConfigurationException {
         try {
             final Class<?> clazz = classLoader.loadClass(className);
-            if (!RouteBuilder.class.isAssignableFrom(clazz)) {
-                throw new InvalidJBIConfigurationException(className + " is not a subclass of camel RouteBuilder");
+            final Object o = clazz.newInstance();
+            if (!(o instanceof RouteBuilder)) {
+                throw new InvalidJBIConfigurationException(className + " is not a subclass of Camel RouteBuilder");
             }
-            return (RouteBuilder) clazz.newInstance();
+            return (RouteBuilder) o;
         } catch (ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
         } catch (InstantiationException | IllegalAccessException e) {
@@ -47,20 +50,32 @@ public class CamelRoutesHelper {
     }
 
     public static RoutesDefinition loadRoutesFromXML(final String xmlName, final ModelCamelContext context,
-            final ClassLoader classLoader) throws InvalidCamelRouteDefinitionException,
+            final ClassLoader classLoader, final Logger logger) throws InvalidCamelRouteDefinitionException,
             InvalidJBIConfigurationException {
-        try (final InputStream xml = classLoader.getResourceAsStream(xmlName)) {
-            if (xml == null) {
-                throw new InvalidJBIConfigurationException("Can't find xml routes definition " + xmlName);
-            }
-            try {
-                return context.loadRoutesDefinition(xml);
-            } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName, e);
-            }
-        } catch (final IOException e) {
-            // TODO should that happen?! shouldn't we just log a warning?!
-            throw new InvalidJBIConfigurationException("Can't close xml routes definition " + xmlName, e);
+
+        final InputStream xml = classLoader.getResourceAsStream(xmlName);
+
+        if (xml == null) {
+            throw new InvalidJBIConfigurationException("Can't find xml routes definition " + xmlName);
         }
+
+        final RoutesDefinition routes;
+        try {
+            routes = context.loadRoutesDefinition(xml);
+        } catch (final Exception e) {
+            throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName, e);
+        } finally {
+            try {
+                xml.close();
+            } catch (final IOException e) {
+                logger.log(Level.WARNING, "Can't close the xml stream for xml " + xmlName, e);
+            }
+        }
+
+        if (routes == null) {
+            throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName);
+        }
+
+        return routes;
     }
 }

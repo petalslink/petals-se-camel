@@ -29,9 +29,6 @@ import javax.xml.transform.Source;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Utils to convert between petals exchange and camel exchange.
@@ -51,12 +48,13 @@ public class Conversions {
     /**
      * To populate a new camel exchange with an exchange coming from petals
      * 
+     * TODO should we have a set of "normalized" headers such as jbi.operation or things like that?
+     * 
      * @param camelExchange
      * @param exchange
-     * @throws MessagingException
      */
     public static void populateNewCamelExchange(final Exchange camelExchange,
-            final org.ow2.petals.component.framework.api.message.Exchange exchange) throws MessagingException {
+            final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
         camelExchange.setExchangeId(exchange.getExchangeId());
 
@@ -75,10 +73,9 @@ public class Conversions {
      * 
      * @param camelExchange
      * @param exchange
-     * @throws MessagingException
      */
     public static void populateAnswerCamelExchange(final Exchange camelExchange,
-            final org.ow2.petals.component.framework.api.message.Exchange exchange) throws MessagingException {
+            final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
         // TODO should I update properties?!
 
@@ -101,11 +98,7 @@ public class Conversions {
         }
     }
 
-    private static void populateCamelMessage(final @Nullable Message camelMessage,
-            final @Nullable NormalizedMessage message) {
-
-        Preconditions.checkNotNull(message);
-        Preconditions.checkNotNull(camelMessage);
+    private static void populateCamelMessage(final Message camelMessage, final NormalizedMessage message) {
 
         // Normally, it is an empty message that is populated...
 
@@ -182,11 +175,8 @@ public class Conversions {
         }
     }
 
-    private static void populateNormalizedMessage(final @Nullable NormalizedMessage message,
-            final @Nullable Message camelMessage) throws MessagingException {
-
-        Preconditions.checkNotNull(message);
-        Preconditions.checkNotNull(camelMessage);
+    private static void populateNormalizedMessage(final NormalizedMessage message, final Message camelMessage)
+            throws MessagingException {
 
         // Normally, it is an empty message that is populated...
 

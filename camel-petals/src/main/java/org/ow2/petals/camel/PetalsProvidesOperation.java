@@ -29,5 +29,12 @@ import org.ow2.petals.component.framework.api.message.Exchange;
  */
 public interface PetalsProvidesOperation {
 
-    public void process(Exchange exchange) throws Exception;
+    /**
+     * No exceptions are thrown: the message will be set in error if something happens and the implementation must take
+     * care of sending back the answer (except if sending itself fails).
+     * 
+     * @param exchange
+     * @return <code>true</code> if the processing was done synchronously (i.e. it is finished when the method returns).
+     */
+    public boolean process(Exchange exchange);
 }

@@ -28,6 +28,7 @@ import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
  */
 public class CamelSE extends AbstractServiceEngine {
 
+    @SuppressWarnings("null")
     public CamelSUManager getCamelSUManager() {
         return (CamelSUManager) getServiceUnitManager();
     }

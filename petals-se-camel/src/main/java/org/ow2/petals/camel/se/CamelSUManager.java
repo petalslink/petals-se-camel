@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
-import org.eclipse.jdt.annotation.Nullable;
+import javax.jbi.JBIException;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
@@ -33,7 +35,6 @@ import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
@@ -41,7 +42,6 @@ import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -64,6 +64,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      * Used only by deploy, undeploy, start and stop that are synchronized
      * 
      */
+    @SuppressWarnings("null")
     private final Map<String, CamelSU> su2camel = Maps.newHashMap();
 
     /**
@@ -71,6 +72,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      * 
      * Needed to know where to send an arriving exchange (coming from the JBIListener)
      */
+    @SuppressWarnings("null")
     private final ConcurrentMap<EndpointOperationKey, PetalsProvidesOperation> eo2ppo = Maps.newConcurrentMap();
 
     public CamelSUManager(CamelSE component) {
@@ -80,17 +82,14 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     /**
      * This is synchronised as we modify the shared collection that must stay consistent during the whole method
      */
+    @NonNullByDefault(false)
     @Override
-    protected synchronized void doDeploy(final @Nullable String serviceUnitName, final @Nullable String suRootPath,
-            final @Nullable Jbi jbiDescriptor) throws PEtALSCDKException {
-
-        Preconditions.checkNotNull(serviceUnitName);
-        Preconditions.checkNotNull(suRootPath);
-        Preconditions.checkNotNull(jbiDescriptor);
+    protected synchronized void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
+            throws PetalsCamelSEException {
 
         // First let's do some checks w.r.t. other SUs
         if (su2camel.containsKey(serviceUnitName)) {
-            throw new PEtALSCDKException("This shouldn't happen: another SU with the name " + serviceUnitName
+            throw new PetalsCamelSEException("This shouldn't happen: another SU with the name " + serviceUnitName
                     + " was already deployed in this SE");
         }
 
@@ -133,8 +132,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     /**
      * This is synchronised as we modify the shared collection that must stay consistent during the whole method
      */
+    @NonNullByDefault(false)
     @Override
-    protected synchronized void doUndeploy(@Nullable String serviceUnitName) throws PEtALSCDKException {
+    protected synchronized void doUndeploy(String serviceUnitName) throws PetalsCamelSEException {
         final CamelSU camelSU = su2camel.get(serviceUnitName);
         camelSU.undeploy();
         this.su2camel.remove(serviceUnitName);
@@ -143,8 +143,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     /**
      * This is synchronised as we modify the shared collection that must stay consistent during the whole method
      */
+    @NonNullByDefault(false)
     @Override
-    protected synchronized void doStart(@Nullable String serviceUnitName) throws PEtALSCDKException {
+    protected synchronized void doStart(String serviceUnitName) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to resume?
         su2camel.get(serviceUnitName).start();
     }
@@ -152,8 +153,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     /**
      * This is synchronised as we modify the shared collection that must stay consistent during the whole method
      */
+    @NonNullByDefault(false)
     @Override
-    protected synchronized void doStop(@Nullable String serviceUnitName) throws PEtALSCDKException {
+    protected synchronized void doStop(String serviceUnitName) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to suspend?
         su2camel.get(serviceUnitName).stop();
     }
@@ -176,8 +178,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         }
     }
 
-    public void process(final Exchange exchange) throws Exception {
-
+    public PetalsProvidesOperation getPPO(final Exchange exchange) throws JBIException {
         final EndpointOperationKey eo = new EndpointOperationKey(exchange);
 
         final PetalsProvidesOperation ppo = this.eo2ppo.get(eo);
@@ -186,7 +187,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
             throw new NotImplementedRouteException(eo);
         }
 
-        ppo.process(exchange);
+        return ppo;
     }
 
     @SuppressWarnings("null")
@@ -198,6 +199,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         return new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(), seo.getOperation());
     }
 
+    @SuppressWarnings("null")
     private CamelSE getCamelSE() {
         return (CamelSE) super.component;
     }

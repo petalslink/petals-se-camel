@@ -15,10 +15,17 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.camel.exceptions;
+package org.ow2.petals.camel.component.exceptions;
 
 import org.ow2.petals.component.framework.api.message.Exchange;
 
+/**
+ * An exception that is set as an error in the Camel message if a timeout happens when sending a message to a Petals
+ * service.
+ * 
+ * @author vnoel
+ *
+ */
 public class TimeoutException extends Exception {
 
     private static final long serialVersionUID = 8136338557562521784L;
