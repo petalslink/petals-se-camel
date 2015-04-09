@@ -25,7 +25,6 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
-import org.eclipse.jdt.annotation.NonNull;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.component.utils.Conversions;
@@ -58,8 +57,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
     @Override
     public boolean process(final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
-        @SuppressWarnings("null")
-        final @NonNull Exchange camelExchange = getEndpoint().createExchange();
+        final Exchange camelExchange = getEndpoint().createExchange();
 
         Conversions.populateNewCamelExchange(camelExchange, exchange);
 

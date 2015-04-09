@@ -75,7 +75,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     @SuppressWarnings("null")
     private final ConcurrentMap<EndpointOperationKey, PetalsProvidesOperation> eo2ppo = Maps.newConcurrentMap();
 
-    public CamelSUManager(CamelSE component) {
+    public CamelSUManager(final CamelSE component) {
         super(component);
     }
 
@@ -134,7 +134,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doUndeploy(String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
         final CamelSU camelSU = su2camel.get(serviceUnitName);
         camelSU.undeploy();
         this.su2camel.remove(serviceUnitName);
@@ -145,7 +145,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStart(String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doStart(final String serviceUnitName) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to resume?
         su2camel.get(serviceUnitName).start();
     }
@@ -155,7 +155,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStop(String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doStop(final String serviceUnitName) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to suspend?
         su2camel.get(serviceUnitName).stop();
     }

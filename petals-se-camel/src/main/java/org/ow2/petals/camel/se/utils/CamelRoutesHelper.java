@@ -34,7 +34,7 @@ public class CamelRoutesHelper {
     private CamelRoutesHelper() {
     }
 
-    public static RouteBuilder loadRoutesFromClass(ClassLoader classLoader, String className)
+    public static RouteBuilder loadRoutesFromClass(final ClassLoader classLoader, final String className)
             throws InvalidJBIConfigurationException {
         try {
             final Class<?> clazz = classLoader.loadClass(className);
@@ -43,9 +43,9 @@ public class CamelRoutesHelper {
                 throw new InvalidJBIConfigurationException(className + " is not a subclass of Camel RouteBuilder");
             }
             return (RouteBuilder) o;
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (final InstantiationException | IllegalAccessException e) {
             throw new InvalidJBIConfigurationException("Can't instantiate " + className, e);
         }
     }

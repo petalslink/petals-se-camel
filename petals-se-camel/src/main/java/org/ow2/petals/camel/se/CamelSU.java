@@ -159,15 +159,15 @@ public class CamelSU implements PetalsCamelContext {
 
     @Override
     public PetalsConsumesChannel getConsumesChannel(final ServiceEndpointOperation seo) {
-        assert seo instanceof ServiceEndpointOperationConsumes : "This can't happen";
         assert seo instanceof PetalsConsumesChannel : "This can't happen";
+        assert seo instanceof ServiceEndpointOperationConsumes : "This can't happen";
         return (PetalsConsumesChannel) seo;
     }
 
     @Override
     public PetalsProvidesChannel getProvidesChannel(final ServiceEndpointOperation seo) {
-        assert seo instanceof ServiceEndpointOperationProvides : "This can't happen";
         assert seo instanceof PetalsProvidesChannel : "This can't happen";
+        assert seo instanceof ServiceEndpointOperationProvides : "This can't happen";
         return (PetalsProvidesChannel) seo;
     }
     
