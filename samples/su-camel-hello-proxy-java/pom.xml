@@ -9,8 +9,8 @@
       <relativePath>../parent/pom.xml</relativePath>
    </parent>
 
-   <artifactId>su-camel-provides-simpleroute-xml</artifactId>
-   <name>Petals ESB - Samples - SE Camel - SU Simple Route XML</name>
+   <artifactId>su-camel-hello-proxy-java</artifactId>
+   <name>Petals ESB - Samples - SE Camel - SU Simple Route Java</name>
    <packaging>jbi-service-unit</packaging>
 
    <properties>
@@ -23,6 +23,22 @@
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-camel</artifactId>
          <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>camel-core</artifactId>
+         <version>2.15.0</version>
+         <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+               <artifactId>jaxb-core</artifactId>
+               <groupId>com.sun.xml.bind</groupId>
+            </exclusion>
+            <exclusion>
+               <artifactId>jaxb-impl</artifactId>
+               <groupId>com.sun.xml.bind</groupId>
+            </exclusion>
+         </exclusions>
       </dependency>
    </dependencies>
 

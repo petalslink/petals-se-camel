@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <artifactId>petals-camel-samples-parent</artifactId>
@@ -9,9 +9,9 @@
       <relativePath>../parent/pom.xml</relativePath>
    </parent>
 
-   <artifactId>sa-camel-simpleroute</artifactId>
-   <name>Petals ESB - Samples - SE Camel - SA Simple Route</name>
-   <packaging>jbi-service-assembly</packaging>
+   <artifactId>su-camel-hello-proxy-xml</artifactId>
+   <name>Petals ESB - Samples - SE Camel - SU Simple Route XML</name>
+   <packaging>jbi-service-unit</packaging>
 
    <properties>
       <!-- Skip dependency check for service unit. -->
@@ -20,16 +20,9 @@
 
    <dependencies>
       <dependency>
-         <artifactId>su-camel-provides-simpleroute-java</artifactId>
-         <groupId>org.ow2.petals.samples</groupId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
-      </dependency>
-      <dependency>
-         <artifactId>su-camel-provides-simpleroute-xml</artifactId>
-         <groupId>org.ow2.petals.samples</groupId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-camel</artifactId>
+         <type>jbi-component</type>
       </dependency>
    </dependencies>
 
@@ -38,9 +31,6 @@
          <plugin>
             <groupId>org.ow2.petals</groupId>
             <artifactId>maven-petals-plugin</artifactId>
-            <configuration>
-               <serviceAssemblyNameMapping>${project.artifactId}</serviceAssemblyNameMapping>
-            </configuration>
          </plugin>
       </plugins>
    </build>

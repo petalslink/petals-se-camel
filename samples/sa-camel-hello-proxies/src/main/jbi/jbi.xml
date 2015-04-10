@@ -3,8 +3,8 @@
 	xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0">
 	<jbi:service-assembly>
 		<jbi:identification>
-			<jbi:name>sa-camel-simpleroute</jbi:name>
-			<jbi:description>sa-camel-simpleroute description</jbi:description>
+			<jbi:name>sa-camel-hello-proxies</jbi:name>
+			<jbi:description>description</jbi:description>
 		</jbi:identification>
 	</jbi:service-assembly>
 </jbi:jbi>
