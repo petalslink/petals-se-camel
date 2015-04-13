@@ -83,6 +83,10 @@ public class CamelSU implements PetalsCamelContext {
         this.manager = manager;
         this.context = new DefaultCamelContext();
 
+        // needed so that routes are executed with the correct context classloader
+        // (for example JAXB uses it to load classes)
+        this.context.setApplicationContextClassLoader(classLoader);
+
         context.addComponent("petals", new PetalsCamelComponent(this));
 
         for (final String className : classNames) {

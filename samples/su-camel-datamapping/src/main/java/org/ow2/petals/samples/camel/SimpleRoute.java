@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.samples.camel;
 
-import javax.xml.bind.JAXBContext;
-
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -38,10 +36,8 @@ public class SimpleRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         // we need to use the current classloader
-        final DataFormat jaxb1 = new JaxbDataFormat(JAXBContext.newInstance("org.ow2.petals.anothernamespace",
-                getClass().getClassLoader()));
-        final DataFormat jaxb2 = new JaxbDataFormat(JAXBContext.newInstance("org.ow2.petals", getClass()
-                .getClassLoader()));
+        final DataFormat jaxb1 = new JaxbDataFormat("org.ow2.petals.anothernamespace");
+        final DataFormat jaxb2 = new JaxbDataFormat("org.ow2.petals");
 
         from("petals:theProvidesId").streamCaching()
                 .to(CAMEL_LOG)
