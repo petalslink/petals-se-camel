@@ -78,6 +78,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
                     handleAnswer(camelExchange, exchange);
                 }
             });
+            // TODO sould I return true in case an error happened? (and thus process would have returned true)
             return false;
         }
     }
