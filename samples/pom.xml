@@ -13,6 +13,8 @@
       <module>su-camel-hello-proxy-java</module>
       <module>su-camel-hello-proxy-xml</module>
       <module>sa-camel-hello-proxies</module>
+      <module>su-camel-datamapping</module>
+      <module>sa-camel-datamapping</module>
    </modules>
 
    <build>
