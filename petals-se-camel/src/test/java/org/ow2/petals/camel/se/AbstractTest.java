@@ -17,14 +17,13 @@
  */
 package org.ow2.petals.camel.se;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-public abstract class AbstractTest {
+import org.junit.Assert;
+
+public abstract class AbstractTest extends Assert {
 
     static {
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
