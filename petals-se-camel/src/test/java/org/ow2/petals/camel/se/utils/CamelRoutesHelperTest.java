@@ -32,6 +32,10 @@ import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 
 public class CamelRoutesHelperTest extends Assert {
 
+    public static final String XML_ROUTES_OK = "tests/routes-valid.xml";
+
+    public static final String XML_ROUTES_KO = "tests/routes-invalid.xml";
+
     public static final String CLASS_ROUTES_OK = TestRoutesOK.class.getName();
 
     public static final String CLASS_ROUTES_KO_SUB = CamelRoutesHelperTest.class.getName();
@@ -66,10 +70,6 @@ public class CamelRoutesHelperTest extends Assert {
         thrown.expectMessage("Can't instantiate");
         CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), TestRoutesKO1.class.getName());
     }
-
-    public static final String XML_ROUTES_OK = "sus/valid-xml-wsdl-1.1/routes.xml";
-
-    public static final String XML_ROUTES_KO = "sus/invalid-xml/routes.xml";
 
     @Test
     public void testLoadRoutesXML_ok() throws Exception {

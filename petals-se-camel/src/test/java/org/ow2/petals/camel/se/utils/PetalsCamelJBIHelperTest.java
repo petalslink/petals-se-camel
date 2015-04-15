@@ -36,16 +36,24 @@ import com.google.common.collect.Lists;
 
 public class PetalsCamelJBIHelperTest extends Assert {
 
+    private static final String WSDL20 = "/tests/service-2.0.wsdl";
+
+    private static final String WSDL11 = "/tests/service-1.1.wsdl";
+
+    private static final String JBI_XML = "/tests/jbi-xml.xml";
+
+    private static final String JBI_JAVA = "/tests/jbi-java.xml";
+
     @Test
     public void testJbiJavaOk() throws Exception {
-        final Jbi jbi = getJBI("/sus/valid-java/jbi.xml");
+        final Jbi jbi = getJBI(JBI_JAVA);
 
         testPopulateRouteLists(jbi, 1, 0);
     }
 
     @Test
     public void testJbiXmlOk() throws Exception {
-        final Jbi jbi = getJBI("/sus/valid-xml-wsdl-1.1/jbi.xml");
+        final Jbi jbi = getJBI(JBI_XML);
 
         testPopulateRouteLists(jbi, 0, 1);
     }
@@ -53,7 +61,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
     @Test
     public void testWsdl11Ok() throws Exception {
 
-        final Document doc = getWSDL("/sus/valid-xml-wsdl-1.1/service.wsdl", WSDLVersionConstants.WSDL11);
+        final Document doc = getWSDL(WSDL11, WSDLVersionConstants.WSDL11);
 
         final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
                 new QName("http://petals.ow2.org", "HelloInterface"));
@@ -66,7 +74,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
     @Test
     public void testWsdl20Ok() throws Exception {
 
-        final Document doc = getWSDL("/sus/valid-xml-wsdl-2.0/service.wsdl", WSDLVersionConstants.WSDL20);
+        final Document doc = getWSDL(WSDL20, WSDLVersionConstants.WSDL20);
 
         final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
                 new QName("http://petals.ow2.org", "HelloInterface"));
