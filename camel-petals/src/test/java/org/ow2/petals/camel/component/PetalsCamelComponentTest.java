@@ -21,13 +21,19 @@ import org.apache.camel.Consumer;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
 import org.apache.camel.ResolveEndpointFailedException;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
 public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
+
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testCreateProvidesEndpoint() {
@@ -38,27 +44,28 @@ public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
     }
 
     @Test
-    public void testCreateProvidesEndpoint_KO() {
+    public void testCreateProvidesEndpoint_KO1() {
         addMockProvides("serviceId1");
-        try {
-            createEndpoint("serviceId2");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getCause() instanceof UnknownServiceException);
-        }
-        try {
-            // timeout is not authorised for provides
-            createEndpoint("serviceId1?timeout=5");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getMessage().contains("Unknown parameters"));
-        }
-        try {
-            createEndpoint("serviceId1?wrong=true");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getMessage().contains("Unknown parameters"));
-        }
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectCause(CoreMatchers.isA(UnknownServiceException.class));
+        createEndpoint("serviceId2");
+    }
+
+    @Test
+    public void testCreateProvidesEndpoint_KO2() {
+        addMockProvides("serviceId1");
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectMessage("Unknown parameters");
+        // timeout is not authorised for provides
+        createEndpoint("serviceId1?timeout=5");
+    }
+
+    @Test
+    public void testCreateProvidesEndpoint_KO3() {
+        addMockProvides("serviceId1");
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectMessage("Unknown parameters");
+        createEndpoint("serviceId1?wrong=true");
     }
 
     @Test
@@ -73,37 +80,35 @@ public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
     }
 
     @Test
-    public void testCreateConsumesEndpoint_KO() {
+    public void testCreateConsumesEndpoint_KO1() {
         addMockConsumes("serviceId1");
-        try {
-            createEndpoint("serviceId2");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getCause() instanceof UnknownServiceException);
-        }
-        try {
-            createEndpoint("serviceId1?wrong=true");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getMessage().contains("Unknown parameters"));
-        }
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectCause(CoreMatchers.isA(UnknownServiceException.class));
+        createEndpoint("serviceId2");
     }
 
     @Test
-    public void testCreateConsumesEndpoint_KO_URI() {
+    public void testCreateConsumesEndpoint_KO2() {
         addMockConsumes("serviceId1");
-        try {
-            context().getEndpoint("petalsA:serviceId1");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getMessage().contains("No component found with scheme"));
-        }
-        try {
-            context().getEndpoint("petals:serviceId1$$");
-            fail();
-        } catch (ResolveEndpointFailedException e) {
-            assertTrue(e.getCause() instanceof InvalidURIException);
-        }
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectMessage("Unknown parameters");
+        createEndpoint("serviceId1?wrong=true");
+    }
+
+    @Test
+    public void testCreateConsumesEndpoint_KO_URI1() {
+        addMockConsumes("serviceId1");
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectMessage("No component found with scheme");
+        context().getEndpoint("petalsA:serviceId1");
+    }
+
+    @Test
+    public void testCreateConsumesEndpoint_KO_URI2() {
+        addMockConsumes("serviceId1");
+        thrown.expect(ResolveEndpointFailedException.class);
+        thrown.expectCause(CoreMatchers.isA(InvalidURIException.class));
+        context().getEndpoint("petals:serviceId1$$");
     }
 
     @Test
