@@ -82,6 +82,74 @@
       </dependencies>
    </dependencyManagement>
 
+   <profiles>
+      <!-- Have this in a profile so that it is disabled in IDE builds -->
+      <profile>
+         <id>extra-documentation-for-camel</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <dependencies>
+            <!-- enable the APT processor -->
+            <dependency>
+               <groupId>org.apache.camel</groupId>
+               <artifactId>apt</artifactId>
+               <version>${camel.version}</version>
+               <optional>true</optional>
+               <exclusions>
+                  <exclusion>
+                     <!-- Let's use the version from easy* -->
+                     <artifactId>jaxb-impl</artifactId>
+                     <groupId>com.sun.xml.bind</groupId>
+                  </exclusion>
+                  <exclusion>
+                     <!-- Let's use the version from easy* -->
+                     <artifactId>jaxb-core</artifactId>
+                     <groupId>com.sun.xml.bind</groupId>
+                  </exclusion>
+                  <exclusion>
+                     <!-- Already in camel-core -->
+                     <groupId>org.apache.camel</groupId>
+                     <artifactId>spi-annotations</artifactId>
+                  </exclusion>
+               </exclusions>
+            </dependency>
+         </dependencies>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.camel</groupId>
+                  <artifactId>camel-package-maven-plugin</artifactId>
+                  <version>${camel.version}</version>
+                  <executions>
+                     <execution>
+                        <id>components</id>
+                        <goals>
+                           <goal>generate-components-list</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>analyze</id>
+                        <configuration>
+                           <usedDependencies>
+                              <usedDependency>org.apache.camel:apt</usedDependency>
+                           </usedDependencies>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
