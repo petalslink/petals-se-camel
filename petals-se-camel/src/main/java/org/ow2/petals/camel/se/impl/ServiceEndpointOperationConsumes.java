@@ -21,6 +21,7 @@ import java.net.URI;
 
 import javax.jbi.JBIException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -46,7 +47,13 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
         return sender.createConsumeExchange(sender.getConsumes());
     }
 
-    private static URI toMEP(final MEPType mep, final Consumes c) throws InvalidJBIConfigurationException {
+    private static URI toMEP(@Nullable final MEPType mep, final Consumes c) throws InvalidJBIConfigurationException {
+
+        // default MEP in Camel SE
+        if (mep == null) {
+            return MEPPatternConstants.IN_OUT.value();
+        }
+
         switch (mep) {
             case IN_ONLY:
                 return MEPPatternConstants.IN_ONLY.value();
