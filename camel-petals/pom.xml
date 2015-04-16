@@ -20,8 +20,6 @@
       <dependency>
          <groupId>org.eclipse.jdt</groupId>
          <artifactId>org.eclipse.jdt.annotation</artifactId>
-         <!-- Must be optional because it's not used at runtime -->
-         <optional>true</optional>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -75,6 +73,7 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
+            <!-- Align versions -->
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>5.0.3</version>
@@ -95,7 +94,7 @@
                <groupId>org.apache.camel</groupId>
                <artifactId>apt</artifactId>
                <version>${camel.version}</version>
-               <optional>true</optional>
+               <scope>provided</scope>
                <exclusions>
                   <exclusion>
                      <!-- Let's use the version from easy* -->
