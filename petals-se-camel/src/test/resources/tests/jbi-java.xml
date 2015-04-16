@@ -19,9 +19,7 @@
          <petals-se-camel:service-id>theConsumesId</petals-se-camel:service-id>
       </jbi:consumes>
 
-      <petals-se-camel:routes>
-         <petals-se-camel:java-class>org.ow2.petals.samples.camel.tests.TestRouteOK</petals-se-camel:java-class>
-      </petals-se-camel:routes>
+      <petals-se-camel:java-routes>org.ow2.petals.samples.camel.tests.TestRouteOK</petals-se-camel:java-routes>
 
    </jbi:services>
 </jbi:jbi>

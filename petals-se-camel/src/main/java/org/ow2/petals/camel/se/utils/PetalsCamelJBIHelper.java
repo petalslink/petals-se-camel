@@ -48,7 +48,6 @@ import org.ow2.petals.component.framework.util.ServiceEndpointKey;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
@@ -64,11 +63,9 @@ public class PetalsCamelJBIHelper {
 
     private static final String PETALS_CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
-    private static final QName PETALS_CAMEL_JBI_ROUTES = new QName(PETALS_CAMEL_JBI_NS_URI, "routes");
+    private static final QName PETALS_CAMEL_JBI_ROUTE_CLASS = new QName(PETALS_CAMEL_JBI_NS_URI, "java-routes");
 
-    private static final QName PETALS_CAMEL_JBI_ROUTE_CLASS = new QName(PETALS_CAMEL_JBI_NS_URI, "java-class");
-
-    private static final QName PETALS_CAMEL_JBI_ROUTE_XML = new QName(PETALS_CAMEL_JBI_NS_URI, "xml-file");
+    private static final QName PETALS_CAMEL_JBI_ROUTE_XML = new QName(PETALS_CAMEL_JBI_NS_URI, "xml-routes");
 
     private static final String PETALS_CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
 
@@ -147,18 +144,10 @@ public class PetalsCamelJBIHelper {
     public static void populateRouteLists(final Services servicesNode, final List<String> classNames,
             final List<String> xmlNames) throws URISyntaxException {
         for (final Element e : servicesNode.getAnyOrAny()) {
-            if (hasQName(e, PETALS_CAMEL_JBI_ROUTES)) {
-                final NodeList routes = e.getChildNodes();
-                for (int i = 0; i < routes.getLength(); i++) {
-                    final Node item = routes.item(i);
-                    if (item instanceof Element) {
-                        if (hasQName(item, PETALS_CAMEL_JBI_ROUTE_CLASS)) {
-                            classNames.add(item.getTextContent());
-                        } else if (hasQName(item, PETALS_CAMEL_JBI_ROUTE_XML)) {
-                            xmlNames.add(item.getTextContent());
-                        }
-                    }
-                }
+            if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_CLASS)) {
+                classNames.add(e.getTextContent());
+            } else if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_XML)) {
+                xmlNames.add(e.getTextContent());
             }
         }
     }

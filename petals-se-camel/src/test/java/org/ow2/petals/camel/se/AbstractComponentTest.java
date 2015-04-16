@@ -33,7 +33,7 @@ import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 public abstract class AbstractComponentTest extends AbstractTest {
 
-    private static final String SE_CAMEL_JBI_NS = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
+    protected static final String SE_CAMEL_JBI_NS = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
     protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-1.1.wsdl");

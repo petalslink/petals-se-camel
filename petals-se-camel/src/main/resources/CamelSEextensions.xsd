@@ -30,18 +30,16 @@
       </xs:annotation>
    </xs:element>
    
-   <xs:element name="routes" type="petals-se-camel:CamelRoutes">
+   <xs:element name="java-routes" type="xs:string">
       <xs:annotation>
-         <xs:documentation>Routes that will be instantiated in the Camel Service Engine</xs:documentation>
+         <xs:documentation>Java Routes that will be instantiated in the Camel Service Engine. Must extends Camel's RouteBuilder.</xs:documentation>
       </xs:annotation>
    </xs:element>
    
-   <!-- TYPES -->
-   <xs:complexType name="CamelRoutes">
-      <xs:sequence>
-         <xs:element minOccurs="0" maxOccurs="unbounded" name="java-class" type="xs:string" />
-         <xs:element minOccurs="0" maxOccurs="unbounded" name="xml-file" type="petalsCDK:File" />
-      </xs:sequence>
-   </xs:complexType>
+   <xs:element name="xml-routes" type="petalsCDK:File">
+      <xs:annotation>
+         <xs:documentation>XML Routes that will be instantiated in the Camel Service Engine. Must have the Spring Camel namespace.</xs:documentation>
+      </xs:annotation>
+   </xs:element>
 
 </xs:schema>
