@@ -17,30 +17,12 @@
  */
 package org.ow2.petals.camel.component;
 
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-
-import org.apache.camel.AsyncCallback;
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
-import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
-import org.ow2.petals.component.framework.api.message.Exchange;
 
 public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
-    private @Nullable PetalsConsumesChannel channel;
-
     private @Nullable PetalsCamelProducer producer;
-
-    protected PetalsConsumesChannel channel() {
-        assert channel != null;
-        return channel;
-    }
 
     protected PetalsCamelProducer producer() {
         assert producer != null;
@@ -51,30 +33,13 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
     protected void doPostSetup() throws Exception {
         super.doPostSetup();
 
-        this.channel = easyMock.createMock(PetalsConsumesChannel.class);
-
-        pcc().addMockService("serviceId1", createMockSEO(ServiceType.CONSUMES), channel());
+        pcc().addMockService("serviceId1", createMockSEO(ServiceType.CONSUMES));
         final PetalsCamelEndpoint endpoint = createEndpoint("serviceId1");
+
         this.producer = (PetalsCamelProducer) endpoint.createProducer();
 
-        this.exchange = producer.createExchange();
+        this.exchange = producer().createExchange();
         assertNotNull(this.exchange);
         populateExchange(exchange);
-    }
-
-    @Test
-    @Ignore("there seems to be a bug in easymock...")
-    public void testProducer() throws Exception {
-        final Exchange petalsExchange = easyMock.createNiceMock(Exchange.class);
-        final AsyncCallback callback = easyMock.createNiceMock(AsyncCallback.class);
-        expect(channel().newExchange()).andReturn(petalsExchange);
-        channel().sendAsync(eq(petalsExchange), eq(-1), anyObject(SendAsyncCallback.class));
-        expectLastCall();
-
-        easyMock.replayAll();
-        final boolean doneSync = producer().process(exchange, callback);
-
-        assertFalse(doneSync);
-        easyMock.verifyAll();
     }
 }

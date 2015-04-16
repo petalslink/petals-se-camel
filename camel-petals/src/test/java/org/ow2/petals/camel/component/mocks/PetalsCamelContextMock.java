@@ -54,15 +54,11 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     public void addMockService(final String serviceId, final ServiceEndpointOperation seo) {
-        this.addMockService(serviceId, seo,
-                EasyMock.createMock(seo.getType() == ServiceType.CONSUMES ? PetalsConsumesChannel.class
-                        : PetalsProvidesChannel.class));
-    }
-
-    public void addMockService(final String serviceId, final ServiceEndpointOperation seo, final PetalsChannel channel) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        final PetalsChannel pC = this.channels.put(key, channel);
+        final PetalsChannel pC = this.channels.put(key,
+                EasyMock.createMock(seo.getType() == ServiceType.CONSUMES ? PetalsConsumesChannel.class
+                        : PetalsProvidesChannel.class));
         Assert.assertNull(pC);
         final ServiceEndpointOperation pS = this.seos.put(serviceId, seo);
         Assert.assertNull(pS);

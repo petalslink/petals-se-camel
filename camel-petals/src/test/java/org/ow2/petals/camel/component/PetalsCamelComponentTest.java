@@ -22,7 +22,6 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
 import org.apache.camel.ResolveEndpointFailedException;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -117,8 +116,8 @@ public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
         addMockConsumes("serviceId1");
         Endpoint endpoint = createEndpoint("serviceId1");
         Producer producer = endpoint.createProducer();
-        Assert.assertNotNull(producer);
-        Assert.assertTrue(producer instanceof PetalsCamelProducer);
+        assertNotNull(producer);
+        assertTrue(producer instanceof PetalsCamelProducer);
     }
 
     @Test(expected = IncompatibleEndpointUsageException.class)
@@ -134,8 +133,8 @@ public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
         addMockProvides("serviceId1");
         Endpoint endpoint = createEndpoint("serviceId1");
         Consumer consumer = endpoint.createConsumer(emptyProcessor());
-        Assert.assertNotNull(consumer);
-        Assert.assertTrue(consumer instanceof PetalsCamelConsumer);
+        assertNotNull(consumer);
+        assertTrue(consumer instanceof PetalsCamelConsumer);
     }
 
     @Test(expected = IncompatibleEndpointUsageException.class)
