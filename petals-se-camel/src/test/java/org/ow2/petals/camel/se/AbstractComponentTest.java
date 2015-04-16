@@ -33,9 +33,11 @@ import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 public abstract class AbstractComponentTest extends AbstractTest {
 
-    protected static final String WSDL11 = "tests/service-1.1.wsdl";
+    protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
+            .getResource("tests/service-1.1.wsdl");
 
-    protected static final String WSDL20 = "tests/service-2.0.wsdl";
+    protected static final URL WSDL20 = Thread.currentThread().getContextClassLoader()
+            .getResource("tests/service-2.0.wsdl");
 
     protected static final String HELLO_NS = "http://petals.ow2.org";
 
@@ -62,8 +64,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest().addLogHandler(
-            IN_MEMORY_LOG_HANDLER.getHandler()).registerExternalServiceProvider(HELLO_SERVICE,
-            EXTERNAL_ENDPOINT_NAME);
+            IN_MEMORY_LOG_HANDLER.getHandler()).registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME);
 
     /**
      * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
@@ -89,10 +90,10 @@ public abstract class AbstractComponentTest extends AbstractTest {
         COMPONENT_UNDER_TEST.undeployAllServices();
     }
 
-    protected ServiceConfiguration createTestService(final String suName, final QName interfaceName,
-            final QName serviceName, final String endpointName, final URL wsdl) {
-        final ServiceConfiguration provides = new ServiceConfiguration(suName, interfaceName, serviceName,
-                endpointName, ServiceType.PROVIDE, wsdl);
+    protected ServiceConfiguration createTestService(final QName interfaceName, final QName serviceName,
+            final String endpointName, final URL wsdl) {
+        final ServiceConfiguration provides = new ServiceConfiguration(interfaceName, serviceName, endpointName,
+                ServiceType.PROVIDE, wsdl);
 
         final ServiceConfiguration consumes = createHelloConsumes();
 
@@ -104,8 +105,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected ServiceConfiguration createHelloConsumes() {
-        final ServiceConfiguration consumes = new ServiceConfiguration(CamelSETest.class.getSimpleName(),
-                HELLO_INTERFACE, HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
+        final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
         consumes.setParameter("{http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0}service-id",
                 EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;

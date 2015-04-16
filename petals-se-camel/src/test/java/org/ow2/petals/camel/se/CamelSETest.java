@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.camel.se;
 
-import java.net.URL;
-
 import javax.jbi.management.DeploymentException;
 
 import org.junit.Rule;
@@ -39,9 +37,7 @@ public class CamelSETest extends AbstractComponentTest {
         COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
-                final URL wsdl = Thread.currentThread().getContextClassLoader().getResource(WSDL11);
-                assertNotNull(wsdl);
-                return createTestService(SU_NAME, WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", wsdl);
+                return createTestService(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", WSDL11);
             }
         });
     }
@@ -51,9 +47,7 @@ public class CamelSETest extends AbstractComponentTest {
         COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
-                final URL wsdl = Thread.currentThread().getContextClassLoader().getResource(WSDL11);
-                assertNotNull(wsdl);
-                return createTestService(SU_NAME, HELLO_INTERFACE, HELLO_SERVICE, "autogenerate", wsdl);
+                return createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate", WSDL11);
             }
         });
     }
@@ -63,9 +57,7 @@ public class CamelSETest extends AbstractComponentTest {
         COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
-                final URL wsdl = Thread.currentThread().getContextClassLoader().getResource(WSDL20);
-                assertNotNull(wsdl);
-                return createTestService(SU_NAME, HELLO_INTERFACE, HELLO_SERVICE, "autogenerate", wsdl);
+                return createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate", WSDL20);
             }
         });
     }
