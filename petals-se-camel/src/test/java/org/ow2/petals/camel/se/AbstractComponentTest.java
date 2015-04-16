@@ -86,7 +86,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
      */
     @After
     public void undeployAllServices() {
-        System.out.println("ccc");
         COMPONENT_UNDER_TEST.undeployAllServices();
     }
 
