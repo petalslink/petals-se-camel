@@ -33,6 +33,8 @@ import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 public abstract class AbstractComponentTest extends AbstractTest {
 
+    private static final String SE_CAMEL_JBI_NS = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
+
     protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-1.1.wsdl");
 
@@ -47,10 +49,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final String EXTERNAL_CAMEL_SERVICE_ID = "theConsumesId";
 
-    /**
-     * TODO this information is duplicated between ServiceConfiguration and registerServiceToDeploy(), and is useless
-     * for depend service! We should change the CDK-JUNIT about that...
-     */
     protected static final String SU_NAME = "su-name";
 
     protected static final QName HELLO_INTERFACE = new QName(HELLO_NS, "HelloInterface");
@@ -107,8 +105,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected ServiceConfiguration createHelloConsumes() {
         final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
                 EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
-        consumes.setParameter("{http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0}service-id",
-                EXTERNAL_CAMEL_SERVICE_ID);
+        consumes.setParameter(new QName(SE_CAMEL_JBI_NS, "service-id"), EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
 
