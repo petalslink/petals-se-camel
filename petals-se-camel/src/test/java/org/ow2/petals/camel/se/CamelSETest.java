@@ -18,10 +18,15 @@
 package org.ow2.petals.camel.se;
 
 import javax.jbi.management.DeploymentException;
+import javax.xml.namespace.QName;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
+import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
+import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 
@@ -58,6 +63,69 @@ public class CamelSETest extends AbstractComponentTest {
             @Override
             public ServiceConfiguration create() {
                 return createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate", WSDL20);
+            }
+        });
+    }
+
+    @Test
+    public void testDeploy_XML_OK() throws DeploymentException {
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+                final ServiceConfiguration provides = createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate",
+                        WSDL11);
+                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"), "routes-valid.xml");
+                provides.addResource(VALID_ROUTES);
+                return provides;
+            }
+        });
+    }
+
+    @Test
+    public void testDeploy_XML_KO() throws DeploymentException {
+        thrown.expect(DeploymentException.class);
+        // the cause is in the message!
+        thrown.expectMessage(InvalidCamelRouteDefinitionException.class.getName());
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+                final ServiceConfiguration provides = createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate",
+                        WSDL11);
+                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"), "routes-invalid.xml");
+                provides.addResource(INVALID_ROUTES);
+                return provides;
+            }
+        });
+    }
+
+    @Test
+    public void testDeploy_JAVA_OK() throws DeploymentException {
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+                final ServiceConfiguration provides = createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate",
+                        WSDL11);
+                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"),
+                        TestRoutesOK.class.getName());
+                return provides;
+            }
+        });
+    }
+
+    @Test
+    public void testDeploy_JAVA_KO() throws DeploymentException {
+        thrown.expect(DeploymentException.class);
+        // the cause is in the message!
+        thrown.expectMessage(InvalidJBIConfigurationException.class.getName());
+        thrown.expectMessage("Can't instantiate");
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+                final ServiceConfiguration provides = createTestService(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate",
+                        WSDL11);
+                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"),
+                        TestRoutesKO1.class.getName());
+                return provides;
             }
         });
     }

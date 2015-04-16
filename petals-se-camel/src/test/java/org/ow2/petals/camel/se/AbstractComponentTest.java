@@ -41,6 +41,12 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static final URL WSDL20 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-2.0.wsdl");
 
+    protected static final URL VALID_ROUTES = Thread.currentThread().getContextClassLoader()
+            .getResource("tests/routes-valid.xml");
+
+    protected static final URL INVALID_ROUTES = Thread.currentThread().getContextClassLoader()
+            .getResource("tests/routes-invalid.xml");
+
     protected static final String HELLO_NS = "http://petals.ow2.org";
 
     protected static final QName WRONG_INTERFACE = new QName(HELLO_NS, "WrongInterface");
