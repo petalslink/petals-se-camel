@@ -34,6 +34,7 @@ import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
@@ -85,7 +86,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest().addLogHandler(
+    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest().addLogHandler(
             IN_MEMORY_LOG_HANDLER.getHandler()).registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME);
 
     /**
@@ -172,37 +173,54 @@ public abstract class AbstractComponentTest extends AbstractTest {
         });
     }
 
+    public interface ConsumerImplementation {
+
+        public ResponseMessage provides(final RequestMessage request) throws Exception;
+    }
+
+    protected ResponseMessage send(final RequestMessage request, final ConsumerImplementation consumer,
+            final long timeoutForth, final long timeoutBack)
+            throws Exception {
+
+        COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+
+        final RequestMessage requestConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeoutForth);
+        if (requestConsumer != null) {
+            COMPONENT_UNDER_TEST.pushResponseToConsumer(consumer.provides(requestConsumer));
+        }
+
+        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
+    }
+
     protected ResponseMessage sendHello(final String suName, @Nullable final String request,
             @Nullable final String expectedRequest, @Nullable final String response,
             @Nullable final String expectedResponse) throws Exception {
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(suName), HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                request == null ? null : new ReaderInputStream(new StringReader(request))));
 
-        // a timeout of 1000ms should be enough
-        final RequestMessage requestMessage = COMPONENT_UNDER_TEST.pollRequestFromConsumer(1000);
+        final RequestMessage requestMessage = new WrappedRequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), request == null ? null : new ReaderInputStream(
+                        new StringReader(request)));
 
-        // if it's null, it means the message never arrived to it!
-        if (requestMessage != null) {
-            final MessageExchange exchange = requestMessage.getMessageExchange();
+        // a timeout of 1000ms should be enough both ways
+        final ResponseMessage responseMessage = send(requestMessage, new ConsumerImplementation() {
+            @Override
+            public ResponseMessage provides(RequestMessage request) throws Exception {
+                final MessageExchange exchange = request.getMessageExchange();
 
-            assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
-            assertEquals(exchange.getService(), HELLO_SERVICE);
-            assertEquals(exchange.getOperation(), HELLO_OPERATION);
-            assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
+                assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
+                assertEquals(exchange.getService(), HELLO_SERVICE);
+                assertEquals(exchange.getOperation(), HELLO_OPERATION);
+                assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
 
-            if (expectedRequest != null) {
-                final Diff diff = new Diff(CONVERTER.toDOMSource(requestMessage.getPayload()),
-                        CONVERTER.toDOMSource(expectedRequest));
-                assertTrue(diff.similar());
+                if (expectedRequest != null) {
+                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload()), CONVERTER
+                            .toDOMSource(expectedRequest));
+                    assertTrue(diff.similar());
+                }
+
+                return new WrappedResponseToConsumerMessage(exchange, new ReaderInputStream(new StringReader(response)));
             }
-
-            COMPONENT_UNDER_TEST.pushResponseToConsumer(new WrappedResponseToConsumerMessage(exchange,
-                    new ReaderInputStream(new StringReader(response))));
-
-        }
-
-        final ResponseMessage responseMessage = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        }, 1000, 1000);
 
         if (expectedResponse != null) {
             final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload()),
