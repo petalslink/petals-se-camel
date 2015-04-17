@@ -142,7 +142,7 @@ public class PetalsCamelJBIHelper {
     }
 
     public static void populateRouteLists(final Services servicesNode, final List<String> classNames,
-            final List<String> xmlNames) throws URISyntaxException {
+            final List<String> xmlNames) {
         for (final Element e : servicesNode.getAnyOrAny()) {
             if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_CLASS)) {
                 classNames.add(e.getTextContent());
@@ -198,9 +198,8 @@ public class PetalsCamelJBIHelper {
         return results;
     }
 
-    public static boolean hasQName(final Node e, final QName name) throws URISyntaxException {
-        return new URI(e.getNamespaceURI()).equals(new URI(name.getNamespaceURI()))
-                && e.getLocalName().equals(name.getLocalPart());
+    public static boolean hasQName(final Node e, final QName name) {
+        return new QName(e.getNamespaceURI(), e.getLocalName()).equals(name);
     }
 
     public static String getServiceId(final Consumes s, final ServiceUnitDataHandler suDH)

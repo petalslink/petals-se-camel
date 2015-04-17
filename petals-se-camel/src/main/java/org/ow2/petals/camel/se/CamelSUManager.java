@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.camel.se;
 
-import java.net.URISyntaxException;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
-import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
@@ -105,11 +103,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
 
-        try {
-            PetalsCamelJBIHelper.populateRouteLists(suDH.getDescriptor().getServices(), classNames, xmlNames);
-        } catch (final URISyntaxException e) {
-            throw new InvalidJBIConfigurationException("Exception while parsing camel-specific configuration", e);
-        }
+        PetalsCamelJBIHelper.populateRouteLists(suDH.getDescriptor().getServices(), classNames, xmlNames);
 
         // TODO why use this classloader and not the thread context classloader?
         // is it the same? normally yes according to JBI specs

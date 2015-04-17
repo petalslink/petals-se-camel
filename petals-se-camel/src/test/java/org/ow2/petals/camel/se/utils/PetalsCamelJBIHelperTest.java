@@ -95,7 +95,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
                 this.getClass().getResourceAsStream(localPath));
     }
 
-    public void testPopulateRouteLists(final Jbi jbi, final int classesSize, final int xmlSizes) throws Exception {
+    public void testPopulateRouteLists(final Jbi jbi, final int classesSize, final int xmlSizes) {
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
 
