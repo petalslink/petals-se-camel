@@ -127,9 +127,8 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     @NonNullByDefault(false)
     @Override
     protected synchronized void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
-        final CamelSU camelSU = su2camel.get(serviceUnitName);
+        final CamelSU camelSU = this.su2camel.remove(serviceUnitName);
         camelSU.undeploy();
-        this.su2camel.remove(serviceUnitName);
     }
 
     /**
