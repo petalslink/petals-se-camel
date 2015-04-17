@@ -164,7 +164,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     }
 
     public void unregisterPPO(final ServiceEndpointOperation seo) throws UnknownRegisteredServiceException {
-        if (this.eo2ppo.remove(buildEOK(seo)) != null) {
+        if (this.eo2ppo.remove(buildEOK(seo)) == null) {
             throw new UnknownRegisteredServiceException(seo);
         }
     }
