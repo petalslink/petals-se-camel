@@ -179,23 +179,28 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 .getServiceConfiguration(suName), HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                 request == null ? null : new ReaderInputStream(new StringReader(request))));
 
-        final RequestMessage requestMessage = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+        // a timeout of 1000ms should be enough
+        final RequestMessage requestMessage = COMPONENT_UNDER_TEST.pollRequestFromConsumer(1000);
 
-        final MessageExchange exchange = requestMessage.getMessageExchange();
+        // if it's null, it means the message never arrived to it!
+        if (requestMessage != null) {
+            final MessageExchange exchange = requestMessage.getMessageExchange();
 
-        assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
-        assertEquals(exchange.getService(), HELLO_SERVICE);
-        assertEquals(exchange.getOperation(), HELLO_OPERATION);
-        assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
+            assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
+            assertEquals(exchange.getService(), HELLO_SERVICE);
+            assertEquals(exchange.getOperation(), HELLO_OPERATION);
+            assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
 
-        if (expectedRequest != null) {
-            final Diff diff = new Diff(CONVERTER.toDOMSource(requestMessage.getPayload()),
-                    CONVERTER.toDOMSource(expectedRequest));
-            assertTrue(diff.similar());
+            if (expectedRequest != null) {
+                final Diff diff = new Diff(CONVERTER.toDOMSource(requestMessage.getPayload()),
+                        CONVERTER.toDOMSource(expectedRequest));
+                assertTrue(diff.similar());
+            }
+
+            COMPONENT_UNDER_TEST.pushResponseToConsumer(new WrappedResponseToConsumerMessage(exchange,
+                    new ReaderInputStream(new StringReader(response))));
+
         }
-
-        COMPONENT_UNDER_TEST.pushResponseToConsumer(new WrappedResponseToConsumerMessage(exchange,
-                new ReaderInputStream(new StringReader(response))));
 
         final ResponseMessage responseMessage = COMPONENT_UNDER_TEST.pollResponseFromProvider();
 
