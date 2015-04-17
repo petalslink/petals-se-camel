@@ -87,17 +87,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     protected synchronized void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
             throws PetalsCamelSEException {
 
-        // First let's do some checks w.r.t. other SUs
-        if (su2camel.containsKey(serviceUnitName)) {
-            throw new PetalsCamelSEException("This shouldn't happen: another SU with the name " + serviceUnitName
-                    + " was already deployed in this SE");
-        }
-
-        // Next let's do method-local processing
         final CamelSU camelSU = createCamelSU(serviceUnitName);
 
-        // And finally let's register all of that in our manager
-        // we already checked that the map didn't contain this service unit
+        // No need to check if it isn't here: the CDK did that for us.
         su2camel.put(serviceUnitName, camelSU);
 
         // TODO checks that there is at least one route per operation
