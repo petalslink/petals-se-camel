@@ -25,6 +25,8 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -203,9 +205,19 @@ public class Conversions {
             message.addAttachment(e.getKey(), e.getValue());
         }
 
-        // let's use available converters (see http://camel.apache.org/type-converter.html) to get the
-        // body as a Source
-        // TODO make sure this actually work
-        message.setContent(camelMessage.getBody(Source.class));
+        // TODO provide an endpoint option to force the use of a desired Source implementation.
+        final Object body = camelMessage.getBody();
+        final Source newBody;
+        if (body instanceof StreamSource) {
+            // let's continue with a StreamSource then...
+            newBody = (StreamSource) body;
+        } else {
+            // for now we settle to either a DOMSource that are in-memory and not stream since we are mostly
+            // manipulating small-sized messages.
+            // let's use available converters (see http://camel.apache.org/type-converter.html) to get the
+            // body as a Source.
+            newBody = camelMessage.getBody(DOMSource.class);
+        }
+        message.setContent(newBody);
     }
 }
