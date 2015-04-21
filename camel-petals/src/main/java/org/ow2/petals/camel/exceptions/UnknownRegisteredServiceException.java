@@ -17,15 +17,15 @@
  */
 package org.ow2.petals.camel.exceptions;
 
-import org.ow2.petals.camel.ServiceEndpointOperation;
+import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
 public class UnknownRegisteredServiceException extends Exception {
 
     private static final long serialVersionUID = -7084276404020652784L;
 
-    private static final String MESSAGE_PATTERN = "The operation %s of the service %s has no route bound to it";
+    private static final String MESSAGE_PATTERN = "The operation %s of the endpoint %s has no route bound to it";
 
-    public UnknownRegisteredServiceException(final ServiceEndpointOperation seo) {
-        super(String.format(MESSAGE_PATTERN, seo.getOperation(), seo.getService()));
+    public UnknownRegisteredServiceException(final EndpointOperationKey seo) {
+        super(String.format(MESSAGE_PATTERN, seo.getOperation(), seo.getEndpointName()));
     }
 }
