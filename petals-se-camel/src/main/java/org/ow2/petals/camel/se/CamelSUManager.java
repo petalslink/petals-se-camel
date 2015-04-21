@@ -151,15 +151,18 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         final EndpointOperationKey key = buildEOK(seo);
 
         if (this.eo2ppo.containsKey(key)) {
-            throw new AlreadyRegisteredServiceException(seo);
+            throw new AlreadyRegisteredServiceException(key);
         }
 
         this.eo2ppo.put(key, ppo);
     }
 
     public void unregisterPPO(final ServiceEndpointOperation seo) throws UnknownRegisteredServiceException {
-        if (this.eo2ppo.remove(buildEOK(seo)) == null) {
-            throw new UnknownRegisteredServiceException(seo);
+
+        final EndpointOperationKey key = buildEOK(seo);
+
+        if (this.eo2ppo.remove(key) == null) {
+            throw new UnknownRegisteredServiceException(key);
         }
     }
 

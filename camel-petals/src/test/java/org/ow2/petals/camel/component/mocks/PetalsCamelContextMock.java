@@ -99,7 +99,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
         if (this.ppos.containsKey(key)) {
-            throw new AlreadyRegisteredServiceException(seo);
+            throw new AlreadyRegisteredServiceException(key);
         } else {
             this.ppos.put(key, ppo);
         }
@@ -110,7 +110,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
         if (this.ppos.remove(key) != null) {
-            throw new UnknownRegisteredServiceException(seo);
+            throw new UnknownRegisteredServiceException(key);
         }
     }
 
