@@ -10,12 +10,16 @@
       <version>20.2.3-SNAPSHOT</version>
       <relativePath />
    </parent>
-   
+
    <groupId>org.ow2.petals.samples</groupId>
    <artifactId>petals-camel-samples-parent</artifactId>
    <name>Petals ESB - Samples - SE Camel</name>
    <version>5.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
+
+   <properties>
+      <sonar.skip>true</sonar.skip>
+   </properties>
 
    <modules>
       <module>su-camel-hello-proxy-java</module>
