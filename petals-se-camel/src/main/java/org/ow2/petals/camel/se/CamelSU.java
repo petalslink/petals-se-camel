@@ -33,8 +33,6 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.component.PetalsCamelComponent;
-import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
-import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
@@ -151,13 +149,12 @@ public class CamelSU implements PetalsCamelContext {
     }
 
     @Override
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo)
-            throws AlreadyRegisteredServiceException {
+    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
         this.manager.registerPPO(seo, ppo);
     }
 
     @Override
-    public void unregisterPPO(final ServiceEndpointOperation seo) throws UnknownRegisteredServiceException {
+    public void unregisterPPO(final ServiceEndpointOperation seo) {
         this.manager.unregisterPPO(seo);
     }
 

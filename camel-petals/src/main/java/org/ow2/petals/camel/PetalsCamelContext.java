@@ -22,8 +22,6 @@ import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
-import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
 /**
@@ -45,10 +43,9 @@ public interface PetalsCamelContext {
 
     public PetalsProvidesChannel getProvidesChannel(ServiceEndpointOperation seo);
 
-    public void registerPPO(ServiceEndpointOperation seo, PetalsProvidesOperation ppo)
-            throws AlreadyRegisteredServiceException;
+    public void registerPPO(ServiceEndpointOperation seo, PetalsProvidesOperation ppo);
 
-    public void unregisterPPO(ServiceEndpointOperation seo) throws UnknownRegisteredServiceException;
+    public void unregisterPPO(ServiceEndpointOperation seo);
 
     public CamelContext getCamelContext();
 

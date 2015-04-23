@@ -30,8 +30,6 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
-import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
-import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
@@ -94,24 +92,19 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     @Override
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo)
-            throws AlreadyRegisteredServiceException {
+    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        if (this.ppos.containsKey(key)) {
-            throw new AlreadyRegisteredServiceException(key);
-        } else {
-            this.ppos.put(key, ppo);
-        }
+        final PetalsProvidesOperation put = this.ppos.put(key, ppo);
+        assert put == null;
     }
 
     @Override
-    public void unregisterPPO(ServiceEndpointOperation seo) throws UnknownRegisteredServiceException {
+    public void unregisterPPO(ServiceEndpointOperation seo) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        if (this.ppos.remove(key) != null) {
-            throw new UnknownRegisteredServiceException(key);
-        }
+        final PetalsProvidesOperation removed = this.ppos.remove(key);
+        assert removed == null;
     }
 
     @Override

@@ -28,8 +28,6 @@ import javax.jbi.JBIException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.camel.exceptions.AlreadyRegisteredServiceException;
-import org.ow2.petals.camel.exceptions.UnknownRegisteredServiceException;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
@@ -145,25 +143,22 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         su2camel.get(serviceUnitName).stop();
     }
 
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo)
-            throws AlreadyRegisteredServiceException {
+    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
 
         final EndpointOperationKey key = buildEOK(seo);
 
-        if (this.eo2ppo.containsKey(key)) {
-            throw new AlreadyRegisteredServiceException(key);
-        }
+        final PetalsProvidesOperation put = this.eo2ppo.put(key, ppo);
 
-        this.eo2ppo.put(key, ppo);
+        assert put == null;
     }
 
-    public void unregisterPPO(final ServiceEndpointOperation seo) throws UnknownRegisteredServiceException {
+    public void unregisterPPO(final ServiceEndpointOperation seo) {
 
         final EndpointOperationKey key = buildEOK(seo);
 
-        if (this.eo2ppo.remove(key) == null) {
-            throw new UnknownRegisteredServiceException(key);
-        }
+        final PetalsProvidesOperation removed = this.eo2ppo.remove(key);
+
+        assert removed == null;
     }
 
     public PetalsProvidesOperation getPPO(final Exchange exchange) throws JBIException {
