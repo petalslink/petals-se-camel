@@ -40,7 +40,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
     public PetalsCamelProducer(final PetalsCamelEndpoint endpoint) {
         super(endpoint);
-        this.consumes = endpoint.getComponent().getContext().getConsumesChannel(endpoint.getSEO());
+        this.consumes = endpoint.getComponent().getContext().getConsumesChannel(endpoint.getService());
     }
 
     @NonNullByDefault(false)

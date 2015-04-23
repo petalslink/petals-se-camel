@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 import javax.jbi.JBIException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.ow2.petals.camel.PetalsProvidesOperation;
+import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
@@ -69,7 +69,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      * Needed to know where to send an arriving exchange (coming from the JBIListener)
      */
     @SuppressWarnings("null")
-    private final ConcurrentMap<EndpointOperationKey, PetalsProvidesOperation> eo2ppo = Maps.newConcurrentMap();
+    private final ConcurrentMap<EndpointOperationKey, PetalsCamelRoute> eo2routes = Maps.newConcurrentMap();
 
     public CamelSUManager(final CamelSE component) {
         super(component);
@@ -143,28 +143,28 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         su2camel.get(serviceUnitName).stop();
     }
 
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
+    public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {
 
-        final EndpointOperationKey key = buildEOK(seo);
+        final EndpointOperationKey key = buildEOK(service);
 
-        final PetalsProvidesOperation put = this.eo2ppo.put(key, ppo);
+        final PetalsCamelRoute put = this.eo2routes.put(key, route);
 
         assert put == null;
     }
 
-    public void unregisterPPO(final ServiceEndpointOperation seo) {
+    public void unregisterRoute(final ServiceEndpointOperation service) {
 
-        final EndpointOperationKey key = buildEOK(seo);
+        final EndpointOperationKey key = buildEOK(service);
 
-        final PetalsProvidesOperation removed = this.eo2ppo.remove(key);
+        final PetalsCamelRoute removed = this.eo2routes.remove(key);
 
         assert removed == null;
     }
 
-    public PetalsProvidesOperation getPPO(final Exchange exchange) throws JBIException {
+    public PetalsCamelRoute getRoute(final Exchange exchange) throws JBIException {
         final EndpointOperationKey eo = new EndpointOperationKey(exchange);
 
-        final PetalsProvidesOperation ppo = this.eo2ppo.get(eo);
+        final PetalsCamelRoute ppo = this.eo2routes.get(eo);
 
         if (ppo == null) {
             throw new NotImplementedRouteException(eo);

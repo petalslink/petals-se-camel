@@ -50,7 +50,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @UriParam(defaultValue = "-1", name = PARAMETER_TIMEOUT, description = "If 0 then no timeout, if <0 then use the default timeout from the component else specify the timeout in milliseconds")
     private long timeout = -1;
 
-    private final ServiceEndpointOperation seo;
+    private final ServiceEndpointOperation service;
 
     public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String serviceId)
             throws UnknownServiceException {
@@ -59,9 +59,9 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
         this.serviceId = serviceId;
         
-        this.seo = component.getContext().getSEO(serviceId);
+        this.service = component.getContext().getService(serviceId);
 
-        setExchangePattern(ExchangePattern.fromWsdlUri(seo.getMEP().toString()));
+        setExchangePattern(ExchangePattern.fromWsdlUri(service.getMEP().toString()));
     }
 
     /**
@@ -75,7 +75,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         super.configureProperties(options);
 
         // timeout is only supported if this is a to() (i.e. a consumes in the SU)
-        if (this.seo.getType() == ServiceType.CONSUMES) {
+        if (this.service.getType() == ServiceType.CONSUMES) {
             final String s = (String) options.remove(PARAMETER_TIMEOUT);
             if (s != null) {
                 this.timeout = Long.parseLong(s);
@@ -93,8 +93,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         return timeout;
     }
 
-    public ServiceEndpointOperation getSEO() {
-        return seo;
+    public ServiceEndpointOperation getService() {
+        return service;
     }
 
     /**
@@ -104,8 +104,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
      */
     @Override
     public Producer createProducer() throws IncompatibleEndpointUsageException {
-        if (this.seo.getType() != ServiceType.CONSUMES) {
-            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
+        if (this.service.getType() != ServiceType.CONSUMES) {
+            throw new IncompatibleEndpointUsageException(this.service, ServiceType.PROVIDES);
         }
         return new PetalsCamelProducer(this);
     }
@@ -119,8 +119,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(final Processor processor) throws IncompatibleEndpointUsageException {
 
-        if (this.seo.getType() != ServiceType.PROVIDES) {
-            throw new IncompatibleEndpointUsageException(this.seo, ServiceType.PROVIDES);
+        if (this.service.getType() != ServiceType.PROVIDES) {
+            throw new IncompatibleEndpointUsageException(this.service, ServiceType.PROVIDES);
         }
 
         // create the consumer for our JBI provides

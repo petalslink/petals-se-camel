@@ -31,10 +31,10 @@ public class IncompatibleEndpointUsageException extends Exception {
 
     private static final long serialVersionUID = 4627238751624577968L;
 
-    private static final String MESSAGE_PATTERN = "The service endpoint %s is not a %s";
+    private static final String MESSAGE_PATTERN = "The service %s is not a %s";
 
-    public IncompatibleEndpointUsageException(final ServiceEndpointOperation seo, final ServiceType expectedType) {
-        super(String.format(MESSAGE_PATTERN, seo, expectedType));
+    public IncompatibleEndpointUsageException(final ServiceEndpointOperation service, final ServiceType expectedType) {
+        super(String.format(MESSAGE_PATTERN, service, expectedType));
     }
 }
 

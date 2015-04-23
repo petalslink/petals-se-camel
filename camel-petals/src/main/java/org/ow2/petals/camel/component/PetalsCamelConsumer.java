@@ -26,30 +26,30 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.PetalsProvidesOperation;
+import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.component.utils.Conversions;
 
 // TODO should I be suspendable?
-public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvidesOperation {
+public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelRoute {
 
     private final PetalsProvidesChannel provides;
 
     public PetalsCamelConsumer(final PetalsCamelEndpoint endpoint, final Processor processor) {
         super(endpoint, processor);
-        this.provides = endpoint.getComponent().getContext().getProvidesChannel(endpoint.getSEO());
+        this.provides = endpoint.getComponent().getContext().getProvidesChannel(endpoint.getService());
     }
 
     @Override
     protected void doStart() throws Exception {
         super.doStart();
         // let's register so that when MEX are received, they will be passed to us
-        getEndpoint().getComponent().getContext().registerPPO(getEndpoint().getSEO(), this);
+        getEndpoint().getComponent().getContext().registerRoute(getEndpoint().getService(), this);
     }
 
     @Override
     protected void doStop() throws Exception {
         // we unregister
-        getEndpoint().getComponent().getContext().unregisterPPO(getEndpoint().getSEO());
+        getEndpoint().getComponent().getContext().unregisterRoute(getEndpoint().getService());
         super.doStop();
     }
 
@@ -78,7 +78,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsProvid
                     handleAnswer(camelExchange, exchange);
                 }
             });
-            // TODO sould I return true in case an error happened? (and thus process would have returned true)
+            // TODO should I return true in case an error happened? (and thus process would have returned true)
             return false;
         }
     }

@@ -28,9 +28,9 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RoutesDefinition;
 import org.ow2.petals.camel.PetalsCamelContext;
+import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.PetalsProvidesOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.component.PetalsCamelComponent;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
@@ -55,7 +55,7 @@ import com.google.common.collect.ImmutableMap;
 public class CamelSU implements PetalsCamelContext {
 
     /**
-     * Mapping from serviceId to opertaions
+     * Mapping from serviceId to operations
      * 
      * Needed by the camel endpoint to resolve the URI in a from() or a to()
      */
@@ -140,7 +140,7 @@ public class CamelSU implements PetalsCamelContext {
     }
 
     @Override
-    public ServiceEndpointOperation getSEO(final String serviceId) throws UnknownServiceException {
+    public ServiceEndpointOperation getService(final String serviceId) throws UnknownServiceException {
         final ServiceEndpointOperation seo = this.sid2seo.get(serviceId);
         if (seo == null) {
             throw new UnknownServiceException(serviceId);
@@ -149,13 +149,13 @@ public class CamelSU implements PetalsCamelContext {
     }
 
     @Override
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
-        this.manager.registerPPO(seo, ppo);
+    public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {
+        this.manager.registerRoute(service, route);
     }
 
     @Override
-    public void unregisterPPO(final ServiceEndpointOperation seo) {
-        this.manager.unregisterPPO(seo);
+    public void unregisterRoute(final ServiceEndpointOperation seo) {
+        this.manager.unregisterRoute(seo);
     }
 
     @Override

@@ -23,8 +23,8 @@ import javax.jbi.JBIException;
 import javax.jbi.messaging.MessagingException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.ow2.petals.camel.PetalsProvidesOperation;
-import org.ow2.petals.camel.se.datatypes.PetalsCamelAsyncContext;
+import org.ow2.petals.camel.PetalsCamelRoute;
+import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
@@ -71,9 +71,9 @@ public class CamelJBIListener extends AbstractJBIListener {
                         logger.fine("Pattern " + exchange.getPattern());
                     }
                     
-                    final PetalsProvidesOperation ppo = getCamelSE().getCamelSUManager().getPPO(exchange);
+                    final PetalsCamelRoute route = getCamelSE().getCamelSUManager().getRoute(exchange);
 
-                    ppo.process(exchange);
+                    route.process(exchange);
 
                     // we always take care of answering things in the processing!
                     return false;

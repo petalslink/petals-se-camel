@@ -26,7 +26,6 @@ import javax.xml.namespace.QName;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
-import org.ow2.petals.camel.se.datatypes.PetalsCamelAsyncContext;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 

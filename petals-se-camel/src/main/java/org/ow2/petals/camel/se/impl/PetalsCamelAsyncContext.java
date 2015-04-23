@@ -15,7 +15,7 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.camel.se.datatypes;
+package org.ow2.petals.camel.se.impl;
 
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.component.framework.process.async.AsyncContext;

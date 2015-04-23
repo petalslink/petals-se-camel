@@ -27,7 +27,7 @@ import org.ow2.petals.component.framework.api.message.Exchange;
  * @author vnoel
  *
  */
-public interface PetalsProvidesOperation {
+public interface PetalsCamelRoute {
 
     /**
      * No exceptions are thrown: the message will be set in error if something happens and the implementation must take

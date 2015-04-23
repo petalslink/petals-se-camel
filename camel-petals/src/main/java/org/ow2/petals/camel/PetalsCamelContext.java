@@ -27,8 +27,8 @@ import org.ow2.petals.camel.exceptions.UnknownServiceException;
 /**
  * 
  * Represents an object that provides methods for interacting between Petals abstractions (
- * {@link ServiceEndpointOperation}), Petals-Camel abstractions ({@link PetalsProvidesOperation} and
- * {@link PetalsChannel}) and Camel abstractions ({@link CamelContext}).
+ * {@link ServiceEndpointOperation}), Petals-Camel abstractions ({@link PetalsCamelRoute} and {@link PetalsChannel}) and
+ * Camel abstractions ({@link CamelContext}).
  * 
  * It is mainly used by the endpoint.
  * 
@@ -37,15 +37,52 @@ import org.ow2.petals.camel.exceptions.UnknownServiceException;
  */
 public interface PetalsCamelContext {
 
-    public ServiceEndpointOperation getSEO(String serviceId) throws UnknownServiceException;
+    /**
+     * To get informations about the service (as an operation) designated by this serviceId.
+     * 
+     * @param serviceId
+     *            The id of the service
+     * @return
+     * @throws UnknownServiceException
+     *             If petals does not know this service id
+     */
+    public ServiceEndpointOperation getService(String serviceId) throws UnknownServiceException;
 
-    public PetalsConsumesChannel getConsumesChannel(ServiceEndpointOperation seo);
+    /**
+     * To get a channel to be able to create exchange as well as send them
+     * 
+     * @param seo
+     *            the service that this channel will exchange with
+     * @return
+     */
+    public PetalsConsumesChannel getConsumesChannel(ServiceEndpointOperation service);
 
-    public PetalsProvidesChannel getProvidesChannel(ServiceEndpointOperation seo);
+    /**
+     * To get a channel to be able to send (back as a provider) exchange
+     * 
+     * @param seo
+     *            the service that this channel will exchange with
+     * @return
+     */
+    public PetalsProvidesChannel getProvidesChannel(ServiceEndpointOperation service);
 
-    public void registerPPO(ServiceEndpointOperation seo, PetalsProvidesOperation ppo);
+    /**
+     * Register a Camel route to which exchange for the given seo should be dispatched
+     * 
+     * @param seo
+     *            The service concerned by the route
+     * @param ppo
+     *            The callback to pass exchange to the route
+     */
+    public void registerRoute(ServiceEndpointOperation service, PetalsCamelRoute route);
 
-    public void unregisterPPO(ServiceEndpointOperation seo);
+    /**
+     * Unregister a route
+     * 
+     * @param service
+     *            The service concerned by the route
+     */
+    public void unregisterRoute(ServiceEndpointOperation service);
 
     public CamelContext getCamelContext();
 

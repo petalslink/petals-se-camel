@@ -27,7 +27,7 @@ import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.PetalsProvidesOperation;
+import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
@@ -41,7 +41,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     
     private final Map<String, ServiceEndpointOperation> seos = Maps.newHashMap();
 
-    private final Map<EndpointOperationKey, PetalsProvidesOperation> ppos = Maps.newHashMap();
+    private final Map<EndpointOperationKey, PetalsCamelRoute> ppos = Maps.newHashMap();
 
     private final CamelContext context;
 
@@ -63,7 +63,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     @Override
-    public ServiceEndpointOperation getSEO(final String serviceId) throws UnknownServiceException {
+    public ServiceEndpointOperation getService(final String serviceId) throws UnknownServiceException {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         if (seo == null) {
             throw new UnknownServiceException(serviceId);
@@ -92,18 +92,18 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     @Override
-    public void registerPPO(final ServiceEndpointOperation seo, final PetalsProvidesOperation ppo) {
+    public void registerRoute(final ServiceEndpointOperation seo, final PetalsCamelRoute ppo) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        final PetalsProvidesOperation put = this.ppos.put(key, ppo);
+        final PetalsCamelRoute put = this.ppos.put(key, ppo);
         assert put == null;
     }
 
     @Override
-    public void unregisterPPO(ServiceEndpointOperation seo) {
+    public void unregisterRoute(ServiceEndpointOperation seo) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        final PetalsProvidesOperation removed = this.ppos.remove(key);
+        final PetalsCamelRoute removed = this.ppos.remove(key);
         assert removed == null;
     }
 
