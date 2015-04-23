@@ -3,6 +3,7 @@
    xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
+
    <parent>
       <artifactId>petals-camel-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
@@ -155,6 +156,9 @@
                   <goals>
                      <goal>prepare-agent-integration</goal>
                   </goals>
+                  <configuration>
+                     <destFile>${sonar.jacoco.itReportPath}</destFile>
+                  </configuration>
                </execution>
             </executions>
          </plugin>
@@ -166,22 +170,20 @@
                <includes>
                   <include>org/ow2/petals/camel/se/it/**</include>
                </includes>
-               <configuration>
-                  <systemProperties>
-                     <property>
-                        <!-- We must assume that Saxon is used in all petals artefact -->
-                        <name>javax.xml.transform.TransformerFactory</name>
-                        <value>net.sf.saxon.TransformerFactoryImpl</value>
-                     </property>
-                  </systemProperties>
-                  <properties>
-                     <property>
-                        <!-- Have jacoco record per-test coverage (on top of default per-file coverage) -->
-                        <name>listener</name>
-                        <value>org.sonar.java.jacoco.JUnitListener</value>
-                     </property>
-                  </properties>
-               </configuration>
+               <systemProperties>
+                  <property>
+                     <!-- We must assume that Saxon is used in all petals artefact -->
+                     <name>javax.xml.transform.TransformerFactory</name>
+                     <value>net.sf.saxon.TransformerFactoryImpl</value>
+                  </property>
+               </systemProperties>
+               <properties>
+                  <property>
+                     <!-- Have jacoco record per-test coverage (on top of default per-file coverage) -->
+                     <name>listener</name>
+                     <value>org.sonar.java.jacoco.JUnitListener</value>
+                  </property>
+               </properties>
             </configuration>
             <executions>
                <execution>
