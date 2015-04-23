@@ -38,7 +38,7 @@ public class CamelSETest extends AbstractComponentTest {
     public void testDeploy_WSDL_KO() throws Exception {
         thrown.expect(DeploymentException.class);
         thrown.expectMessage("Failed to find provided service");
-        deploy(SU_NAME, WRONG_INTERFACE, WRONG_SERVICE, WSDL11, VALID_ROUTES);
+        deploy(SU_NAME, WRONG_INTERFACE, WRONG_SERVICE, WSDL11, null, VALID_ROUTES);
     }
 
     @Test
@@ -79,11 +79,28 @@ public class CamelSETest extends AbstractComponentTest {
     }
 
     @Test
+    public void testRequestHasImplementation() throws Exception {
+
+        // no implementations are furnished
+        deploy(SU_NAME, HELLO_INTERFACE, HELLO_SERVICE, WSDL11, null, null);
+
+        // we provides an empty in just to be sure it doesn't fail because of it
+        // TODO according to JBI there shouldn't be a fault in that case...
+        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false);
+
+        assertTrue(response.getError() instanceof MessagingException);
+        // the cause is in the message!!!
+        assertTrue(response.getError().getMessage()
+                .contains("org.ow2.petals.camel.se.exceptions.NotImplementedRouteException"));
+    }
+
+    @Test
     public void testRequestHasContent() throws Exception {
 
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
-        final ResponseMessage response = sendHello(SU_NAME, null, null, null, null);
+        // TODO according to JBI there shouldn't be a fault in that case...
+        final ResponseMessage response = sendHello(SU_NAME, null, null, null, null, false, false);
 
         assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError().getMessage().contains("The exchange must be IN"));

@@ -120,8 +120,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
         final ServiceConfiguration consumes = createHelloConsumes();
 
-        // TODO we are missing the routes: need to modify the CDK for that
-
         provides.addServiceConfigurationDependency(consumes);
 
         return provides;
@@ -138,39 +136,36 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected void deployHello(final String suName, final URL wsdl, final Class<?> clazz) throws Exception {
-        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, clazz);
+        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, clazz, null);
     }
 
     protected void deploy(final String suName, final QName interfaceName, final QName serviceName, final URL wsdl,
-            final Class<?> clazz) throws Exception {
+            final @Nullable Class<?> clazz, final @Nullable URL routes) throws Exception {
+        final String routesFileName;
+        if (routes != null) {
+            routesFileName = new File(routes.toURI()).getName();
+        } else {
+            routesFileName = null;
+        }
         COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
                 final ServiceConfiguration provides = createTestService(interfaceName, serviceName, "autogenerate",
                         wsdl);
-                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"), clazz.getName());
+                if (clazz != null) {
+                    provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"), clazz.getName());
+                }
+                if (routes != null) {
+                    provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"), routesFileName);
+                    provides.addResource(routes);
+                }
                 return provides;
             }
         });
     }
 
     protected void deployHello(final String suName, final URL wsdl, final URL routes) throws Exception {
-        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, routes);
-    }
-
-    protected void deploy(final String suName, final QName interfaceName, final QName serviceName, final URL wsdl,
-            final URL routes) throws Exception {
-        final String routesFileName = new File(routes.toURI()).getName();
-        COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
-            @Override
-            public ServiceConfiguration create() {
-                final ServiceConfiguration provides = createTestService(interfaceName, serviceName, "autogenerate",
-                        wsdl);
-                provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"), routesFileName);
-                provides.addResource(routes);
-                return provides;
-            }
-        });
+        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, null, routes);
     }
 
     public interface ConsumerImplementation {
@@ -194,7 +189,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected ResponseMessage sendHello(final String suName, @Nullable final String request,
             @Nullable final String expectedRequest, @Nullable final String response,
-            @Nullable final String expectedResponse) throws Exception {
+            @Nullable final String expectedResponse, final boolean checkResponseNoError,
+            final boolean checkResponseNoFault) throws Exception {
 
         final RequestMessage requestMessage = new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
@@ -213,7 +209,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
 
                 if (expectedRequest != null) {
-                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload()), CONVERTER
+                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null), CONVERTER
                             .toDOMSource(expectedRequest));
                     assertTrue(diff.similar());
                 }
@@ -222,8 +218,17 @@ public abstract class AbstractComponentTest extends AbstractTest {
             }
         }, 1000, 1000);
 
+        if (checkResponseNoError) {
+            assertNull(responseMessage.getError());
+        }
+
+        if (checkResponseNoFault) {
+            assertNull(responseMessage.getFault());
+        }
+
         if (expectedResponse != null) {
-            final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload()),
+            assertNotNull(responseMessage.getPayload());
+            final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload(), null),
                     CONVERTER.toDOMSource(expectedResponse));
             assertTrue(diff.similar());
         }

@@ -20,7 +20,6 @@ package org.ow2.petals.camel.se;
 import org.junit.Before;
 import org.junit.Test;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
-import org.ow2.petals.component.framework.junit.ResponseMessage;
 
 public class CamelSUTest extends AbstractComponentTest {
 
@@ -35,12 +34,7 @@ public class CamelSUTest extends AbstractComponentTest {
         final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
 
         // TestRoutesOK is an identity transformation expected contents are similar to contents
-        final ResponseMessage response = sendHello(SU_NAME, requestContent, requestContent, responseContent,
-                responseContent);
-
-        assertNull(response.getError());
-        assertNull(response.getFault());
-        assertNotNull(response.getPayload());
+        sendHello(SU_NAME, requestContent, requestContent, responseContent, responseContent, true, true);
         
     }
 }
