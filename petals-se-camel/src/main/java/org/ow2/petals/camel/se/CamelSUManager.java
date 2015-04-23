@@ -158,7 +158,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
 
         final PetalsCamelRoute removed = this.eo2routes.remove(key);
 
-        assert removed == null;
+        assert removed != null;
     }
 
     public PetalsCamelRoute getRoute(final Exchange exchange) throws JBIException {
