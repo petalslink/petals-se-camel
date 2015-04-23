@@ -29,6 +29,12 @@ import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 
+/**
+ * Tests for {@link CamelSE}, {@link CamelSU}, {@link CamelSUManager}, {@link CamelJBIListener} and co.
+ * 
+ * @author vnoel
+ *
+ */
 public class CamelSETest extends AbstractComponentTest {
 
     @Rule
@@ -104,5 +110,18 @@ public class CamelSETest extends AbstractComponentTest {
 
         assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError().getMessage().contains("The exchange must be IN"));
+    }
+
+    @Test
+    public void testMessageGoThrough() throws Exception {
+
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
+        final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
+
+        // TestRoutesOK is an identity transformation: expected contents are similar to contents
+        sendHello(SU_NAME, requestContent, requestContent, responseContent, responseContent, true, true);
+
     }
 }

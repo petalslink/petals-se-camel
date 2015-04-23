@@ -135,6 +135,63 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <excludes>
+                  <!-- we will run this one in integration-test -->
+                  <exclude>org/ow2/petals/camel/se/it/**</exclude>
+               </excludes>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <!-- This activates the use of jacoco for recording integration test coverage -->
+                  <id>prepare-agent-integration</id>
+                  <goals>
+                     <goal>prepare-agent-integration</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.18.1</version>
+            <configuration>
+               <includes>
+                  <include>org/ow2/petals/camel/se/it/**</include>
+               </includes>
+               <configuration>
+                  <systemProperties>
+                     <property>
+                        <!-- We must assume that Saxon is used in all petals artefact -->
+                        <name>javax.xml.transform.TransformerFactory</name>
+                        <value>net.sf.saxon.TransformerFactoryImpl</value>
+                     </property>
+                  </systemProperties>
+                  <properties>
+                     <property>
+                        <!-- Have jacoco record per-test coverage (on top of default per-file coverage) -->
+                        <name>listener</name>
+                        <value>org.sonar.java.jacoco.JUnitListener</value>
+                     </property>
+                  </properties>
+               </configuration>
+            </configuration>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>integration-test</goal>
+                     <goal>verify</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
 
