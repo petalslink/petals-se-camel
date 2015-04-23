@@ -25,7 +25,7 @@ public class NotImplementedRouteException extends PetalsCamelSEException {
 
     private static final long serialVersionUID = -7084276404020652784L;
 
-    private static final String MESSAGE_PATTERN = "There is more than one route for the operation %s of the service endpoint %s";
+    private static final String MESSAGE_PATTERN = "There is no route for the operation %s of the service endpoint %s";
 
     public NotImplementedRouteException(final EndpointOperationKey eo) {
         this(eo, null);
