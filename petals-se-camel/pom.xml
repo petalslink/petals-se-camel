@@ -151,12 +151,9 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <executions>
                <execution>
-                  <!-- This activates the use of jacoco for recording integration test coverage -->
                   <id>prepare-agent-integration</id>
-                  <goals>
-                     <goal>prepare-agent-integration</goal>
-                  </goals>
                   <configuration>
+                     <!-- We output the results in the path shared by all submodules -->
                      <destFile>${sonar.jacoco.itReportPath}</destFile>
                   </configuration>
                </execution>
@@ -165,34 +162,12 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.18.1</version>
             <configuration>
                <includes>
+                  <!-- Only execute the integration tests -->
                   <include>org/ow2/petals/camel/se/it/**</include>
                </includes>
-               <systemProperties>
-                  <property>
-                     <!-- We must assume that Saxon is used in all petals artefact -->
-                     <name>javax.xml.transform.TransformerFactory</name>
-                     <value>net.sf.saxon.TransformerFactoryImpl</value>
-                  </property>
-               </systemProperties>
-               <properties>
-                  <property>
-                     <!-- Have jacoco record per-test coverage (on top of default per-file coverage) -->
-                     <name>listener</name>
-                     <value>org.sonar.java.jacoco.JUnitListener</value>
-                  </property>
-               </properties>
             </configuration>
-            <executions>
-               <execution>
-                  <goals>
-                     <goal>integration-test</goal>
-                     <goal>verify</goal>
-                  </goals>
-               </execution>
-            </executions>
          </plugin>
       </plugins>
    </build>
