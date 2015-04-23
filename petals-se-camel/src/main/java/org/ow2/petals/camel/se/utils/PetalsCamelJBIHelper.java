@@ -173,11 +173,11 @@ public class PetalsCamelJBIHelper {
 
                 Element camelOperation = null;
                 for (final Element e : operation.getOtherElements()) {
-                    if (camelOperation != null) {
-                        throw new InvalidJBIConfigurationException("Duplicate " + PETALS_CAMEL_WSDL_OPERATION
-                                + " available for the operation " + qName);
-                    }
                     if (hasQName(e, PETALS_CAMEL_WSDL_OPERATION)) {
+                        if (camelOperation != null) {
+                            throw new InvalidJBIConfigurationException("Duplicate " + PETALS_CAMEL_WSDL_OPERATION
+                                    + " available for the operation " + qName);
+                        }
                         camelOperation = e;
                     }
                 }
