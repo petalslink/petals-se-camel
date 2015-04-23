@@ -20,6 +20,10 @@ package org.ow2.petals.camel.se;
 import java.io.File;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.logging.Formatter;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
@@ -30,6 +34,7 @@ import org.custommonkey.xmlunit.Diff;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -86,8 +91,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
-    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest().addLogHandler(
-            IN_MEMORY_LOG_HANDLER.getHandler()).registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME);
+    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest();
 
     /**
      * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
@@ -95,6 +99,16 @@ public abstract class AbstractComponentTest extends AbstractTest {
      */
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
+
+    @BeforeClass
+    public static void registerExternalService() {
+        COMPONENT_UNDER_TEST.registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME);
+    }
+
+    @BeforeClass
+    public static void attachInMemoryLoggerToLogger() {
+        Logger.getLogger("").addHandler(IN_MEMORY_LOG_HANDLER.getHandler());
+    }
 
     /**
      * All log traces must be cleared before starting a unit test (because the log handler is static and lives during
@@ -105,12 +119,22 @@ public abstract class AbstractComponentTest extends AbstractTest {
         IN_MEMORY_LOG_HANDLER.clear();
     }
 
+
     /**
      * We undeploy services after each test (because the component is static and lives during the whole suite of tests)
      */
     @After
     public void undeployAllServices() {
         COMPONENT_UNDER_TEST.undeployAllServices();
+    }
+
+    @After
+    public void checkNoAssertInLog() {
+        // asserts are ALWAYS a bug!
+        final Formatter formatter = new SimpleFormatter();
+        for (final LogRecord r : IN_MEMORY_LOG_HANDLER.getAllRecords()) {
+            assertFalse("Got a log with an assertion: " + formatter.format(r), r.getThrown() instanceof AssertionError || r.getMessage().contains("AssertionError"));
+        }
     }
 
     protected ServiceConfiguration createTestService(final QName interfaceName, final QName serviceName,
