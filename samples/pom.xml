@@ -2,14 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>petals-camel-samples-rootbuilder</artifactId>
-   <name>Petals ESB - Samples - SE Camel</name>
+   
+   <!-- We use petals-parent as parent and not ../pom.xml to well dissociate samples from component -->
+   <parent>
+      <artifactId>petals-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <version>20.2.3-SNAPSHOT</version>
+      <relativePath />
+   </parent>
+   
    <groupId>org.ow2.petals.samples</groupId>
-   <version>0-SNAPSHOT</version>
+   <artifactId>petals-camel-samples-parent</artifactId>
+   <name>Petals ESB - Samples - SE Camel</name>
+   <version>5.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <modules>
-      <module>parent</module>
       <module>su-camel-hello-proxy-java</module>
       <module>su-camel-hello-proxy-xml</module>
       <module>sa-camel-hello-proxies</module>
@@ -17,23 +25,33 @@
       <module>sa-camel-datamapping</module>
    </modules>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <artifactId>petals-se-camel</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <scope>provided</scope>
+            <type>jbi-component</type>
+            <version>1.0.0-SNAPSHOT</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <build>
-      <plugins>
-         <plugin>
-            <!-- The reactor should not be deployed. It is needed only to chain all modules -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-deploy-plugin</artifactId>
-            <version>2.8.2</version>
-            <configuration>
-               <skip>true</skip>
-            </configuration>
-         </plugin>
-      </plugins>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <artifactId>maven-petals-plugin</artifactId>
+               <groupId>org.ow2.petals</groupId>
+               <version>2.4.0-SNAPSHOT</version>
+               <extensions>true</extensions>
+            </plugin>
+         </plugins>
+      </pluginManagement>
    </build>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
    </scm>
-
 </project>
