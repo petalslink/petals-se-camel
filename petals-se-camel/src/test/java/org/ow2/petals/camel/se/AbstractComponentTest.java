@@ -119,21 +119,18 @@ public abstract class AbstractComponentTest extends AbstractTest {
         IN_MEMORY_LOG_HANDLER.clear();
     }
 
-
     /**
      * We undeploy services after each test (because the component is static and lives during the whole suite of tests)
      */
     @After
-    public void undeployAllServices() {
+    public void after() {
         COMPONENT_UNDER_TEST.undeployAllServices();
-    }
 
-    @After
-    public void checkNoAssertInLog() {
         // asserts are ALWAYS a bug!
         final Formatter formatter = new SimpleFormatter();
         for (final LogRecord r : IN_MEMORY_LOG_HANDLER.getAllRecords()) {
-            assertFalse("Got a log with an assertion: " + formatter.format(r), r.getThrown() instanceof AssertionError || r.getMessage().contains("AssertionError"));
+            assertFalse("Got a log with an assertion: " + formatter.format(r), r.getThrown() instanceof AssertionError
+                    || r.getMessage().contains("AssertionError"));
         }
     }
 
@@ -198,8 +195,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected ResponseMessage send(final RequestMessage request, final ConsumerImplementation consumer,
-            final long timeoutForth, final long timeoutBack)
-            throws Exception {
+            final long timeoutForth, final long timeoutBack) throws Exception {
 
         COMPONENT_UNDER_TEST.pushRequestToProvider(request);
 
@@ -209,6 +205,49 @@ public abstract class AbstractComponentTest extends AbstractTest {
         }
 
         return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
+    }
+
+    protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
+            final long timeoutForth, final long timeoutBack, @Nullable final String expectedRequestContent,
+            @Nullable final String expectedResponseContent) throws Exception {
+        return sendAndCheck(request, consumer, timeoutForth, timeoutBack, expectedRequestContent,
+                expectedResponseContent, true, true);
+    }
+
+    protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
+            final long timeoutForth, final long timeoutBack, @Nullable final String expectedRequestContent,
+            @Nullable final String expectedResponseContent, final boolean checkResponseNoError,
+            final boolean checkResponseNoFault) throws Exception {
+
+        final ResponseMessage responseMessage = send(request, new ConsumerImplementation() {
+            @Override
+            public ResponseMessage provides(RequestMessage request) throws Exception {
+                if (expectedRequestContent != null) {
+                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null), CONVERTER
+                            .toDOMSource(expectedRequestContent));
+                    assertTrue(diff.similar());
+                }
+
+                return consumer.provides(request);
+            }
+        }, timeoutForth, timeoutBack);
+
+        if (checkResponseNoError) {
+            assertNull(responseMessage.getError());
+        }
+
+        if (checkResponseNoFault) {
+            assertNull(responseMessage.getFault());
+        }
+
+        if (expectedResponseContent != null) {
+            assertNotNull(responseMessage.getPayload());
+            final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload(), null),
+                    CONVERTER.toDOMSource(expectedResponseContent));
+            assertTrue(diff.similar());
+        }
+
+        return responseMessage;
     }
 
     protected ResponseMessage sendHello(final String suName, @Nullable final String request,
@@ -222,7 +261,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
                         new StringReader(request)));
 
         // a timeout of 1000ms should be enough both ways
-        final ResponseMessage responseMessage = send(requestMessage, new ConsumerImplementation() {
+        return sendAndCheck(requestMessage, new ConsumerImplementation() {
             @Override
             public ResponseMessage provides(RequestMessage request) throws Exception {
                 final MessageExchange exchange = request.getMessageExchange();
@@ -232,32 +271,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 assertEquals(exchange.getOperation(), HELLO_OPERATION);
                 assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
 
-                if (expectedRequest != null) {
-                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null), CONVERTER
-                            .toDOMSource(expectedRequest));
-                    assertTrue(diff.similar());
-                }
-
                 return new WrappedResponseToConsumerMessage(exchange, new ReaderInputStream(new StringReader(response)));
             }
-        }, 1000, 1000);
-
-        if (checkResponseNoError) {
-            assertNull(responseMessage.getError());
-        }
-
-        if (checkResponseNoFault) {
-            assertNull(responseMessage.getFault());
-        }
-
-        if (expectedResponse != null) {
-            assertNotNull(responseMessage.getPayload());
-            final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload(), null),
-                    CONVERTER.toDOMSource(expectedResponse));
-            assertTrue(diff.similar());
-        }
-
-        return responseMessage;
+        }, 1000, 1000, expectedRequest, expectedResponse, checkResponseNoError, checkResponseNoFault);
     }
 
 }
