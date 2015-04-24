@@ -27,8 +27,4 @@ public class UnknownServiceException extends Exception {
     public UnknownServiceException(final String serviceId) {
         super(String.format(MESSAGE_PATTERN, serviceId));
     }
-
-    public UnknownServiceException(final String serviceId, final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, serviceId), cause);
-    }
 }
