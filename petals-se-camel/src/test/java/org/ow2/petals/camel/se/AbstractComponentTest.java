@@ -189,9 +189,19 @@ public abstract class AbstractComponentTest extends AbstractTest {
         deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, null, routes);
     }
 
-    public interface ConsumerImplementation {
+    public static abstract class ConsumerImplementation {
 
-        public ResponseMessage provides(final RequestMessage request) throws Exception;
+        public abstract ResponseMessage provides(RequestMessage request) throws Exception;
+
+        public static ConsumerImplementation fromString(final String content) {
+            return new ConsumerImplementation() {
+                @Override
+                public ResponseMessage provides(RequestMessage request) throws Exception {
+                    return new WrappedResponseToConsumerMessage(request.getMessageExchange(), new ReaderInputStream(
+                            new StringReader(content)));
+                }
+            };
+        }
     }
 
     protected ResponseMessage send(final RequestMessage request, final ConsumerImplementation consumer,
@@ -207,21 +217,37 @@ public abstract class AbstractComponentTest extends AbstractTest {
         return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
     }
 
+    public static abstract class ConsumerChecks {
+
+        public abstract boolean checks(final RequestMessage request) throws Exception;
+
+        public static ConsumerChecks none() {
+            return new ConsumerChecks() {
+                @Override
+                public boolean checks(RequestMessage request) throws Exception {
+                    return false;
+                }
+            };
+        }
+    }
+
     protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final long timeoutForth, final long timeoutBack, @Nullable final String expectedRequestContent,
-            @Nullable final String expectedResponseContent) throws Exception {
-        return sendAndCheck(request, consumer, timeoutForth, timeoutBack, expectedRequestContent,
+            final ConsumerChecks consumerChecks, final long timeoutForth, final long timeoutBack,
+            @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent)
+            throws Exception {
+        return sendAndCheck(request, consumer, consumerChecks, timeoutForth, timeoutBack, expectedRequestContent,
                 expectedResponseContent, true, true);
     }
 
     protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final long timeoutForth, final long timeoutBack, @Nullable final String expectedRequestContent,
-            @Nullable final String expectedResponseContent, final boolean checkResponseNoError,
-            final boolean checkResponseNoFault) throws Exception {
+            final ConsumerChecks consumerChecks, final long timeoutForth, final long timeoutBack,
+            @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent,
+            final boolean checkResponseNoError, final boolean checkResponseNoFault) throws Exception {
 
         final ResponseMessage responseMessage = send(request, new ConsumerImplementation() {
             @Override
             public ResponseMessage provides(RequestMessage request) throws Exception {
+                assertFalse(consumerChecks.checks(request));
                 if (expectedRequestContent != null) {
                     final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null), CONVERTER
                             .toDOMSource(expectedRequestContent));
@@ -250,10 +276,22 @@ public abstract class AbstractComponentTest extends AbstractTest {
         return responseMessage;
     }
 
+    protected ResponseMessage sendHelloIdentity(final String suName) throws Exception {
+        return sendHelloIdentity(suName, ConsumerChecks.none());
+    }
+
+    protected ResponseMessage sendHelloIdentity(final String suName, final ConsumerChecks extraChecks) throws Exception {
+        final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
+        final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
+
+        return sendHello(suName, requestContent, requestContent, responseContent, responseContent, true, true,
+                extraChecks);
+    }
+
     protected ResponseMessage sendHello(final String suName, @Nullable final String request,
-            @Nullable final String expectedRequest, @Nullable final String response,
-            @Nullable final String expectedResponse, final boolean checkResponseNoError,
-            final boolean checkResponseNoFault) throws Exception {
+            @Nullable final String expectedRequest, final String response, @Nullable final String expectedResponse,
+            final boolean checkResponseNoError, final boolean checkResponseNoFault, final ConsumerChecks extraChecks)
+            throws Exception {
 
         final RequestMessage requestMessage = new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
@@ -261,17 +299,15 @@ public abstract class AbstractComponentTest extends AbstractTest {
                         new StringReader(request)));
 
         // a timeout of 1000ms should be enough both ways
-        return sendAndCheck(requestMessage, new ConsumerImplementation() {
+        return sendAndCheck(requestMessage, ConsumerImplementation.fromString(response), new ConsumerChecks() {
             @Override
-            public ResponseMessage provides(RequestMessage request) throws Exception {
+            public boolean checks(final RequestMessage request) throws Exception {
                 final MessageExchange exchange = request.getMessageExchange();
-
                 assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
                 assertEquals(exchange.getService(), HELLO_SERVICE);
                 assertEquals(exchange.getOperation(), HELLO_OPERATION);
                 assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
-
-                return new WrappedResponseToConsumerMessage(exchange, new ReaderInputStream(new StringReader(response)));
+                return extraChecks.checks(request);
             }
         }, 1000, 1000, expectedRequest, expectedResponse, checkResponseNoError, checkResponseNoFault);
     }

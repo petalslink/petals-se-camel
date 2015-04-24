@@ -20,9 +20,8 @@ package org.ow2.petals.camel.se;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessagingException;
 
-import org.junit.Rule;
+import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
@@ -36,9 +35,6 @@ import org.ow2.petals.component.framework.junit.ResponseMessage;
  *
  */
 public class CamelSETest extends AbstractComponentTest {
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testDeploy_WSDL_KO() throws Exception {
@@ -85,14 +81,14 @@ public class CamelSETest extends AbstractComponentTest {
     }
 
     @Test
-    public void testRequestHasImplementation() throws Exception {
+    public void testRequestHasNoImplementation() throws Exception {
 
         // no implementations are furnished
         deploy(SU_NAME, HELLO_INTERFACE, HELLO_SERVICE, WSDL11, null, null);
 
         // we provides an empty in just to be sure it doesn't fail because of it
-        // TODO according to JBI there shouldn't be a fault in that case...
-        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false);
+        // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
+        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false, ConsumerChecks.none());
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!
@@ -101,12 +97,12 @@ public class CamelSETest extends AbstractComponentTest {
     }
 
     @Test
-    public void testRequestHasContent() throws Exception {
+    public void testRequestHasNoContent() throws Exception {
 
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
-        // TODO according to JBI there shouldn't be a fault in that case...
-        final ResponseMessage response = sendHello(SU_NAME, null, null, null, null, false, false);
+        // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
+        final ResponseMessage response = sendHello(SU_NAME, null, null, "", null, false, false, ConsumerChecks.none());
 
         assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError().getMessage().contains("The exchange must be IN"));
@@ -117,11 +113,35 @@ public class CamelSETest extends AbstractComponentTest {
 
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
-        final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
-        final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
+        sendHelloIdentity(SU_NAME);
 
-        // TestRoutesOK is an identity transformation: expected contents are similar to contents
-        sendHello(SU_NAME, requestContent, requestContent, responseContent, responseContent, true, true);
+    }
 
+    public static class RouteWrongFromServiceId extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("petals:theWrongProvidesId").to("petals:theConsumesId");
+        }
+    }
+
+    public static class RouteWrongToServiceId extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("petals:theProvidesId").to("petals:theWrongConsumesId");
+        }
+    }
+
+    @Test
+    public void testUnknownFromServiceId() throws Exception {
+        thrown.expect(DeploymentException.class);
+        // TODO better checks for the cause of the error
+        deployHello(SU_NAME, WSDL11, RouteWrongFromServiceId.class);
+    }
+
+    @Test
+    public void testUnknownToServiceId() throws Exception {
+        thrown.expect(DeploymentException.class);
+        // TODO better checks for the cause of the error
+        deployHello(SU_NAME, WSDL11, RouteWrongToServiceId.class);
     }
 }

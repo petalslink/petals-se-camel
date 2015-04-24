@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.camel.se.it;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
@@ -30,19 +29,11 @@ import org.ow2.petals.camel.se.mocks.TestRoutesOK;
  */
 public class CamelIntegrationTest extends AbstractComponentTest {
 
-    @Before
-    public void deployIdentityService() throws Exception {
-        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
-    }
-
     @Test
     public void testMessageGoThrough() throws Exception {
-
-        final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
-        final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
-
-        // TestRoutesOK is an identity transformation: expected contents are similar to contents
-        sendHello(SU_NAME, requestContent, requestContent, responseContent, responseContent, true, true);
-
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+        sendHelloIdentity(SU_NAME);
     }
+
+
 }
