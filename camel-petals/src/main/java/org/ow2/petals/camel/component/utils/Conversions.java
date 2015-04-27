@@ -61,9 +61,6 @@ public class Conversions {
 
         camelExchange.setExchangeId(exchange.getExchangeId());
 
-        // normally the MEP should be already correctly set...
-        // TODO check for compatibility and use the mep of the exchange?
-
         for (String prop : exchange.getPropertyNames()) {
             camelExchange.setProperty(prop, exchange.getProperty(prop));
         }
@@ -80,10 +77,6 @@ public class Conversions {
     public static void populateAnswerCamelExchange(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
-        // TODO should I update properties?!
-
-        // TODO add checks w.r.t. MEP?
-
         if (exchange.isErrorStatus()) {
             // there has been a technical error
             camelExchange.setException(exchange.getError());
@@ -96,8 +89,7 @@ public class Conversions {
             populateCamelMessage(camelExchange.getOut(), exchange.getOutMessage());
         } else {
             // the exchange is finished! it corresponds to done for petals exchange, but in Camel there is
-            // nothing
-            // specific to do...
+            // nothing specific to do...
         }
     }
 
@@ -124,8 +116,6 @@ public class Conversions {
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final Exchange camelExchange)
             throws MessagingException {
 
-        // MEP is already set (TODO check coherence with the one of the camel exchange?!)
-
         for (final Entry<String, Object> e : camelExchange.getProperties().entrySet()) {
             exchange.setProperty(e.getKey(), e.getValue());
         }
@@ -136,8 +126,6 @@ public class Conversions {
     public static void populateAnswerPetalsExchange(
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final Exchange camelExchange)
             throws MessagingException {
-
-        // TODO should I update properties?!
 
         // Note: the Petals exchange checks that all is correct w.r.t. to MEP and status
 
@@ -182,7 +170,7 @@ public class Conversions {
             final Exchange camelExchange) {
         final Exception exception = camelExchange.getException();
         final String exceptionName = exception.getClass().getName();
-        // TODO is that correct?
+        // TODO is that correct? I added javax on top of those recommended by the JBI spec!!!
         if (exceptionName.startsWith("java.") || exceptionName.startsWith("javax.")
                 || exceptionName.startsWith("org.w3c.") || exceptionName.startsWith("org.xml.")) {
             exchange.setError(exception);
@@ -214,7 +202,7 @@ public class Conversions {
             // manipulating small-sized messages.
             // TODO provide an endpoint option to force the use of a desired Source implementation.
             // let's use available converters (see http://camel.apache.org/type-converter.html) to get the
-            // body as a Source.
+            // body as a DOMSource.
             newBody = camelMessage.getBody(DOMSource.class);
         }
         message.setContent(newBody);

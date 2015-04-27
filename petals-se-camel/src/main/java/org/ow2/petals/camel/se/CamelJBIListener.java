@@ -52,13 +52,17 @@ public class CamelJBIListener extends AbstractJBIListener {
         try {
             if (exchange.isActiveStatus()) {
 
-
                 try {
+                    // TODO actually this should never happen, or there is a bug
+                    // (well there is a bug because our camel consumer sends with send and not sendasync so we may
+                    // receive answers to our answers...
                     if (!exchange.isProviderRole()) {
+                        // caught in the catch clause below
                         throw new MessagingException("The exchange must be Provider!");
                     }
 
                     if (!exchange.isInMessage()) {
+                        // caught in the catch clause below
                         throw new MessagingException("The exchange must be IN!");
                     }
 
@@ -73,7 +77,15 @@ public class CamelJBIListener extends AbstractJBIListener {
                     
                     final PetalsCamelRoute route = getCamelSE().getCamelSUManager().getRoute(exchange);
 
-                    route.process(exchange);
+                    logger.info("Let's start processing " + logHint + " with Camel");
+
+                    final boolean doneSync = route.process(exchange);
+
+                    if (doneSync) {
+                        logger.info("Processing of " + logHint + " with Camel is finished (happened synchronously)");
+                    } else {
+                        logger.info("Processing of " + logHint + " with Camel will finish asynchronously");
+                    }
 
                     // we always take care of answering things in the processing!
                     return false;
@@ -83,10 +95,12 @@ public class CamelJBIListener extends AbstractJBIListener {
                     exchange.setError(e);
                 }
             } else if (exchange.isErrorStatus()) {
-                logger.warning(logHint + " received with a status 'ERROR'. Skipped !");
+                logger.warning(logHint + " received with a status 'ERROR'. Skipped!");
+            } else if (exchange.isDoneStatus()) {
+                logger.info(logHint + " received with a status 'DONE'. Skipped");
             }
 
-            // something bad happened, let the CDK handle the response!
+            // let the CDK handle the response (either an error occured or it is an error message or a done message)
             return true;
         } finally {
             logger.fine("End CamelJBIListener.onJBIMessage()");
@@ -110,8 +124,13 @@ public class CamelJBIListener extends AbstractJBIListener {
 
     private boolean handleAsyncJBIMessage(final AsyncContext asyncContext, final boolean timedOut) {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
-            this.getLogger().warning("Got an async context not from me!!! " + asyncContext);
+            this.getLogger().warning(
+                    "Got an async context not from me for the exchange "
+                            + asyncContext.getOriginalExchange().getExchangeId());
         } else {
+            this.getLogger().info(
+                    "Received an async answer, let's continue our execution for the exchange "
+                            + asyncContext.getOriginalExchange().getExchangeId());
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
             context.getCallback().done(timedOut);
         }

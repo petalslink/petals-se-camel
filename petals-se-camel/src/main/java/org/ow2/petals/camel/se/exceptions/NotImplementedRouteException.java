@@ -18,7 +18,6 @@
 package org.ow2.petals.camel.se.exceptions;
 
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
 public class NotImplementedRouteException extends PetalsCamelSEException {
@@ -28,10 +27,7 @@ public class NotImplementedRouteException extends PetalsCamelSEException {
     private static final String MESSAGE_PATTERN = "There is no route for the operation %s of the service endpoint %s";
 
     public NotImplementedRouteException(final EndpointOperationKey eo) {
-        this(eo, null);
+        super(String.format(MESSAGE_PATTERN, eo.getOperation(), eo.getEndpointName()));
     }
 
-    public NotImplementedRouteException(final EndpointOperationKey eo, @Nullable final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, eo.getOperation(), eo.getEndpointName()), cause);
-    }
 }

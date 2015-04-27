@@ -91,6 +91,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         try {
             final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
 
+            // TODO should I check that the camel exchange has the same MEP as the consumes MEP?
+
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
             if (doSync) {
@@ -129,6 +131,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         if (timedOut) {
             camelExchange.setException(new TimeoutException(exchange));
         } else {
+            // TODO should properties of the camel exchange be updated with those of the received response?!
             Conversions.populateAnswerCamelExchange(camelExchange, exchange);
         }
         callback.done(doneSync);

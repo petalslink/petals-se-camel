@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
-import javax.jbi.JBIException;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.ServiceEndpointOperation;
@@ -162,7 +160,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         assert removed != null;
     }
 
-    public PetalsCamelRoute getRoute(final Exchange exchange) throws JBIException {
+    public PetalsCamelRoute getRoute(final Exchange exchange) throws NotImplementedRouteException {
         final EndpointOperationKey eo = new EndpointOperationKey(exchange);
 
         final PetalsCamelRoute ppo = this.eo2routes.get(eo);

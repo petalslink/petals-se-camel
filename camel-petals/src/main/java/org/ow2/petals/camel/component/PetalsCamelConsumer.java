@@ -25,8 +25,8 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
-import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.PetalsCamelRoute;
+import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.component.utils.Conversions;
 
 // TODO should I be suspendable?
@@ -72,24 +72,26 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
             handleAnswer(camelExchange, exchange);
             return true;
         } else {
-            getAsyncProcessor().process(camelExchange, new AsyncCallback() {
+            return getAsyncProcessor().process(camelExchange, new AsyncCallback() {
                 @Override
                 public void done(final boolean doneSync) {
+                    // no need to use doneSync: if it is true it just means we are being executed synchronously (w.r.t.
+                    // the execution of process from this class).
                     handleAnswer(camelExchange, exchange);
                 }
             });
-            // TODO should I return true in case an error happened? (and thus process would have returned true)
-            return false;
         }
     }
 
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
-        // this must be caught before sending to be sure that if an error happens here it is sent back!
+        // TODO should I update the poperties of the exchange with those of the camel exchange?
+
         try {
             Conversions.populateAnswerPetalsExchange(exchange, camelExchange);
         } catch (final MessagingException e) {
+            // this must be caught before sending to be sure that if an error happens here it is sent back!
             this.provides.getLogger().log(Level.SEVERE,
                     "Just set an error on the Petals Exchange " + exchange.getExchangeId(), e);
             exchange.setError(e);

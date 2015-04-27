@@ -84,9 +84,11 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         // TODO add the possibility to change that at runtime (or rather, to force something using an MBean for example
         // for debugging...)
         this.setSynchronous(Boolean.parseBoolean((String) options.remove(PARAMETER_SYNCHRONOUS)));
+
         // the mep is not used because we use the one declared in the SU (see the constructor)
         // TODO should I verify that the patterns match (with the one of the endpoint)
         // is there some kind of subtyping of MEP? see JBI spec!
+        // (ResolveEndpointFailedException should be thrown in case of problems)
     }
 
     public long getTimeout() {
