@@ -119,6 +119,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     @NonNullByDefault(false)
     @Override
     protected synchronized void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
+        // TODO should I force stop of camel in case it is not stopped yet?
         final CamelSU camelSU = this.su2camel.remove(serviceUnitName);
         camelSU.undeploy();
     }
