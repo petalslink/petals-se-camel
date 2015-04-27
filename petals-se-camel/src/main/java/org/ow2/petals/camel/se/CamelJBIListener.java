@@ -61,11 +61,6 @@ public class CamelJBIListener extends AbstractJBIListener {
                         throw new MessagingException("The exchange must be Provider!");
                     }
 
-                    if (!exchange.isInMessage()) {
-                        // caught in the catch clause below
-                        throw new MessagingException("The exchange must be IN!");
-                    }
-
                     if (logger.isLoggable(Level.FINE)) {
                         logger.fine(logHint + " was received and is started to be processed.");
                         logger.fine("interfaceName = " + exchange.getInterfaceName());
