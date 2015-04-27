@@ -19,14 +19,19 @@ package org.ow2.petals.camel.se;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
+import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
+import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
+import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 
 /**
  * Tests for {@link CamelSE}, {@link CamelSU}, {@link CamelSUManager}, {@link CamelJBIListener} and co.
@@ -36,11 +41,21 @@ import org.ow2.petals.component.framework.junit.ResponseMessage;
  */
 public class CamelSETest extends AbstractComponentTest {
 
+    protected static final QName WRONG_INTERFACE = new QName(HELLO_NS, "WrongInterface");
+
+    protected static final QName WRONG_SERVICE = new QName(HELLO_NS, "WrongInterface");
+
     @Test
     public void testDeploy_WSDL_KO() throws Exception {
         thrown.expect(DeploymentException.class);
         thrown.expectMessage("Failed to find provided service");
-        deploy(SU_NAME, WRONG_INTERFACE, WRONG_SERVICE, WSDL11, null, VALID_ROUTES);
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+                return new ServiceConfiguration(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", ServiceType.PROVIDE,
+                        WSDL11);
+            }
+        });
     }
 
     @Test
@@ -83,8 +98,8 @@ public class CamelSETest extends AbstractComponentTest {
     @Test
     public void testRequestHasNoImplementation() throws Exception {
 
-        // no implementations are furnished
-        deploy(SU_NAME, HELLO_INTERFACE, HELLO_SERVICE, WSDL11, null, null);
+        // no implementations are provided
+        COMPONENT_UNDER_TEST.deployService(SU_NAME, createHelloService(WSDL11, null, null));
 
         // we provides an empty in just to be sure it doesn't fail because of it
         // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
@@ -92,8 +107,7 @@ public class CamelSETest extends AbstractComponentTest {
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!
-        assertTrue(response.getError().getMessage()
-                .contains("org.ow2.petals.camel.se.exceptions.NotImplementedRouteException"));
+        assertTrue(response.getError().getMessage().contains(NotImplementedRouteException.class.getName()));
     }
 
     @Test

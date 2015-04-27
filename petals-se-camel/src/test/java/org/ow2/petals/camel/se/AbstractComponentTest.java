@@ -60,6 +60,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final String SE_CAMEL_JBI_NS = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
+    protected static final String CDK_JBI_NS = "http://petals.ow2.org/components/extensions/version-5";
+
     protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-1.1.wsdl");
 
@@ -73,10 +75,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
             .getResource("tests/routes-invalid.xml");
 
     protected static final String HELLO_NS = "http://petals.ow2.org";
-
-    protected static final QName WRONG_INTERFACE = new QName(HELLO_NS, "WrongInterface");
-
-    protected static final QName WRONG_SERVICE = new QName(HELLO_NS, "WrongInterface");
 
     protected static final String EXTERNAL_CAMEL_SERVICE_ID = "theConsumesId";
 
@@ -134,9 +132,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
     @After
     public void after() throws InterruptedException {
 
-        // let's wait a bit to be sure everything is terminated
-        Thread.sleep(2000);
-
         COMPONENT_UNDER_TEST.undeployAllServices();
 
         // asserts are ALWAYS a bug!
@@ -147,62 +142,221 @@ public abstract class AbstractComponentTest extends AbstractTest {
         }
     }
 
-    protected ServiceConfiguration createTestService(final QName interfaceName, final QName serviceName,
-            final String endpointName, final URL wsdl) {
-        final ServiceConfiguration provides = new ServiceConfiguration(interfaceName, serviceName, endpointName,
-                ServiceType.PROVIDE, wsdl);
-
-        final ServiceConfiguration consumes = createHelloConsumes();
-
-        provides.addServiceConfigurationDependency(consumes);
-
-        return provides;
-    }
-
-    protected ServiceConfiguration createHelloConsumes() {
+    protected static ServiceConfiguration createHelloConsumes() {
         final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
                 EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
-        consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "mep"), "InOut");
-        consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "operation"),
-                HELLO_OPERATION.toString());
+        consumes.setParameter(new QName(CDK_JBI_NS, "mep"), "InOut");
+        consumes.setParameter(new QName(CDK_JBI_NS, "operation"), HELLO_OPERATION.toString());
         // let's use a smaller timeout time by default
-        consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "timeout"), ""
-                + DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
+        consumes.setParameter(new QName(CDK_JBI_NS, "timeout"), "" + DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
         consumes.setParameter(new QName(SE_CAMEL_JBI_NS, "service-id"), EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
 
-    protected void deployHello(final String suName, final URL wsdl, final Class<?> clazz) throws Exception {
-        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, clazz, null);
-    }
+    protected static ServiceConfigurationFactory createHelloService(final URL wsdl, final @Nullable Class<?> clazz,
+            final @Nullable URL routes) throws Exception {
 
-    protected void deploy(final String suName, final QName interfaceName, final QName serviceName, final URL wsdl,
-            final @Nullable Class<?> clazz, final @Nullable URL routes) throws Exception {
-        final String routesFileName;
-        if (routes != null) {
-            routesFileName = new File(routes.toURI()).getName();
-        } else {
-            routesFileName = null;
+        final ServiceConfiguration provides = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE, "autogenerate",
+                ServiceType.PROVIDE, wsdl);
+
+        provides.addServiceConfigurationDependency(createHelloConsumes());
+
+        if (clazz != null) {
+            provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"), clazz.getName());
         }
-        COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+
+        if (routes != null) {
+            provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"),
+                    new File(routes.toURI()).getName());
+            provides.addResource(routes);
+        }
+
+        return new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
-                final ServiceConfiguration provides = createTestService(interfaceName, serviceName, "autogenerate",
-                        wsdl);
-                if (clazz != null) {
-                    provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"), clazz.getName());
-                }
-                if (routes != null) {
-                    provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"), routesFileName);
-                    provides.addResource(routes);
-                }
                 return provides;
             }
-        });
+        };
     }
 
-    protected void deployHello(final String suName, final URL wsdl, final URL routes) throws Exception {
-        deploy(suName, HELLO_INTERFACE, HELLO_SERVICE, wsdl, null, routes);
+    protected static void deployHello(final String suName, final URL wsdl, final Class<?> clazz) throws Exception {
+        COMPONENT_UNDER_TEST.deployService(suName, createHelloService(wsdl, clazz, null));
+    }
+
+    protected static void deployHello(final String suName, final URL wsdl, final URL routes) throws Exception {
+        COMPONENT_UNDER_TEST.deployService(suName, createHelloService(wsdl, null, routes));
+    }
+
+    protected static ResponseMessage sendAndCheckConsumer(final RequestMessage request,
+            final ConsumerImplementation consumer,
+            final MessageChecks consumerChecks) throws Exception {
+        return sendAndCheck(request, consumer, consumerChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
+                MessageChecks.none(), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+    }
+
+    protected static ResponseMessage sendHelloIdentity(final String suName) throws Exception {
+        return sendHelloIdentity(suName, MessageChecks.none());
+    }
+
+    protected static ResponseMessage sendHelloIdentity(final String suName, final MessageChecks consumerChecks)
+            throws Exception {
+        final String requestContent = "<aaa/>";
+        final String responseContent = "<bbb/>";
+
+        return sendHello(suName, requestContent, requestContent, responseContent, responseContent, true, true,
+                consumerChecks);
+    }
+
+    protected static ResponseMessage sendHello(final String suName, @Nullable final String request,
+            @Nullable final String expectedRequest, final String response, @Nullable final String expectedResponse,
+            final boolean checkResponseNoError, final boolean checkResponseNoFault, final MessageChecks consumerChecks)
+            throws Exception {
+
+        MessageChecks reqChecks = isHelloRequest();
+        if (expectedRequest != null) {
+            reqChecks = reqChecks.andThen(hasXmlContent(expectedRequest));
+        }
+        reqChecks = reqChecks.andThen(consumerChecks);
+
+        MessageChecks respChecks = MessageChecks.none();
+        if (checkResponseNoError) {
+            respChecks = respChecks.andThen(hasNoError());
+        }
+        if (checkResponseNoFault) {
+            respChecks = respChecks.andThen(hasNoFault());
+        }
+        if (expectedResponse != null) {
+            respChecks = respChecks.andThen(hasXmlContent(expectedResponse));
+        }
+
+        return sendAndCheck(helloRequest(suName, request), ConsumerImplementation.fromString(response), reqChecks,
+                TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE, respChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+    }
+
+    protected static MessageChecks isHelloRequest() {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(Message request) throws Exception {
+                final MessageExchange exchange = request.getMessageExchange();
+                assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
+                assertEquals(exchange.getService(), HELLO_SERVICE);
+                assertEquals(exchange.getOperation(), HELLO_OPERATION);
+                assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
+                return false;
+            }
+        };
+    }
+
+    protected static RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
+        return new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
+                HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent == null ? null
+                        : new ReaderInputStream(new StringReader(requestContent)));
+    }
+
+    // /////////////////// GENERIC METHODS /////////////////////////
+
+    protected static ResponseMessage send(final RequestMessage request, final ConsumerImplementation consumer,
+            final long timeoutForth, final long timeoutBack) throws Exception {
+
+        COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+
+        final RequestMessage requestConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeoutForth);
+        if (requestConsumer != null) {
+            COMPONENT_UNDER_TEST.pushResponseToConsumer(consumer.provides(requestConsumer));
+        }
+
+        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
+    }
+
+    protected static ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
+            final MessageChecks consumerChecks, final long consumerTimeout, final MessageChecks clientChecks,
+            final long clientTimeout) throws Exception {
+
+        final ResponseMessage responseMessage = send(request, consumer.with(consumerChecks), consumerTimeout,
+                clientTimeout);
+
+        assertFalse(clientChecks.checks(responseMessage));
+
+        return responseMessage;
+    }
+
+    protected static MessageChecks hasNoError() {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(final Message message) throws Exception {
+                assertNull(message.getMessageExchange().getError());
+                return false;
+            }
+        };
+    }
+
+    protected static MessageChecks hasNoFault() {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(final Message message) throws Exception {
+                assertNull(message.getMessageExchange().getFault());
+                return false;
+            }
+        };
+    }
+
+    protected static MessageChecks hasContent(final String expectedContent) {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(final Message request) throws Exception {
+                final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null),
+                        CONVERTER.toDOMSource(expectedContent));
+
+                assertTrue(diff.similar());
+
+                return false;
+            }
+        };
+    }
+
+    protected static MessageChecks hasXmlContent(final String expectedContent) {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(final Message request) throws Exception {
+                final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null),
+                        CONVERTER.toDOMSource(expectedContent));
+
+                assertTrue(diff.similar());
+
+                return false;
+            }
+        };
+    }
+
+    public static abstract class MessageChecks {
+
+        /**
+         * Checks fail if return true!
+         * 
+         * @param request
+         * @return
+         * @throws Exception
+         */
+        public abstract boolean checks(final Message message) throws Exception;
+
+        public final MessageChecks andThen(final MessageChecks checks) {
+            final MessageChecks me = this;
+            return new MessageChecks() {
+                @Override
+                public boolean checks(final Message message) throws Exception {
+                    return me.checks(message) || checks.checks(message);
+                }
+            };
+        }
+
+        public static MessageChecks none() {
+            return new MessageChecks() {
+                @Override
+                public boolean checks(Message message) throws Exception {
+                    return false;
+                }
+            };
+        }
     }
 
     public static abstract class ConsumerImplementation {
@@ -230,146 +384,4 @@ public abstract class AbstractComponentTest extends AbstractTest {
             };
         }
     }
-
-    protected ResponseMessage send(final RequestMessage request, final ConsumerImplementation consumer,
-            final long timeoutForth, final long timeoutBack) throws Exception {
-
-        COMPONENT_UNDER_TEST.pushRequestToProvider(request);
-
-        final RequestMessage requestConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeoutForth);
-        if (requestConsumer != null) {
-            COMPONENT_UNDER_TEST.pushResponseToConsumer(consumer.provides(requestConsumer));
-        }
-
-        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
-    }
-
-    public static abstract class MessageChecks {
-
-        /**
-         * Checks fail if return true!
-         * 
-         * @param request
-         * @return
-         * @throws Exception
-         */
-        public abstract boolean checks(final Message request) throws Exception;
-
-        public final MessageChecks andThen(final MessageChecks checks) {
-            final MessageChecks me = this;
-            return new MessageChecks() {
-                @Override
-                public boolean checks(final Message request) throws Exception {
-                    return me.checks(request) || checks.checks(request);
-                }
-            };
-        }
-
-        public static MessageChecks none() {
-            return new MessageChecks() {
-                @Override
-                public boolean checks(Message request) throws Exception {
-                    return false;
-                }
-            };
-        }
-    }
-
-    protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final MessageChecks consumerChecks, final long timeoutForth, final long timeoutBack,
-            @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent)
-            throws Exception {
-        return sendAndCheck(request, consumer, consumerChecks, timeoutForth, timeoutBack, expectedRequestContent,
-                expectedResponseContent, true, true);
-    }
-
-    protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final MessageChecks consumerChecks, final long timeoutForth, final long timeoutBack,
-            @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent,
-            final boolean checkResponseNoError, final boolean checkResponseNoFault) throws Exception {
-
-        final MessageChecks checks;
-        if (expectedRequestContent != null) {
-            checks = hasXmlContent(expectedRequestContent).andThen(consumerChecks);
-        } else {
-            checks = consumerChecks;
-        }
-        final ResponseMessage responseMessage = send(request, consumer.with(checks), timeoutForth, timeoutBack);
-
-        if (checkResponseNoError) {
-            assertNull(responseMessage.getError());
-        }
-
-        if (checkResponseNoFault) {
-            assertNull(responseMessage.getFault());
-        }
-
-        if (expectedResponseContent != null) {
-            assertFalse(hasXmlContent(expectedResponseContent).checks(responseMessage));
-        }
-
-        return responseMessage;
-    }
-
-    protected ResponseMessage sendHelloIdentity(final String suName) throws Exception {
-        return sendHelloIdentity(suName, MessageChecks.none());
-    }
-
-    protected ResponseMessage sendHelloIdentity(final String suName, final MessageChecks extraChecks) throws Exception {
-        final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
-        final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
-
-        return sendHello(suName, requestContent, requestContent, responseContent, responseContent, true, true,
-                extraChecks);
-    }
-
-    protected ResponseMessage sendHello(final String suName, @Nullable final String request,
-            @Nullable final String expectedRequest, final String response, @Nullable final String expectedResponse,
-            final boolean checkResponseNoError, final boolean checkResponseNoFault, final MessageChecks extraChecks)
-            throws Exception {
-
-        // no timeouts
-        return sendAndCheck(helloRequest(suName, request), ConsumerImplementation.fromString(response),
-                isHelloRequest(EXTERNAL_ENDPOINT_NAME).andThen(extraChecks), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
-                TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE, expectedRequest, expectedResponse, checkResponseNoError,
-                checkResponseNoFault);
-    }
-
-    /**
-     * Arriving at the external service
-     */
-    protected MessageChecks isHelloRequest(final String targetEndpoint) {
-        return new MessageChecks() {
-            @Override
-            public boolean checks(Message request) throws Exception {
-                final MessageExchange exchange = request.getMessageExchange();
-                assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
-                assertEquals(exchange.getService(), HELLO_SERVICE);
-                assertEquals(exchange.getOperation(), HELLO_OPERATION);
-                assertEquals(exchange.getEndpoint().getEndpointName(), targetEndpoint);
-                return false;
-            }
-        };
-    }
-
-    protected MessageChecks hasXmlContent(final String expectedContent) {
-        return new MessageChecks() {
-            @Override
-            public boolean checks(final Message request) throws Exception {
-                final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null),
-                        CONVERTER.toDOMSource(expectedContent));
-
-                assertTrue(diff.similar());
-
-                return false;
-            }
-        };
-    }
-
-    protected RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
-        return new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
-                HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent == null ? null
-                        : new ReaderInputStream(new StringReader(requestContent)));
-    }
-
 }

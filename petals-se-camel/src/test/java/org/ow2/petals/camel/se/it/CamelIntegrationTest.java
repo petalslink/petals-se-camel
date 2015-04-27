@@ -85,22 +85,22 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     @Test
     public void testMessageTimeoutAndSUStillWorks() throws Exception {
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
-        
-        final ResponseMessage response = sendAndCheck(helloRequest(SU_NAME, "aaa"), new ConsumerImplementation() {
+
+        final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, ""), new ConsumerImplementation() {
             @Override
             public ResponseMessage provides(final RequestMessage request) throws Exception {
                 // let's wait more than the timeout duration
                 Thread.sleep(2000);
                 // this shouldn't be returned normally...
-                return ConsumerImplementation.fromString("bbb").provides(request);
+                return ConsumerImplementation.fromString("").provides(request);
             }
-        }, isHelloRequest(EXTERNAL_ENDPOINT_NAME), 1000, 1000, null, null, false, false);
+        }, isHelloRequest());
 
         assertNotNull(response.getError());
         assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError().getMessage().contains(TimeoutException.class.getName()));
 
-        // let's wait for the external service to answer before clearing the channel
+        // let's wait for the external service to finally answer before clearing the channel
         Thread.sleep(2000);
 
         // there will be left-overs (the timeout answer to the external service), let's remove them!
