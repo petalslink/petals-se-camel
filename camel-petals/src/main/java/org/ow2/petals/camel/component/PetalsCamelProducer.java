@@ -94,7 +94,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
             if (doSync) {
-                final boolean timedOut = this.consumes.sendSync(exchange, timeout);
+                // false means timed out!
+                final boolean timedOut = !this.consumes.sendSync(exchange, timeout);
                 // this has been done sync
                 final boolean doneSync = true;
                 handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
