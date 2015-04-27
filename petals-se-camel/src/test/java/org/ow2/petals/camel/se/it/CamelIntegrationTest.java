@@ -17,9 +17,17 @@
  */
 package org.ow2.petals.camel.se.it;
 
+import javax.jbi.messaging.MessagingException;
+
+import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
+import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
+import org.ow2.petals.component.framework.junit.Component;
+import org.ow2.petals.component.framework.junit.Message;
+import org.ow2.petals.component.framework.junit.RequestMessage;
+import org.ow2.petals.component.framework.junit.ResponseMessage;
 
 /**
  * Contains tests that cover both petals-se-camel and camel-petals classes.
@@ -35,5 +43,70 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         sendHelloIdentity(SU_NAME);
     }
 
+    public static class RouteSyncFrom extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("petals:theProvidesId?synchronous=true").to("petals:theConsumesId");
+        }
+    }
 
+    @Test
+    public void testMessageGoThroughFromSynchronous() throws Exception {
+        deployHello(SU_NAME, WSDL11, RouteSyncFrom.class);
+        sendHelloIdentity(SU_NAME, new MessageChecks() {
+            @Override
+            public boolean checks(Message request) throws Exception {
+                // if the from is sync but not the to, then it shouldn't be send synchronously
+                assertNull(request.getMessageExchange().getProperty(Component.SENDSYNC_EXCHANGE_PROPERTY));
+                return false;
+            }
+        });
+    }
+
+    public static class RouteSyncTo extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("petals:theProvidesId").to("petals:theConsumesId?synchronous=true");
+        }
+    }
+
+    @Test
+    public void testMessageGoThroughToSynchronous() throws Exception {
+        deployHello(SU_NAME, WSDL11, RouteSyncTo.class);
+        sendHelloIdentity(SU_NAME, new MessageChecks() {
+            @Override
+            public boolean checks(Message request) throws Exception {
+                assertNotNull(request.getMessageExchange().getProperty(Component.SENDSYNC_EXCHANGE_PROPERTY));
+                return false;
+            }
+        });
+    }
+
+    @Test
+    public void testMessageTimeoutAndSUStillWorks() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+        
+        final ResponseMessage response = sendAndCheck(helloRequest(SU_NAME, "aaa"), new ConsumerImplementation() {
+            @Override
+            public ResponseMessage provides(final RequestMessage request) throws Exception {
+                // let's wait more than the timeout duration
+                Thread.sleep(2000);
+                // this shouldn't be returned normally...
+                return ConsumerImplementation.fromString("bbb").provides(request);
+            }
+        }, isHelloRequest(EXTERNAL_ENDPOINT_NAME), 1000, 1000, null, null, false, false);
+
+        assertNotNull(response.getError());
+        assertTrue(response.getError() instanceof MessagingException);
+        assertTrue(response.getError().getMessage().contains(TimeoutException.class.getName()));
+
+        // let's wait for the external service to answer before clearing the channel
+        Thread.sleep(2000);
+
+        // there will be left-overs (the timeout answer to the external service), let's remove them!
+        COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
+
+        // and now let's send another message that should work
+        sendHelloIdentity(SU_NAME);
+    }
 }

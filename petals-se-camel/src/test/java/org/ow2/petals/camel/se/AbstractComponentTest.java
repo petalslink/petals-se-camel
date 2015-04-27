@@ -40,6 +40,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.Component;
+import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
@@ -89,6 +90,10 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final String EXTERNAL_ENDPOINT_NAME = "externalHelloEndpoint";
 
+    protected static final long DEFAULT_TIMEOUT_FOR_COMPONENT_SEND = 10000;
+
+    protected static final long TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE = 1000;
+
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest();
@@ -117,13 +122,21 @@ public abstract class AbstractComponentTest extends AbstractTest {
     @Before
     public void clearLogTraces() {
         IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
+        COMPONENT_UNDER_TEST.clearResponsesFromProvider();
     }
 
     /**
      * We undeploy services after each test (because the component is static and lives during the whole suite of tests)
+     * 
+     * @throws InterruptedException
      */
     @After
-    public void after() {
+    public void after() throws InterruptedException {
+
+        // let's wait a bit to be sure everything is terminated
+        Thread.sleep(2000);
+
         COMPONENT_UNDER_TEST.undeployAllServices();
 
         // asserts are ALWAYS a bug!
@@ -152,6 +165,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
         consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "mep"), "InOut");
         consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "operation"),
                 HELLO_OPERATION.toString());
+        // let's use a smaller timeout time by default
+        consumes.setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "timeout"), ""
+                + DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
         consumes.setParameter(new QName(SE_CAMEL_JBI_NS, "service-id"), EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
@@ -191,12 +207,23 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     public static abstract class ConsumerImplementation {
 
-        public abstract ResponseMessage provides(RequestMessage request) throws Exception;
+        public abstract ResponseMessage provides(final RequestMessage request) throws Exception;
+
+        public final ConsumerImplementation with(final MessageChecks checks) {
+            final ConsumerImplementation me = this;
+            return new ConsumerImplementation() {
+                @Override
+                public ResponseMessage provides(final RequestMessage request) throws Exception {
+                    assertFalse(checks.checks(request));
+                    return me.provides(request);
+                }
+            };
+        }
 
         public static ConsumerImplementation fromString(final String content) {
             return new ConsumerImplementation() {
                 @Override
-                public ResponseMessage provides(RequestMessage request) throws Exception {
+                public ResponseMessage provides(final RequestMessage request) throws Exception {
                     return new WrappedResponseToConsumerMessage(request.getMessageExchange(), new ReaderInputStream(
                             new StringReader(content)));
                 }
@@ -217,14 +244,31 @@ public abstract class AbstractComponentTest extends AbstractTest {
         return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
     }
 
-    public static abstract class ConsumerChecks {
+    public static abstract class MessageChecks {
 
-        public abstract boolean checks(final RequestMessage request) throws Exception;
+        /**
+         * Checks fail if return true!
+         * 
+         * @param request
+         * @return
+         * @throws Exception
+         */
+        public abstract boolean checks(final Message request) throws Exception;
 
-        public static ConsumerChecks none() {
-            return new ConsumerChecks() {
+        public final MessageChecks andThen(final MessageChecks checks) {
+            final MessageChecks me = this;
+            return new MessageChecks() {
                 @Override
-                public boolean checks(RequestMessage request) throws Exception {
+                public boolean checks(final Message request) throws Exception {
+                    return me.checks(request) || checks.checks(request);
+                }
+            };
+        }
+
+        public static MessageChecks none() {
+            return new MessageChecks() {
+                @Override
+                public boolean checks(Message request) throws Exception {
                     return false;
                 }
             };
@@ -232,7 +276,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final ConsumerChecks consumerChecks, final long timeoutForth, final long timeoutBack,
+            final MessageChecks consumerChecks, final long timeoutForth, final long timeoutBack,
             @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent)
             throws Exception {
         return sendAndCheck(request, consumer, consumerChecks, timeoutForth, timeoutBack, expectedRequestContent,
@@ -240,23 +284,17 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected ResponseMessage sendAndCheck(final RequestMessage request, final ConsumerImplementation consumer,
-            final ConsumerChecks consumerChecks, final long timeoutForth, final long timeoutBack,
+            final MessageChecks consumerChecks, final long timeoutForth, final long timeoutBack,
             @Nullable final String expectedRequestContent, @Nullable final String expectedResponseContent,
             final boolean checkResponseNoError, final boolean checkResponseNoFault) throws Exception {
 
-        final ResponseMessage responseMessage = send(request, new ConsumerImplementation() {
-            @Override
-            public ResponseMessage provides(RequestMessage request) throws Exception {
-                assertFalse(consumerChecks.checks(request));
-                if (expectedRequestContent != null) {
-                    final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null), CONVERTER
-                            .toDOMSource(expectedRequestContent));
-                    assertTrue(diff.similar());
-                }
-
-                return consumer.provides(request);
-            }
-        }, timeoutForth, timeoutBack);
+        final MessageChecks checks;
+        if (expectedRequestContent != null) {
+            checks = hasXmlContent(expectedRequestContent).andThen(consumerChecks);
+        } else {
+            checks = consumerChecks;
+        }
+        final ResponseMessage responseMessage = send(request, consumer.with(checks), timeoutForth, timeoutBack);
 
         if (checkResponseNoError) {
             assertNull(responseMessage.getError());
@@ -267,20 +305,17 @@ public abstract class AbstractComponentTest extends AbstractTest {
         }
 
         if (expectedResponseContent != null) {
-            assertNotNull(responseMessage.getPayload());
-            final Diff diff = new Diff(CONVERTER.toDOMSource(responseMessage.getPayload(), null),
-                    CONVERTER.toDOMSource(expectedResponseContent));
-            assertTrue(diff.similar());
+            assertFalse(hasXmlContent(expectedResponseContent).checks(responseMessage));
         }
 
         return responseMessage;
     }
 
     protected ResponseMessage sendHelloIdentity(final String suName) throws Exception {
-        return sendHelloIdentity(suName, ConsumerChecks.none());
+        return sendHelloIdentity(suName, MessageChecks.none());
     }
 
-    protected ResponseMessage sendHelloIdentity(final String suName, final ConsumerChecks extraChecks) throws Exception {
+    protected ResponseMessage sendHelloIdentity(final String suName, final MessageChecks extraChecks) throws Exception {
         final String requestContent = "<sayHello xmlns=\"http://petals.ow2.org\"><arg0>John</arg0></sayHello>";
         final String responseContent = "<sayHelloResponse xmlns=\"http://petals.ow2.org\"><return>Hello John</return></sayHelloResponse>";
 
@@ -290,26 +325,51 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected ResponseMessage sendHello(final String suName, @Nullable final String request,
             @Nullable final String expectedRequest, final String response, @Nullable final String expectedResponse,
-            final boolean checkResponseNoError, final boolean checkResponseNoFault, final ConsumerChecks extraChecks)
+            final boolean checkResponseNoError, final boolean checkResponseNoFault, final MessageChecks extraChecks)
             throws Exception {
 
-        final RequestMessage requestMessage = new WrappedRequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), request == null ? null : new ReaderInputStream(
-                        new StringReader(request)));
+        // no timeouts
+        return sendAndCheck(helloRequest(suName, request), ConsumerImplementation.fromString(response),
+                isHelloRequest(EXTERNAL_ENDPOINT_NAME).andThen(extraChecks), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
+                TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE, expectedRequest, expectedResponse, checkResponseNoError,
+                checkResponseNoFault);
+    }
 
-        // a timeout of 1000ms should be enough both ways
-        return sendAndCheck(requestMessage, ConsumerImplementation.fromString(response), new ConsumerChecks() {
+    /**
+     * Arriving at the external service
+     */
+    protected MessageChecks isHelloRequest(final String targetEndpoint) {
+        return new MessageChecks() {
             @Override
-            public boolean checks(final RequestMessage request) throws Exception {
+            public boolean checks(Message request) throws Exception {
                 final MessageExchange exchange = request.getMessageExchange();
                 assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
                 assertEquals(exchange.getService(), HELLO_SERVICE);
                 assertEquals(exchange.getOperation(), HELLO_OPERATION);
-                assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
-                return extraChecks.checks(request);
+                assertEquals(exchange.getEndpoint().getEndpointName(), targetEndpoint);
+                return false;
             }
-        }, 1000, 1000, expectedRequest, expectedResponse, checkResponseNoError, checkResponseNoFault);
+        };
+    }
+
+    protected MessageChecks hasXmlContent(final String expectedContent) {
+        return new MessageChecks() {
+            @Override
+            public boolean checks(final Message request) throws Exception {
+                final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null),
+                        CONVERTER.toDOMSource(expectedContent));
+
+                assertTrue(diff.similar());
+
+                return false;
+            }
+        };
+    }
+
+    protected RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
+        return new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
+                HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent == null ? null
+                        : new ReaderInputStream(new StringReader(requestContent)));
     }
 
 }

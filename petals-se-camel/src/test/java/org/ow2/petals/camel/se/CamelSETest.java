@@ -88,7 +88,7 @@ public class CamelSETest extends AbstractComponentTest {
 
         // we provides an empty in just to be sure it doesn't fail because of it
         // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
-        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false, ConsumerChecks.none());
+        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false, MessageChecks.none());
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!
@@ -102,7 +102,7 @@ public class CamelSETest extends AbstractComponentTest {
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
         // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
-        final ResponseMessage response = sendHello(SU_NAME, null, null, "", null, false, false, ConsumerChecks.none());
+        final ResponseMessage response = sendHello(SU_NAME, null, null, "", null, false, false, MessageChecks.none());
 
         assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError().getMessage().contains("The exchange must be IN"));
