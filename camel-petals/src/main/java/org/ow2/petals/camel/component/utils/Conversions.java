@@ -31,8 +31,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 
-import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
-
 /**
  * Utils to convert between petals exchange and camel exchange.
  * 
@@ -134,7 +132,7 @@ public class Conversions {
             Conversions.populateNormalizedMessage(fault, camelExchange.getOut());
             exchange.setFault(fault);
         } else if (camelExchange.getException() != null) {
-            convertExceptionToError(exchange, camelExchange);
+            exchange.setError(camelExchange.getException());
         } else {
             final ExchangePattern mep = camelExchange.getPattern();
 
@@ -163,19 +161,6 @@ public class Conversions {
             } else {
                 exchange.setDoneStatus();
             }
-        }
-    }
-
-    private static void convertExceptionToError(final org.ow2.petals.component.framework.api.message.Exchange exchange,
-            final Exchange camelExchange) {
-        final Exception exception = camelExchange.getException();
-        final String exceptionName = exception.getClass().getName();
-        // TODO is that correct? I added javax on top of those recommended by the JBI spec!!!
-        if (exceptionName.startsWith("java.") || exceptionName.startsWith("javax.")
-                || exceptionName.startsWith("org.w3c.") || exceptionName.startsWith("org.xml.")) {
-            exchange.setError(exception);
-        } else {
-            exchange.setError(new MessagingException(ExceptionHelper.getStackTrace(exception)));
         }
     }
 
