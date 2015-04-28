@@ -35,8 +35,8 @@ import org.apache.camel.Message;
  * Utils to convert between petals exchange and camel exchange.
  * 
  * Important: Some of this code makes the assumption that an inoptionalout camel exchange MUST have an out message, even
- * though camel allows for modifying inline the message. This is needed because we can't know if an inoutoptional has no
- * out because it's in is modified or because the exchange is finished!
+ * though camel allows for modifying inline the IN message. This is needed because we can't know if an inoutoptional has
+ * no out because it's in is modified or because the exchange is finished!
  * 
  * @author vnoel
  *

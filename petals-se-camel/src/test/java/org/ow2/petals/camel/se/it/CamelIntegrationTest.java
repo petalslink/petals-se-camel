@@ -53,7 +53,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void testMessageGoThroughFromSynchronous() throws Exception {
         deployHello(SU_NAME, WSDL11, RouteSyncFrom.class);
         // if the from is sync but not the to, then it shouldn't be send synchronously...
-        // it means executing with sync on the from is useless then... ?
+        // the only thing that should happen is that the route execution blocks the caller
         sendHelloIdentity(SU_NAME, MessageChecks.propertyNotExists(Component.SENDSYNC_EXCHANGE_PROPERTY));
     }
 

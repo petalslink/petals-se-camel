@@ -49,7 +49,7 @@ public class PetalsCamelComponent extends UriEndpointComponent {
             throw new InvalidURIException(remaining);
         }
 
-        // parameters will be set from the class
+        // parameters will be set from the class's configureProperties
         return new PetalsCamelEndpoint(uri, this, remaining);
     }
 

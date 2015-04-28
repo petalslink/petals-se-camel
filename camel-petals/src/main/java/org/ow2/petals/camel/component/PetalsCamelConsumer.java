@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.net.URI;
 import java.util.logging.Level;
 
 import javax.jbi.messaging.MessagingException;
@@ -27,7 +28,9 @@ import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
+import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
+import org.ow2.petals.component.framework.api.Message.MEPConstants;
 
 // TODO should I be suspendable?
 public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelRoute {
@@ -62,6 +65,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
         Conversions.populateNewCamelExchange(camelExchange, exchange);
 
         if (getEndpoint().isSynchronous()) {
+            // in that case, this method won't return until the route is fully executed
             try {
                 getProcessor().process(camelExchange);
             } catch (final Exception e) {
@@ -99,11 +103,44 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
 
         // if the send fails, there is nothing we can do except logging the error
         try {
-            // TODO shouldn't we use sendAsync so that we can handle received done or fault or error messages?
-            this.provides.send(exchange);
-            // TODO and actually, shouldn't I WAIT for it before letting other continue... which others? maybe not then!
+            // TODO maybe we should render that answer synchronicity configurable... for now let's use sendAsync in
+            // order not to tie resources for simple acknowledging (there is no need to block the current execution nor
+            // anything)
+            // TODO and actually, shouldn't I WAIT for it before letting other continue, or before letting this method
+            // to return... which others? maybe not then!
+            // TODO for now the timeout is not settable, let's use -1 as a starter...
+            final boolean wasFault = exchange.getFault() != null;
+            final boolean wasOut = exchange.isOutMessage();
+            final boolean expectingAnswer = wasFault || wasOut;
+            this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
+                @Override
+                public void done(boolean timedOut) {
+                    if (timedOut) {
+                        provides.getLogger().warning(
+                                "The exchange I sent back to the NMR never got acknowledged, it timed out: "
+                                        + exchange.getExchangeId());
+                    } else {
+                        final URI mep = exchange.getPattern();
+                        if (expectingAnswer && exchange.isDoneStatus()) {
+                            provides.getLogger().info("Correctly received acknowledgment for our previous answer");
+                        } else if (MEPConstants.IN_OPTIONAL_OUT_PATTERN.equals(mep) && wasOut
+                                && exchange.getFault() != null) {
+                            try {
+                                exchange.setDoneStatus();
+                                PetalsCamelConsumer.this.provides.send(exchange);
+                            } catch (final MessagingException e) {
+                                provides.getLogger().log(Level.SEVERE,
+                                        "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
+                            }
+                        }
+                        // TODO log for other cases...
+                        // TODO and add tests for all of this!
+                    }
+                }
+            });
         } catch (final MessagingException e) {
-            provides.getLogger().log(Level.SEVERE, "An exchange (" + exchange + ") couldn't be sent back", e);
+            provides.getLogger().log(Level.SEVERE,
+                    "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
         }
     }
 
