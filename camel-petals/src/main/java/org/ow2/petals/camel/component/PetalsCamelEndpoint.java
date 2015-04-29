@@ -107,7 +107,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @Override
     public Producer createProducer() throws IncompatibleEndpointUsageException {
         if (this.service.getType() != ServiceType.CONSUMES) {
-            throw new IncompatibleEndpointUsageException(this.service, ServiceType.PROVIDES);
+            throw new IncompatibleEndpointUsageException(this.service, ServiceType.CONSUMES);
         }
         return new PetalsCamelProducer(this);
     }
