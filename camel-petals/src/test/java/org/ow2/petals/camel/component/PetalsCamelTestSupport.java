@@ -22,11 +22,13 @@ import java.net.URI;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.junit4.ExchangeTestSupport;
 import org.easymock.EasyMockSupport;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock;
@@ -43,11 +45,24 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
         return pcc;
     }
 
+    /**
+     * Override to initialize services in the PCC
+     */
+    protected void initializeServices() {
+        // empty
+    }
+
     @Override
-    protected void doPostSetup() throws Exception {
-        super.doPostSetup();
+    protected void postProcessTest() throws Exception {
+        // this method is executed after the context has been created and before the PCC is needed from the registry (to
+        // instantiate mock endpoint and stuffs)
+
         this.pcc = new PetalsCamelContextMock(context());
-        context().addComponent("petals", new PetalsCamelComponent(pcc()));
+
+        context().getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this.pcc);
+        this.initializeServices();
+
+        super.postProcessTest();
     }
 
     protected void addMockConsumes(final String serviceId) {

@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RoutesDefinition;
 import org.ow2.petals.camel.PetalsCamelContext;
@@ -32,7 +33,6 @@ import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.camel.component.PetalsCamelComponent;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
@@ -79,13 +79,16 @@ public class CamelSU implements PetalsCamelContext {
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
         this.manager = manager;
+
         this.context = new DefaultCamelContext();
 
         // needed so that routes are executed with the correct context classloader
         // (for example JAXB uses it to load classes)
         this.context.setApplicationContextClassLoader(classLoader);
 
-        context.addComponent("petals", new PetalsCamelComponent(this));
+        // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent to
+        // initialise itself
+        this.context.getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this);
 
         for (final String className : classNames) {
             final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);

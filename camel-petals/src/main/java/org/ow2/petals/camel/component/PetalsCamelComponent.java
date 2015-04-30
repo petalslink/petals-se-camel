@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 
@@ -31,11 +32,11 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     @SuppressWarnings("null")
     private static final Pattern URI_PATTERN = Pattern.compile("^\\w*$");
 
-    private final PetalsCamelContext pcc;
+    @Nullable
+    private PetalsCamelContext pcc;
 
-    public PetalsCamelComponent(final PetalsCamelContext pcc) {
-        super(pcc.getCamelContext(), PetalsCamelEndpoint.class);
-        this.pcc = pcc;
+    public PetalsCamelComponent() {
+        super(PetalsCamelEndpoint.class);
     }
 
     @NonNullByDefault(false)
@@ -60,6 +61,16 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     }
 
     public PetalsCamelContext getContext() {
-        return this.pcc;
+        PetalsCamelContext result = this.pcc;
+        if (result == null) {
+            final PetalsCamelContext found = getCamelContext().getRegistry().lookupByNameAndType(
+                    PetalsCamelContext.class.getName(), PetalsCamelContext.class);
+            if (found == null) {
+                throw new IllegalArgumentException("No instance of PetalsCamelContext available in the Camel registry.");
+            }
+            this.pcc = found;
+            result = found;
+        }
+        return result;
     }
 }
