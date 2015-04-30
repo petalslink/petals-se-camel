@@ -104,7 +104,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
         final PetalsCamelRoute removed = this.ppos.remove(key);
-        assert removed == null;
+        assert removed != null;
     }
 
     @Override
