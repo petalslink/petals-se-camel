@@ -22,6 +22,7 @@ import java.net.URI;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.converter.jaxp.XmlConverter;
 import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.junit4.ExchangeTestSupport;
 import org.easymock.EasyMockSupport;
@@ -32,9 +33,15 @@ import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock;
+import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandler;
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 
 public class PetalsCamelTestSupport extends ExchangeTestSupport {
+
+    /**
+     * Converters from Camel
+     */
+    protected static final XmlConverter CONVERTER = new XmlConverter();
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
 
@@ -65,12 +72,28 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
         super.postProcessTest();
     }
 
-    protected void addMockConsumes(final String serviceId) {
-        pcc().addMockService(serviceId, createMockSEO(ServiceType.CONSUMES));
+    protected ServiceEndpointOperation addMockConsumes(final String serviceId, final MockSendHandler handler) {
+        final ServiceEndpointOperation seo = createMockSEO(ServiceType.CONSUMES);
+        pcc().addMockService(serviceId, seo, handler);
+        return seo;
     }
 
-    protected void addMockProvides(final String serviceId) {
-        pcc().addMockService(serviceId, createMockSEO(ServiceType.PROVIDES));
+    protected ServiceEndpointOperation addMockConsumes(final String serviceId) {
+        final ServiceEndpointOperation seo = createMockSEO(ServiceType.CONSUMES);
+        pcc().addMockService(serviceId, seo);
+        return seo;
+    }
+
+    protected ServiceEndpointOperation addMockProvides(final String serviceId) {
+        final ServiceEndpointOperation seo = createMockSEO(ServiceType.PROVIDES);
+        pcc().addMockService(serviceId, seo);
+        return seo;
+    }
+
+    protected ServiceEndpointOperation addMockProvides(final String serviceId, final MockSendHandler handler) {
+        final ServiceEndpointOperation seo = createMockSEO(ServiceType.PROVIDES);
+        pcc().addMockService(serviceId, seo, handler);
+        return seo;
     }
 
     protected ServiceEndpointOperation createMockSEO(final ServiceType type) {

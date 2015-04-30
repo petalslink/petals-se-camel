@@ -17,29 +17,94 @@
  */
 package org.ow2.petals.camel.component;
 
+import javax.jbi.messaging.MessagingException;
+
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.builder.RouteBuilder;
+import org.custommonkey.xmlunit.Diff;
 import org.eclipse.jdt.annotation.Nullable;
-import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
+import org.junit.Before;
+import org.junit.Test;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
+import org.ow2.petals.camel.ServiceEndpointOperation;
+import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandler;
+import org.ow2.petals.component.framework.api.message.Exchange;
 
 public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
-    private @Nullable PetalsCamelProducer producer;
+    @Nullable
+    private Exchange receivedExchange = null;
 
-    protected PetalsCamelProducer producer() {
-        assert producer != null;
-        return producer;
+    protected Exchange receivedExchange() {
+        assert receivedExchange != null;
+        return receivedExchange;
+    }
+
+    @Nullable
+    private ServiceEndpointOperation seo = null;
+
+    protected ServiceEndpointOperation seo() {
+        assert seo != null;
+        return seo;
     }
 
     @Override
-    protected void doPostSetup() throws Exception {
-        super.doPostSetup();
+    protected void initializeServices() {
+        super.initializeServices();
+        this.seo = addMockConsumes("serviceId1", new MockSendHandler() {
+            @Override
+            public void send(final Exchange exchange) throws MessagingException {
+                receivedExchange = exchange;
+            }
 
-        pcc().addMockService("serviceId1", createMockSEO(ServiceType.CONSUMES));
-        final PetalsCamelEndpoint endpoint = createEndpoint("serviceId1");
+            @Override
+            public void sendAsync(Exchange exchange, long timeout, SendAsyncCallback callback)
+                    throws MessagingException {
+                receivedExchange = exchange;
+                super.sendAsync(exchange, timeout, callback);
+            }
 
-        this.producer = (PetalsCamelProducer) endpoint.createProducer();
+            @Override
+            public boolean sendSync(Exchange exchange, long timeout) throws MessagingException {
+                receivedExchange = exchange;
+                return super.sendSync(exchange, timeout);
+            }
+        });
+    }
 
-        this.exchange = producer().createExchange();
-        assertNotNull(this.exchange);
-        populateExchange(exchange);
+    @Before
+    public void cleanReceivedExchange() {
+        this.receivedExchange = null;
+    }
+
+    @Override
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        return new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                from("direct:start").to("petals:serviceId1");
+
+                from("direct:start2").to("petals:serviceId1?synchronous=true");
+            }
+        };
+    }
+
+    @Test
+    public void testInOnly() throws Exception {
+        final String content = "<aaa />";
+        template().sendBody("direct:start", ExchangePattern.InOnly, content);
+
+        assertEquals(seo().getEndpoint(), receivedExchange().getEndpointName());
+        assertEquals(seo().getService(), receivedExchange().getService());
+        assertEquals(seo().getOperation(), receivedExchange().getOperation());
+        // there is many variation of the URI for the same MEP!
+        assertEquals(MEPPatternConstants.fromURI(seo().getMEP()),
+                MEPPatternConstants.fromURI(receivedExchange().getPattern()));
+        assertEquals(seo().getInterface(), receivedExchange().getInterfaceName());
+
+        final Diff diff = new Diff(content, CONVERTER.toString(receivedExchange().getInMessageContentAsSource(), null));
+        assertTrue(diff.similar());
+
     }
 }

@@ -22,6 +22,7 @@ import java.net.URI;
 import javax.xml.namespace.QName;
 
 import org.ow2.petals.camel.ServiceEndpointOperation;
+import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
 public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
@@ -37,6 +38,8 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
     private final URI mep;
 
+    private final EndpointOperationKey key;
+
     public ServiceEndpointOperationMock(final String service, final String interfaceName, final String endpoint,
             final String operation, final ServiceType type, final URI mep) {
         this.service = new QName("tests", service);
@@ -45,6 +48,7 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
         this.operation = new QName("tests", operation);
         this.type = type;
         this.mep = mep;
+        this.key = new EndpointOperationKey(endpoint, this.interfaceName, this.operation);
     }
 
     @Override
@@ -75,6 +79,10 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     @Override
     public URI getMEP() {
         return mep;
+    }
+
+    public EndpointOperationKey getKey() {
+        return key;
     }
 
 }

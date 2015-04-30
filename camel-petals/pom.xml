@@ -47,8 +47,29 @@
          <artifactId>guava</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-message-exchange</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-test</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easycommons</groupId>
+         <artifactId>easycommons-uuid</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>xmlunit</groupId>
+         <artifactId>xmlunit</artifactId>
+         <version>1.6</version>
          <scope>test</scope>
       </dependency>
       <dependency>
