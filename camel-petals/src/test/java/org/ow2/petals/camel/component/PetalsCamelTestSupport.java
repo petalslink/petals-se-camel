@@ -22,7 +22,6 @@ import java.net.URI;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.converter.jaxp.XmlConverter;
 import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.junit4.ExchangeTestSupport;
 import org.easymock.EasyMockSupport;
@@ -37,11 +36,6 @@ import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandl
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 
 public class PetalsCamelTestSupport extends ExchangeTestSupport {
-
-    /**
-     * Converters from Camel
-     */
-    protected static final XmlConverter CONVERTER = new XmlConverter();
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
 
@@ -96,11 +90,11 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
         return seo;
     }
 
-    protected ServiceEndpointOperation createMockSEO(final ServiceType type) {
-        return this.createMockSEO(type, MEPPatternConstants.IN_OUT.value());
+    protected static ServiceEndpointOperation createMockSEO(final ServiceType type) {
+        return createMockSEO(type, MEPPatternConstants.IN_OUT.value());
     }
 
-    protected ServiceEndpointOperation createMockSEO(final ServiceType type, final URI pattern) {
+    protected static ServiceEndpointOperation createMockSEO(final ServiceType type, final URI pattern) {
         return new ServiceEndpointOperationMock("Service", "Interface", "endpoint", "operation", type, pattern);
     }
     

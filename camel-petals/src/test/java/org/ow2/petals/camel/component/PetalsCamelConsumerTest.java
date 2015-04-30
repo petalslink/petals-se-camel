@@ -22,7 +22,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
-import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
