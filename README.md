@@ -5,7 +5,7 @@
 [![Jenkins Integration](https://img.shields.io/jenkins/s/http/jenkins.petalslink.com/SE_Camel_integration_tests.svg?label=integration)](http://jenkins.petalslink.com/job/SE_Camel_integration_tests/)
 [![Jenkins tests](https://img.shields.io/jenkins/t/http/jenkins.petalslink.com/Petals Components - SE Camel.svg)](http://jenkins.petalslink.com/job/Petals Components - SE Camel/)
 [![SonarQube Coverage](https://img.shields.io/sonar/http/sonar.petalslink.com/org.ow2.petals:petals-camel-parent/coverage.svg)](http://sonar.petalslink.com/?id=org.ow2.petals:petals-camel-parent)
-
+[![SonarQube Overall Coverage](https://img.shields.io/sonar/http/sonar.petalslink.com/org.ow2.petals:petals-camel-parent/overall_coverage.svg)](http://sonar.petalslink.com/?id=org.ow2.petals:petals-camel-parent)
 ## Specifications and User Documentation
 
 See the Petals Wiki [page on the component](https://doc.petalslink.com/display/petalscomponents/Petals-SE-Camel+1.0.0-SNAPSHOT).
