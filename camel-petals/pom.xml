@@ -90,6 +90,30 @@
          <artifactId>slf4j-jdk14</artifactId>
          <scope>test</scope>
       </dependency>
+      <!-- enable the APT processor -->
+      <dependency>
+         <groupId>org.apache.camel</groupId>
+         <artifactId>apt</artifactId>
+         <version>${camel.version}</version>
+         <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+                  <!-- Let's use the version from easy* -->
+               <artifactId>jaxb-impl</artifactId>
+               <groupId>com.sun.xml.bind</groupId>
+            </exclusion>
+            <exclusion>
+                  <!-- Let's use the version from easy* -->
+               <artifactId>jaxb-core</artifactId>
+               <groupId>com.sun.xml.bind</groupId>
+            </exclusion>
+            <exclusion>
+                  <!-- Already in camel-core -->
+               <groupId>org.apache.camel</groupId>
+               <artifactId>spi-annotations</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
    </dependencies>
 
    <dependencyManagement>
@@ -103,74 +127,68 @@
       </dependencies>
    </dependencyManagement>
 
-   <profiles>
-      <!-- Have this in a profile so that it is disabled in IDE builds -->
-      <profile>
-         <id>extra-documentation-for-camel</id>
-         <activation>
-            <activeByDefault>true</activeByDefault>
-         </activation>
-         <dependencies>
-            <!-- enable the APT processor -->
-            <dependency>
-               <groupId>org.apache.camel</groupId>
-               <artifactId>apt</artifactId>
-               <version>${camel.version}</version>
-               <scope>provided</scope>
-               <exclusions>
-                  <exclusion>
-                     <!-- Let's use the version from easy* -->
-                     <artifactId>jaxb-impl</artifactId>
-                     <groupId>com.sun.xml.bind</groupId>
-                  </exclusion>
-                  <exclusion>
-                     <!-- Let's use the version from easy* -->
-                     <artifactId>jaxb-core</artifactId>
-                     <groupId>com.sun.xml.bind</groupId>
-                  </exclusion>
-                  <exclusion>
-                     <!-- Already in camel-core -->
-                     <groupId>org.apache.camel</groupId>
-                     <artifactId>spi-annotations</artifactId>
-                  </exclusion>
-               </exclusions>
-            </dependency>
-         </dependencies>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.camel</groupId>
-                  <artifactId>camel-package-maven-plugin</artifactId>
-                  <version>${camel.version}</version>
-                  <executions>
-                     <execution>
-                        <id>components</id>
-                        <goals>
-                           <goal>generate-components-list</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-dependency-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>analyze</id>
-                        <configuration>
-                           <usedDependencies>
-                              <usedDependency>org.apache.camel:apt</usedDependency>
-                              <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
-                           </usedDependencies>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-   </profiles>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-package-maven-plugin</artifactId>
+            <version>${camel.version}</version>
+            <executions>
+               <execution>
+                  <id>components</id>
+                  <goals>
+                     <goal>generate-components-list</goal>
+                  </goals>
+                  <phase>generate-resources</phase>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <usedDependency>org.apache.camel:apt</usedDependency>
+                        <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <!-- Ignore camel package maven plugin until they make it eclipse compatible -->
+                           <pluginExecutionFilter>
+                              <groupId>org.apache.camel</groupId>
+                              <artifactId>camel-package-maven-plugin</artifactId>
+                              <versionRange>[2.15.0,)</versionRange>
+                              <goals>
+                                 <goal>generate-components-list</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
