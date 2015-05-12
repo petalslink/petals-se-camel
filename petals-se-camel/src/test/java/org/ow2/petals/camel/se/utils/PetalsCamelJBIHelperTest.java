@@ -27,7 +27,7 @@ import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper.OperationData;
-import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
+import org.ow2.petals.component.framework.jbidescriptor.JBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 import org.w3c.dom.Document;
@@ -91,8 +91,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
     }
 
     public Jbi getJBI(final String localPath) throws Exception {
-        return CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                this.getClass().getResourceAsStream(localPath));
+        return JBIDescriptorBuilder.buildJavaJBIDescriptor(this.getClass().getResourceAsStream(localPath));
     }
 
     public void testPopulateRouteLists(final Jbi jbi, final int classesSize, final int xmlSizes) {

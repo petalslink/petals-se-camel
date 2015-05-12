@@ -45,7 +45,9 @@ public class CamelRoutesHelper {
             return (RouteBuilder) o;
         } catch (final ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
-        } catch (final InstantiationException | IllegalAccessException e) {
+        } catch (final InstantiationException e) {
+            throw new InvalidJBIConfigurationException("Can't instantiate " + className, e);
+        } catch (final IllegalAccessException e) {
             throw new InvalidJBIConfigurationException("Can't instantiate " + className, e);
         }
     }

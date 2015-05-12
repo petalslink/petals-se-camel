@@ -7,7 +7,7 @@
    <parent>
       <artifactId>petals-camel-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>0.5.0-SNAPSHOT</version>
    </parent>
 
    <name>Petals ESB - Components - SE Camel</name>
@@ -78,28 +78,6 @@
          <groupId>org.eclipse.jdt</groupId>
          <artifactId>org.eclipse.jdt.annotation</artifactId>
       </dependency>
-      <!-- CDK Test dependencies -->
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-junit-external-resources</artifactId>
-         <scope>test</scope>
-         <exclusions>
-            <exclusion>
-               <!-- Let's use the version brought by camel-core -->
-               <artifactId>slf4j-api</artifactId>
-               <groupId>org.slf4j</groupId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-jdk14</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
       <!-- Other test dependencies -->
       <dependency>
          <groupId>org.hamcrest</groupId>
@@ -133,39 +111,6 @@
                   </configuration>
                </execution>
             </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <excludes>
-                  <!-- we will run this one in integration-test -->
-                  <exclude>org/ow2/petals/camel/se/it/**</exclude>
-               </excludes>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>prepare-agent-integration</id>
-                  <configuration>
-                     <!-- We output the results in the path shared by all submodules -->
-                     <destFile>${sonar.jacoco.itReportPath}</destFile>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-               <includes>
-                  <!-- Only execute the integration tests -->
-                  <include>org/ow2/petals/camel/se/it/**</include>
-               </includes>
-            </configuration>
          </plugin>
       </plugins>
    </build>

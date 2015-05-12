@@ -91,7 +91,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
 
     private CamelSU createCamelSU(final String serviceUnitName) throws PetalsCamelSEException {
 
-        final ServiceUnitDataHandler suDH = getSUDataHandler(serviceUnitName);
+        final ServiceUnitDataHandler suDH = getServiceUnitDataHandlers().get(serviceUnitName);
 
         final Map<String, ServiceEndpointOperation> sid2seo = PetalsCamelJBIHelper
                 .extractServicesIdAndEndpointOperations(suDH, getCamelSE());

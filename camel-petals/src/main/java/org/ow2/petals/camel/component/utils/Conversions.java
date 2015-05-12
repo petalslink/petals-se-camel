@@ -59,7 +59,7 @@ public class Conversions {
 
         camelExchange.setExchangeId(exchange.getExchangeId());
 
-        for (String prop : exchange.getPropertyNames()) {
+        for (String prop : (Set<String>) exchange.getPropertyNames()) {
             camelExchange.setProperty(prop, exchange.getProperty(prop));
         }
 

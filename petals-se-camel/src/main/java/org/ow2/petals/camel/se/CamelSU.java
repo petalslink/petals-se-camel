@@ -17,9 +17,7 @@
  */
 package org.ow2.petals.camel.se;
 
-import java.io.IOException;
 import java.net.URLClassLoader;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.camel.CamelContext;
@@ -133,13 +131,7 @@ public class CamelSU implements PetalsCamelContext {
     }
 
     public void undeploy() {
-        // TODO other things?
-        try {
-            this.classLoader.close();
-        } catch (final IOException e) {
-            // let's log it, it is severe because it uses memory!
-            getLogger().log(Level.SEVERE, "Can't close the classloader of the SU", e);
-        }
+        // TODO anything? when using Java 7, we can close the classloader at least
     }
 
     @Override

@@ -97,14 +97,16 @@ public class PetalsCamelJBIHelper {
         // for provides, there is one serviceId per operation of each provides
         for (final Provides p : jbiDescriptor.getServices().getProvides()) {
 
-            final ServiceEndpointKey key = new ServiceEndpointKey(p);
+            final ServiceEndpointKey key = new ServiceEndpointKey(p.getServiceName(), p.getEndpointName());
 
             final Document wsdlDoc = suDH.getEpServiceDesc().get(key);
 
             final List<OperationData> seos;
             try {
                 seos = getOperationsAndServiceId(wsdlDoc, p.getInterfaceName());
-            } catch (final URISyntaxException | XmlException e) {
+            } catch (final URISyntaxException e) {
+                throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
+            } catch (final XmlException e) {
                 throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
             }
 

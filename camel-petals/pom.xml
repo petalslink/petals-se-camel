@@ -5,7 +5,7 @@
    <parent>
       <artifactId>petals-camel-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>0.5.0-SNAPSHOT</version>
    </parent>
 
    <artifactId>camel-petals</artifactId>
@@ -35,10 +35,6 @@
          <artifactId>petals-cdk-core</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.activation</groupId>
-         <artifactId>activation</artifactId>
-      </dependency>
-      <dependency>
          <groupId>com.google.guava</groupId>
          <artifactId>guava</artifactId>
       </dependency>
@@ -58,7 +54,7 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.ow2.easycommons</groupId>
+         <groupId>com.ebmwebsourcing.easycommons</groupId>
          <artifactId>easycommons-uuid</artifactId>
          <scope>test</scope>
       </dependency>
@@ -103,6 +99,12 @@
             <artifactId>asm</artifactId>
             <version>5.0.3</version>
          </dependency>
+         <dependency>
+            <!-- For dependency convergence (it concerns test artefacts that are not even used...) -->
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>2.1</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
@@ -132,6 +134,7 @@
                      <usedDependencies>
                         <usedDependency>org.apache.camel:apt</usedDependency>
                         <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
+                        <usedDependency>net.sf.saxon:saxonhe</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
