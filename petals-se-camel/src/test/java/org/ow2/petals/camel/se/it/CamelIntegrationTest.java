@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.camel.se.it;
 
+import java.util.List;
+import java.util.logging.LogRecord;
+
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -24,6 +27,9 @@ import org.junit.Test;
 import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
+import org.ow2.petals.commons.log.FlowLogData;
+import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -40,6 +46,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void testMessageGoThrough() throws Exception {
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
         sendHelloIdentity(SU_NAME);
+        assertMONITOk();
     }
 
     public static class RouteSyncFrom extends RouteBuilder {
@@ -55,6 +62,8 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         // if the from is sync but not the to, then it shouldn't be send synchronously...
         // the only thing that should happen is that the route execution blocks the caller
         sendHelloIdentity(SU_NAME, MessageChecks.propertyNotExists(Component.SENDSYNC_EXCHANGE_PROPERTY));
+
+        assertMONITOk();
     }
 
     public static class RouteSyncTo extends RouteBuilder {
@@ -68,6 +77,8 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void testMessageGoThroughToSynchronous() throws Exception {
         deployHello(SU_NAME, WSDL11, RouteSyncTo.class);
         sendHelloIdentity(SU_NAME, MessageChecks.propertyExists(Component.SENDSYNC_EXCHANGE_PROPERTY));
+
+        assertMONITOk();
     }
 
     @Test
@@ -93,8 +104,26 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         // there will be left-overs (the timeout answer to the external service), let's remove them!
         COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
+        // let's also clear logs
+        IN_MEMORY_LOG_HANDLER.clear();
 
         // and now let's send another message that should work
         sendHelloIdentity(SU_NAME);
+
+        assertMONITOk();
+    }
+
+    public void assertMONITOk() {
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(4, monitLogs.size());
+        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, null, HELLO_OPERATION,
+                monitLogs.get(0));
+        assertMonitProviderEndLog(firstLog, monitLogs.get(3));
+
+        final FlowLogData secondLog = assertMonitProviderBeginLog(
+                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
+                HELLO_SERVICE, null, HELLO_OPERATION, monitLogs.get(1));
+        assertMonitProviderEndLog(secondLog, monitLogs.get(2));
     }
 }

@@ -21,11 +21,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-public abstract class AbstractTest extends Assert {
+public abstract class AbstractTest extends org.ow2.petals.component.framework.junit.Assert {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();

@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
@@ -106,7 +107,7 @@ public class CamelJBIListener extends AbstractJBIListener {
     @Override
     public boolean onAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext) {
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(asyncContext, false);
+        return handleAsyncJBIMessage(exchange, asyncContext, false);
     }
 
     @NonNullByDefault(false)
@@ -114,10 +115,11 @@ public class CamelJBIListener extends AbstractJBIListener {
     public boolean onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
         // this is when I sent something asynchronously but it timeouted!
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(asyncContext, true);
+        return handleAsyncJBIMessage(originalExchange, asyncContext, true);
     }
 
-    private boolean handleAsyncJBIMessage(final AsyncContext asyncContext, final boolean timedOut) {
+    private boolean handleAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext,
+            final boolean timedOut) {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
             this.getLogger().warning(
                     "Got an async context not from me for the exchange "
@@ -126,6 +128,10 @@ public class CamelJBIListener extends AbstractJBIListener {
             this.getLogger().info(
                     "Received an async answer, let's continue our execution for the exchange "
                             + asyncContext.getOriginalExchange().getExchangeId());
+
+            // let's reinitialise the flow attributes of the current thread with the right data
+            PetalsExecutionContext.putFlowAttributes(exchange.getFlowAttributes());
+
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
             context.getCallback().done(timedOut);
         }
