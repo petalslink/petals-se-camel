@@ -34,7 +34,7 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
-@UriEndpoint(scheme = "petals", syntax = "petals:serviceId", consumerClass = PetalsCamelConsumer.class)
+@UriEndpoint(scheme = "petals", syntax = "petals:serviceId", title = "Petals ESB", label = "jbi,soa,esb", consumerClass = PetalsCamelConsumer.class)
 public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private static final String PARAMETER_TIMEOUT = "timeout";
