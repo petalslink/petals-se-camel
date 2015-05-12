@@ -24,7 +24,7 @@
 
    <properties>
       <findbugs.version>3.0.0</findbugs.version>
-      <camel.version>2.15.0</camel.version>
+      <camel.version>2.15.2</camel.version>
       <!-- it is set to false in the parent pom and we want to have dependency analysis -->
       <maven-dependency-plugin.failOnWarning>true</maven-dependency-plugin.failOnWarning>
       <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
