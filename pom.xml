@@ -79,6 +79,62 @@
          </dependency>
          <dependency>
             <groupId>org.apache.camel</groupId>
+            <artifactId>apt</artifactId>
+            <version>${camel.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-core</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <!-- Already in camel-core -->
+                  <groupId>org.apache.camel</groupId>
+                  <artifactId>spi-annotations</artifactId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>spi-annotations</artifactId>
+            <version>${camel.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <!-- Let's use the version from easy* -->
+                  <artifactId>jaxb-core</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>3.3.1</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>1.3</version>
+         </dependency>
+         <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.6</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
             <artifactId>camel-test</artifactId>
             <version>${camel.version}</version>
             <scope>test</scope>
