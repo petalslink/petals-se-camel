@@ -101,7 +101,6 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
             exchange.setError(e);
         }
 
-        // if the send fails, there is nothing we can do except logging the error
         try {
             // TODO maybe we should render that answer synchronicity configurable... for now let's use sendAsync in
             // order not to tie resources for simple acknowledging (there is no need to block the current execution nor
@@ -133,12 +132,13 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                                         "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
                             }
                         }
-                        // TODO log for other cases...
+                        // TODO log for other (invalid) cases...
                         // TODO and add tests for all of this!
                     }
                 }
             });
         } catch (final MessagingException e) {
+            // if the send fails, there is nothing we can do except logging the error
             provides.getLogger().log(Level.SEVERE,
                     "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
         }
