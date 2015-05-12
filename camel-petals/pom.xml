@@ -108,7 +108,7 @@
                <groupId>com.sun.xml.bind</groupId>
             </exclusion>
             <exclusion>
-                  <!-- Already in camel-core -->
+               <!-- Already in camel-core -->
                <groupId>org.apache.camel</groupId>
                <artifactId>spi-annotations</artifactId>
             </exclusion>
