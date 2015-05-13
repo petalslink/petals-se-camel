@@ -24,6 +24,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.impl.PropertyPlaceholderDelegateRegistry;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RoutesDefinition;
 import org.ow2.petals.camel.PetalsCamelContext;
@@ -86,7 +87,8 @@ public class CamelSU implements PetalsCamelContext {
 
         // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent to
         // initialise itself
-        this.context.getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this);
+        ((JndiRegistry) ((PropertyPlaceholderDelegateRegistry) this.context.getRegistry()).getRegistry()).bind(
+                PetalsCamelContext.class.getName(), this);
 
         for (final String className : classNames) {
             final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);

@@ -24,7 +24,8 @@
 
    <properties>
       <findbugs.version>3.0.0</findbugs.version>
-      <camel.version>2.15.2</camel.version>
+      <!-- This is the latest version that supports Java 6!! -->
+      <camel.version>2.12.3</camel.version>
       <!-- it is set to false in the parent pom and we want to have dependency analysis -->
       <maven-dependency-plugin.failOnWarning>true</maven-dependency-plugin.failOnWarning>
       <!-- test dependencies are really bothering, let's skip them -->

@@ -23,6 +23,7 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.impl.PropertyPlaceholderDelegateRegistry;
 import org.apache.camel.test.junit4.ExchangeTestSupport;
 import org.easymock.EasyMockSupport;
 import org.eclipse.jdt.annotation.Nullable;
@@ -60,7 +61,8 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
 
         this.pcc = new PetalsCamelContextMock(context());
 
-        context().getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this.pcc);
+        ((JndiRegistry) ((PropertyPlaceholderDelegateRegistry) context().getRegistry()).getRegistry()).bind(
+                PetalsCamelContext.class.getName(), this.pcc);
         this.initializeServices();
 
         super.postProcessTest();

@@ -24,7 +24,6 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
-import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
@@ -34,7 +33,7 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
-@UriEndpoint(scheme = "petals", syntax = "petals:serviceId", title = "Petals ESB", label = "jbi,soa,esb", consumerClass = PetalsCamelConsumer.class)
+@UriEndpoint(scheme = "petals", consumerClass = PetalsCamelConsumer.class)
 public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private static final String PARAMETER_TIMEOUT = "timeout";
@@ -44,10 +43,9 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     private static final String PARAMETER_MEP = "exchangePattern";
 
     @UriPath
-    @Metadata(required = "true")
     private String serviceId;
     
-    @UriParam(defaultValue = "-1", name = PARAMETER_TIMEOUT, description = "If 0 then no timeout, if <0 then use the default timeout from the component else specify the timeout in milliseconds")
+    @UriParam(name = PARAMETER_TIMEOUT)
     private long timeout = -1;
 
     private final ServiceEndpointOperation service;

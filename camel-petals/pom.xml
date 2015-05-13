@@ -155,7 +155,7 @@
                            <pluginExecutionFilter>
                               <groupId>org.apache.camel</groupId>
                               <artifactId>camel-package-maven-plugin</artifactId>
-                              <versionRange>[2.15.0,)</versionRange>
+                              <versionRange>[0,)</versionRange>
                               <goals>
                                  <goal>generate-components-list</goal>
                               </goals>
