@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <artifactId>petals-camel-samples-parent</artifactId>
+      <groupId>org.ow2.petals.samples</groupId>
+      <version>4.3.0-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>su-camel-jsr181-hello</artifactId>
+   <packaging>jbi-service-unit</packaging>
+   <name>Petals ESB - Samples - SE Camel - SU JSR181</name>
+
+   <properties>
+      <!-- Skip dependency check for service unit. -->
+      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+      <maven-enforcer-plugin.rules.dependency>false</maven-enforcer-plugin.rules.dependency>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <artifactId>petals-se-jsr181</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <version>1.4.3-SNAPSHOT</version>
+         <type>jbi-component</type>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>maven-petals-plugin</artifactId>
+            <configuration>
+               <updateJBIXml>false</updateJBIXml>
+               <!-- We add the generated WSDL -->
+               <additionalJBIResourceDirectory>${project.build.directory}/additionals/</additionalJBIResourceDirectory>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-java2ws-plugin</artifactId>
+            <version>2.7.0</version>
+            <executions>
+               <execution>
+                  <id>generate-wsdl</id>
+                  <phase>process-classes</phase>
+                  <goals>
+                     <goal>java2ws</goal>
+                  </goals>
+                  <configuration>
+                     <genWsdl>true</genWsdl>
+                     <outputFile>${project.build.directory}/additionals/Service.wsdl</outputFile>
+                     <verbose>true</verbose>
+                     <className>org.ow2.petals.usecase.jsr181.hello.Service</className>
+                  </configuration>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>org.apache.cxf</groupId>
+                  <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                  <version>2.7.0</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>

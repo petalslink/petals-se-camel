@@ -27,6 +27,7 @@
       <module>sa-camel-hello-proxies</module>
       <module>su-camel-datamapping</module>
       <module>sa-camel-datamapping</module>
+      <module>su-camel-jsr181-hello</module>
    </modules>
 
    <dependencyManagement>

@@ -15,6 +15,7 @@
    <properties>
       <!-- Skip dependency check for service unit. -->
       <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+      <maven-enforcer-plugin.rules.dependency>false</maven-enforcer-plugin.rules.dependency>
    </properties>
 
    <dependencies>
@@ -26,6 +27,12 @@
       </dependency>
       <dependency>
          <artifactId>su-camel-hello-proxy-xml</artifactId>
+         <groupId>org.ow2.petals.samples</groupId>
+         <version>${project.version}</version>
+         <type>jbi-service-unit</type>
+      </dependency>
+      <dependency>
+         <artifactId>su-camel-jsr181-hello</artifactId>
          <groupId>org.ow2.petals.samples</groupId>
          <version>${project.version}</version>
          <type>jbi-service-unit</type>
