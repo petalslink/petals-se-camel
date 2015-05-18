@@ -35,7 +35,7 @@
    </build>
 
    <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-camel.git</connection>
+      <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
    </scm>
 </project>
