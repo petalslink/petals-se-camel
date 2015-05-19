@@ -4,10 +4,10 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>1.0.0-SNAPSHOT</version>
+      <version>20.2.3-SNAPSHOT</version>
    </parent>
 
    <groupId>org.ow2.petals</groupId>
@@ -23,16 +23,20 @@
    </modules>
 
    <properties>
-      <findbugs.version>3.0.0</findbugs.version>
       <camel.version>2.15.2</camel.version>
-      <!-- it is set to false in the parent pom and we want to have dependency analysis -->
-      <maven-dependency-plugin.failOnWarning>true</maven-dependency-plugin.failOnWarning>
       <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
       <sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
    </properties>
 
    <dependencyManagement>
       <dependencies>
+         <dependency>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-cdkbased-components-parent</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-message-exchange</artifactId>
