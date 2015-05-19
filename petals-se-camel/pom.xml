@@ -88,17 +88,6 @@
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-junit-external-resources</artifactId>
          <scope>test</scope>
-         <exclusions>
-            <exclusion>
-               <!-- Let's use the version brought by camel-core -->
-               <artifactId>slf4j-api</artifactId>
-               <groupId>org.slf4j</groupId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-jdk14</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <!-- Other test dependencies -->
       <dependency>
@@ -120,20 +109,6 @@
 
    <build>
       <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>analyze</id>
-                  <configuration>
-                     <usedDependencies>
-                        <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
-                     </usedDependencies>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
