@@ -82,6 +82,7 @@ public class Conversions {
             // there has been a fault
             populateCamelMessage(camelExchange.getOut(), exchange.getFault());
             camelExchange.getOut().setFault(true);
+            // TODO add test of conversions in both direction to be sure everything is correct!
         } else if (exchange.isOutMessage()) {
             // this is a response
             populateCamelMessage(camelExchange.getOut(), exchange.getOutMessage());
@@ -152,11 +153,8 @@ public class Conversions {
                     // the exchange is finished
                     exchange.setDoneStatus();
                     // NOTE: we make the assumption that in the case of an optional out, the out message of
-                    // the camel
-                    // exchange is populated (sometimes the in message is used instead of the out in Camel
-                    // processors...
-                    // this is an ambiguity we can only handle by choosing this rule)
-                    // TODO add documentation
+                    // the camel exchange is populated (sometimes the in message is used instead of the out in Camel
+                    // processors... this is an ambiguity we can only handle by choosing this rule)
                 }
             } else {
                 exchange.setDoneStatus();
