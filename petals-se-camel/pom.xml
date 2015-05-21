@@ -6,7 +6,7 @@
    <parent>
       <artifactId>petals-camel-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>0.5.0</version>
+      <version>0.5.1-SNAPSHOT</version>
    </parent>
 
    <name>Petals ESB - Components - SE Camel</name>
