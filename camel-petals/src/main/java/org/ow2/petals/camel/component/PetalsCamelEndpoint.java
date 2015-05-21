@@ -23,6 +23,8 @@ import org.apache.camel.Consumer;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
+import org.apache.camel.ResolveEndpointFailedException;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
@@ -64,6 +66,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         String mep = service.getMEP().toString();
         if (mep.contains("in-opt-out")) {
             // TODO It seems camel has the wrong URI for the pattern InOptionalOut!
+            // This is fixed in version 2.16 of camel!
             mep = mep.substring(0, mep.lastIndexOf("/")) + "/in-optional-out";
         }
 
@@ -72,29 +75,50 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     /**
      * If there is parameters left in options, then Camel will complain, this serves as syntax checking
+     * 
+     * Optionally, we can throw an exception to customize the error (it will be wrapped in a
+     * {@link ResolveEndpointFailedException} by Camel).
      */
     @NonNullByDefault(false)
     @Override
     public void configureProperties(final Map<String, Object> options) {
-
         // this will setup some specific properties...
         super.configureProperties(options);
 
-        // timeout is only supported if this is a to() (i.e. a consumes in the SU)
-        if (this.service.getType() == ServiceType.CONSUMES) {
-            final String s = (String) options.remove(PARAMETER_TIMEOUT);
-            if (s != null) {
-                this.timeout = Long.parseLong(s);
+        final String timeoutParameter = (String) options.remove(PARAMETER_TIMEOUT);
+        if (timeoutParameter != null) {
+            // timeout is only supported if this is a to() (i.e. a consumes in the SU)
+            if (this.service.getType() == ServiceType.CONSUMES) {
+                this.timeout = Long.parseLong(timeoutParameter);
+            } else {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_TIMEOUT
+                        + " can't be set on a Provides endpoint.");
             }
         }
+
         // TODO add the possibility to change that at runtime (or rather, to force something using an MBean for example
         // for debugging...)
-        this.setSynchronous(Boolean.parseBoolean((String) options.remove(PARAMETER_SYNCHRONOUS)));
+        final String synchronousParameter = (String) options.remove(PARAMETER_SYNCHRONOUS);
+        if (synchronousParameter != null) {
+            this.setSynchronous(Boolean.parseBoolean(synchronousParameter));
+        }
 
-        // the mep is not used because we use the one declared in the SU (see the constructor)
-        // TODO should I instead verify that the patterns match (with the one of the endpoint)
-        // is there some kind of subtyping of MEP? see JBI spec!
-        // (ResolveEndpointFailedException should be thrown in case of problems)
+        final String mepParameter = (String) options.remove(PARAMETER_MEP);
+        if (mepParameter != null) {
+            final ExchangePattern mep;
+            try {
+                mep = ExchangePattern.valueOf(mepParameter);
+            } catch (final IllegalArgumentException e) {
+                throw new ResolveEndpointFailedException(this.getEndpointUri(), e);
+            }
+            // TODO is there some kind of subtyping of MEP?
+            // it also depends if it's a consumes or a provides!
+            if (!mep.equals(this.getExchangePattern())) {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_MEP
+                        + " can't be set with a value incompatible with the Petals service (parameter is '" + mep
+                        + "', service's is '" + this.getExchangePattern() + "').");
+            }
+        }
     }
 
     public long getTimeout() {

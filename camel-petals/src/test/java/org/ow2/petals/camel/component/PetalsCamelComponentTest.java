@@ -54,7 +54,7 @@ public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
     public void testCreateProvidesEndpoint_KO2() {
         addMockProvides("serviceId1");
         thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("Unknown parameters");
+        thrown.expectMessage("Failed to resolve endpoint: petals://serviceId1?timeout=5 due to: The parameter timeout can't be set on a Provides endpoint.");
         // timeout is not authorised for provides
         createEndpoint("serviceId1?timeout=5");
     }
