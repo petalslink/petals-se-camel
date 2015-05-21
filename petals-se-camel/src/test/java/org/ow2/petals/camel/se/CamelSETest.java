@@ -102,8 +102,7 @@ public class CamelSETest extends AbstractComponentTest {
         COMPONENT_UNDER_TEST.deployService(SU_NAME, createHelloService(WSDL11, null, null));
 
         // we provides an empty in just to be sure it doesn't fail because of it
-        // TODO according to JBI there shouldn't be a fault in that case... see PETALSDISTRIB-133
-        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, false, MessageChecks.none());
+        final ResponseMessage response = sendHello(SU_NAME, "", null, "", null, false, true, MessageChecks.none());
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!
