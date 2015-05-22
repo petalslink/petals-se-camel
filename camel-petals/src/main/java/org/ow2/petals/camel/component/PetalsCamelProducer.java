@@ -91,20 +91,23 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         try {
             final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
 
-            // TODO should I check that the camel exchange has the same MEP as the consumes MEP?
+            // TODO should I check that the camel exchange has the same MEP as the consumes MEP? or compatibility?
+            // for example if I have a inonly exchange sent to an inout service, then I just discard the out
+            // while an InOut exchange for an InOnly service is not possible!
+            // TODO and also I should take into account the MEP of the endpoint??!!
 
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
             if (doSync) {
                 // false means timed out!
                 final boolean timedOut = !this.consumes.sendSync(exchange, timeout);
-                // this has been done sync
+                // this has been done synchronously
                 final boolean doneSync = true;
                 handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                 return doneSync;
             } else {
-                // this is done async (except if the send fail, but then the value of this variable won't be used
-                // because the callback will never be called)
+                // this is done asynchronously (except if the send fail, but then the value of this variable won't be
+                // used because the callback will never be called)
                 final boolean doneSync = false;
                 this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
                     @Override
