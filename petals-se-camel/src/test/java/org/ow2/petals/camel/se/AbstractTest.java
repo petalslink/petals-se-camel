@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.camel.se;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Rule;
@@ -32,10 +30,5 @@ public abstract class AbstractTest extends org.ow2.petals.component.framework.ju
     static {
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
         assertNotNull("Logging configuration file not found", logConfig);
-        try {
-            System.setProperty("java.util.logging.config.file", new File(logConfig.toURI()).getAbsolutePath());
-        } catch (final URISyntaxException e) {
-            fail(e.getMessage());
-        }
     }
 }
