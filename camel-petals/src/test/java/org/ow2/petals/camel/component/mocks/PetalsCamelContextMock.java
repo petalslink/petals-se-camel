@@ -155,8 +155,8 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     public Exchange createExchange(final String serviceId) {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
-        final MessageExchangeImpl msg = new MessageExchangeImpl();
-        msg.setExchangeId(new QualifiedUUIDGenerator(Constants.UUID_DOMAIN).getNewID());
+        final MessageExchangeImpl msg = new MessageExchangeImpl(
+                new QualifiedUUIDGenerator(Constants.UUID_DOMAIN).getNewID());
         // msg.setConsumerEndpoint(consumerEndpoint);
         msg.setEndpoint(new ServiceEndpoint() {
 
