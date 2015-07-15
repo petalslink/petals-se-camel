@@ -38,7 +38,7 @@ import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
-import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
+import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
@@ -205,7 +205,7 @@ public class PetalsCamelJBIHelper {
     public static String getServiceId(final Consumes s, final ServiceUnitDataHandler suDH)
             throws InvalidJBIConfigurationException {
 
-        final ConfigurationExtensions extensions = suDH.getConfigurationExtensions(s);
+        final SuConfigurationParameters extensions = suDH.getConfigurationExtensions(s);
         final String serviceId = extensions.get(SERVICE_ID_PROPERTY);
 
         if (serviceId == null || serviceId.isEmpty()) {

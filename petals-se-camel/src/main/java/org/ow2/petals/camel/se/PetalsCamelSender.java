@@ -17,7 +17,7 @@
  */
 package org.ow2.petals.camel.se;
 
-import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
+import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -35,14 +35,14 @@ public class PetalsCamelSender extends AbstractListener {
     public PetalsCamelSender(final CamelSE component, final Consumes consumes) {
         init(component);
         setConsumes(consumes);
-        setExtensions(new ConfigurationExtensions(consumes.getAny()));
+        setExtensions(new SuConfigurationParameters(consumes.getAny(), component.getPlaceHolders()));
         init();
     }
 
     public PetalsCamelSender(final CamelSE component, final Provides provides) {
         init(component);
         setProvides(provides);
-        setExtensions(new ConfigurationExtensions(provides.getAny()));
+        setExtensions(new SuConfigurationParameters(provides.getAny(), component.getPlaceHolders()));
         init();
     }
 }
