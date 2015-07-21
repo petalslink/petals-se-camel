@@ -30,6 +30,7 @@ import javax.xml.transform.dom.DOMSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
+import org.ow2.petals.commons.xml.BytesSource;
 
 /**
  * Utils to convert between petals exchange and camel exchange.
@@ -108,7 +109,17 @@ public class Conversions {
             camelMessage.addAttachment(attach, message.getAttachment(attach));
         }
 
-        camelMessage.setBody(message.getContent());
+        final Source content = message.getContent();
+
+        // let's take advantage of petals's BytesSource to avoid unneeded conversions
+        final Source body;
+        if (content instanceof BytesSource) {
+            body = new org.apache.camel.BytesSource(((BytesSource) content).getData(), content.getSystemId());
+        } else {
+            body = content;
+        }
+
+        camelMessage.setBody(body);
     }
 
     public static void populateNewPetalsExchange(
@@ -176,18 +187,20 @@ public class Conversions {
         }
 
         final Object body = camelMessage.getBody();
-        final Source newBody;
-        if (body instanceof Source) {
+        final Source content;
+        // TODO maybe replace all of that with type converters registered to Camel?
+        if (body instanceof org.apache.camel.BytesSource) {
+            // let's apply the inverse transformation applied earlier
+            content = new BytesSource(((org.apache.camel.BytesSource) body).getData(), ((Source) body).getSystemId());
+        } else if (body instanceof Source) {
             // let's continue with a Source then
-            newBody = (Source) body;
+            content = (Source) body;
         } else {
-            // for now we settle to either a DOMSource that are in-memory and not stream since we are mostly
-            // manipulating small-sized messages.
             // TODO provide an endpoint option to force the use of a desired Source implementation.
             // let's use available converters (see http://camel.apache.org/type-converter.html) to get the
             // body as a DOMSource.
-            newBody = camelMessage.getBody(DOMSource.class);
+            content = camelMessage.getBody(DOMSource.class);
         }
-        message.setContent(newBody);
+        message.setContent(content);
     }
 }
