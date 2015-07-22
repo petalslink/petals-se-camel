@@ -168,14 +168,11 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
         assertCoherentWithSEO(receivedExchange(), seo());
 
-        final Diff diff = new Diff(content, context().getTypeConverter().convertTo(String.class,
-                receivedExchange().getInMessageContentAsSource()));
-        assertTrue(diff.toString(), diff.similar());
+        assertSimilar(new Diff(content, getContent(receivedExchange().getInMessage())));
 
         if ((MEPPatternConstants.IN_OPTIONAL_OUT.equals(seo().getMEP()) && transformer() != NOTHING)
                 || MEPPatternConstants.IN_OUT.equals(seo().getMEP())) {
-            final Diff diff2 = new Diff("<bb/>", context().getTypeConverter().convertTo(String.class, out));
-            assertTrue(diff2.toString(), diff2.similar());
+            assertSimilar(new Diff("<bb/>", context().getTypeConverter().convertTo(String.class, out)));
         }
     }
 

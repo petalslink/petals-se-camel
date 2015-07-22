@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
@@ -46,6 +47,7 @@ import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.jbi.messaging.exchange.MessageExchangeImpl;
 import org.w3c.dom.DocumentFragment;
 
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.uuid.QualifiedUUIDGenerator;
 import com.google.common.collect.Maps;
 
@@ -136,6 +138,9 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         return this.logger;
     }
 
+    /**
+     * Inject an exchange into Camel to a Petals's Provider (aka Camel's Consumer).
+     */
     public void process(final String serviceId, final Exchange exchange) {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
@@ -143,7 +148,9 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
                 seo.getOperation());
         final PetalsCamelRoute route = this.ppos.get(key);
         assert route != null;
+        setRole(exchange, Role.PROVIDER);
         route.process(exchange);
+        setRole(exchange, Role.CONSUMER);
     }
 
     public Exchange createExchange(final String serviceId, final String body) throws MessagingException {
@@ -203,7 +210,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
     }
 
-    public class MockChannel implements PetalsChannel {
+    public abstract class MockChannel implements PetalsChannel {
 
         private final MockSendHandler handler;
 
@@ -216,22 +223,39 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
             return PetalsCamelContextMock.this.logger;
         }
 
+        public abstract void setRole(final Exchange exchange);
+
+        public abstract void revertRole(final Exchange exchange);
+
         @Override
         public boolean sendSync(final Exchange exchange, final long timeout) throws MessagingException {
-            return handler.sendSync(exchange, timeout);
+            setRole(exchange);
+            boolean sendSync = handler.sendSync(exchange, timeout);
+            revertRole(exchange);
+            return sendSync;
         }
 
         @Override
         public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
                 throws MessagingException {
+            setRole(exchange);
             handler.sendAsync(exchange, timeout, callback);
         }
 
         @Override
         public void send(final Exchange exchange) throws MessagingException {
+            setRole(exchange);
             handler.send(exchange);
         }
 
+    }
+
+    private static void setRole(final Exchange exchange, final Role role) {
+        try {
+            ((MessageExchangeImpl) ((ExchangeImpl) exchange).getMessageExchange()).setRole(role);
+        } catch (MessagingException e) {
+            throw new UncheckedException(e);
+        }
     }
 
     public class MockConsumesChannel extends MockChannel implements PetalsConsumesChannel {
@@ -248,6 +272,15 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
             return PetalsCamelContextMock.this.createExchange(serviceId);
         }
 
+        @Override
+        public void setRole(Exchange exchange) {
+            PetalsCamelContextMock.setRole(exchange, Role.PROVIDER);
+        }
+
+        @Override
+        public void revertRole(Exchange exchange) {
+            PetalsCamelContextMock.setRole(exchange, Role.CONSUMER);
+        }
     }
 
     public class MockProvidesChannel extends MockChannel implements PetalsProvidesChannel {
@@ -256,5 +289,14 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
             super(handler);
         }
 
+        @Override
+        public void setRole(Exchange exchange) {
+            PetalsCamelContextMock.setRole(exchange, Role.CONSUMER);
+        }
+
+        @Override
+        public void revertRole(Exchange exchange) {
+            PetalsCamelContextMock.setRole(exchange, Role.PROVIDER);
+        }
     }
 }

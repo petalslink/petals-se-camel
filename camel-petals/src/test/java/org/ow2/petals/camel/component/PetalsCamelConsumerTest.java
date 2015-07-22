@@ -55,7 +55,7 @@ public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
     public void testSend() throws Exception {
         final String content = "<aa/>";
 
-        resultEndpoint().expectedBodiesReceived(content);
+        expectBodyReceived(resultEndpoint(), content);
 
         final Exchange petalsExchange = pcc().createExchange("serviceId1", content);
 
@@ -63,5 +63,4 @@ public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
 
         resultEndpoint().assertIsSatisfied();
     }
-
 }
