@@ -85,13 +85,14 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void testMessageTimeoutAndSUStillWorks() throws Exception {
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
-        final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, ""), new ExternalServiceImplementation() {
+        final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, "<aa/>"),
+                new ExternalServiceImplementation() {
             @Override
             public ResponseMessage provides(final RequestMessage request) throws Exception {
                 // let's wait more than the timeout duration
                 Thread.sleep(2000);
                 // this shouldn't be returned normally...
-                return ExternalServiceImplementation.outMessage("").provides(request);
+                return outMessage("<bb/>").provides(request);
             }
         }, isHelloRequest());
 
