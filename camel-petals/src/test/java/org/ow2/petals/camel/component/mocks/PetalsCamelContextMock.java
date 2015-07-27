@@ -44,7 +44,7 @@ import org.ow2.petals.commons.Constants;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
-import org.ow2.petals.jbi.messaging.exchange.MessageExchangeImpl;
+import org.ow2.petals.jbi.messaging.exchange.impl.MessageExchangeImpl;
 import org.w3c.dom.DocumentFragment;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
