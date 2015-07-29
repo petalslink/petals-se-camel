@@ -128,7 +128,7 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
             public void run() {
                 List<org.apache.camel.Exchange> receivedExchanges = endpoint.getReceivedExchanges();
                 org.apache.camel.Exchange exchange = receivedExchanges.iterator().next();
-                assertTrue("No exchange received.", exchange != null);
+                assert exchange != null;
 
                 try {
                     assertSimilar(new Diff(content, getContent(exchange.getIn())));
