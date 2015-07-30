@@ -91,6 +91,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
         // TODO should I update the poperties of the exchange with those of the camel exchange?
+        // Careful with the flow attributes... !
 
         try {
             Conversions.populateAnswerPetalsExchange(exchange, camelExchange);

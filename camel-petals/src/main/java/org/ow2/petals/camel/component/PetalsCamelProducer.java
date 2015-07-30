@@ -27,6 +27,9 @@ import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.component.utils.Conversions;
+import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.commons.log.FlowAttributesExchangeProperties;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
@@ -97,6 +100,11 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             // TODO and also I should take into account the MEP of the endpoint??!!
 
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
+
+            // TODO fix that, it's not nice, there is work to do for properties...
+            final FlowAttributes flowAttributes = PetalsExecutionContext.getFlowAttributes();
+            exchange.setProperty(FlowAttributesExchangeProperties.FLOW_INSTANCE_ID, flowAttributes.getFlowInstanceId());
+            exchange.setProperty(FlowAttributesExchangeProperties.FLOW_STEP_ID, flowAttributes.getFlowStepId());
 
             if (doSync) {
                 // false means timed out!
