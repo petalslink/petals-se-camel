@@ -103,8 +103,11 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
             // TODO fix that, it's not nice, there is work to do for properties...
             final FlowAttributes flowAttributes = PetalsExecutionContext.getFlowAttributes();
-            exchange.setProperty(FlowAttributesExchangeProperties.FLOW_INSTANCE_ID, flowAttributes.getFlowInstanceId());
-            exchange.setProperty(FlowAttributesExchangeProperties.FLOW_STEP_ID, flowAttributes.getFlowStepId());
+            if (flowAttributes != null) {
+                exchange.setProperty(FlowAttributesExchangeProperties.FLOW_INSTANCE_ID,
+                        flowAttributes.getFlowInstanceId());
+                exchange.setProperty(FlowAttributesExchangeProperties.FLOW_STEP_ID, flowAttributes.getFlowStepId());
+            }
 
             if (doSync) {
                 // false means timed out!
