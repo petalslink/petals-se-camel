@@ -129,10 +129,11 @@ public class CamelJBIListener extends AbstractJBIListener {
                     "Received an async answer, let's continue our execution for the exchange "
                             + asyncContext.getOriginalExchange().getExchangeId());
 
-            // let's reinitialise the flow attributes of the current thread with the right data
-            PetalsExecutionContext.putFlowAttributes(exchange.getFlowAttributes());
-
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
+
+            // let's reinitialise the flow attributes of the current thread with the right data
+            PetalsExecutionContext.putFlowAttributes(context.getFlowAttributes());
+
             context.getCallback().done(timedOut);
         }
 

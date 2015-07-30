@@ -27,6 +27,7 @@ import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 public abstract class AbstractServiceEndpointOperation implements ServiceEndpointOperation, PetalsChannel {
@@ -76,7 +77,8 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     @Override
     public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
             throws MessagingException {
-        sender.sendAsync(exchange, new PetalsCamelAsyncContext(exchange, timeout, callback));
+        sender.sendAsync(exchange,
+                new PetalsCamelAsyncContext(exchange, timeout, callback, PetalsExecutionContext.getFlowAttributes()));
     }
 
     @Override
