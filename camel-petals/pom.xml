@@ -44,6 +44,10 @@
          <artifactId>petals-commons</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-commons-log</artifactId>
+      </dependency>
+      <dependency>
          <!-- And on that?! -->
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-core</artifactId>
