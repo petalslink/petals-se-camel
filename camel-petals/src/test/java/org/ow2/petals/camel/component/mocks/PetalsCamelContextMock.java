@@ -47,7 +47,6 @@ import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.jbi.messaging.exchange.impl.MessageExchangeImpl;
 import org.w3c.dom.DocumentFragment;
 
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.uuid.QualifiedUUIDGenerator;
 import com.google.common.collect.Maps;
 
@@ -251,11 +250,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     private static void setRole(final Exchange exchange, final Role role) {
-        try {
-            ((MessageExchangeImpl) ((ExchangeImpl) exchange).getMessageExchange()).setRole(role);
-        } catch (MessagingException e) {
-            throw new UncheckedException(e);
-        }
+        ((MessageExchangeImpl) ((ExchangeImpl) exchange).getMessageExchange()).setRole(role);
     }
 
     public class MockConsumesChannel extends MockChannel implements PetalsConsumesChannel {
