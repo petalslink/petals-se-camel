@@ -133,11 +133,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     /**
      * We undeploy services after each test (because the component is static and lives during the whole suite of tests)
-     * 
-     * @throws InterruptedException
      */
     @After
-    public void after() throws InterruptedException {
+    public void after() {
 
         COMPONENT_UNDER_TEST.undeployAllServices();
 

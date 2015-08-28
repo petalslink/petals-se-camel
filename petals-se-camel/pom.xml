@@ -82,12 +82,10 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-junit</artifactId>
-         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-junit-external-resources</artifactId>
-         <scope>test</scope>
       </dependency>
       <!-- Other test dependencies -->
       <dependency>
