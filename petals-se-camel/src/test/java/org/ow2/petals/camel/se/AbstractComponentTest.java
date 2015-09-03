@@ -114,7 +114,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     @BeforeClass
     public static void attachInMemoryLoggerToLogger() {
-        Logger.getLogger("").addHandler(IN_MEMORY_LOG_HANDLER.getHandler());
+        COMPONENT_UNDER_TEST.addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
     }
 
     /**
