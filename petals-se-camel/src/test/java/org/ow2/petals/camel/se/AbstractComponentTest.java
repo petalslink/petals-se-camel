@@ -22,7 +22,6 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -41,6 +40,7 @@ import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
@@ -150,10 +150,10 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static ServiceConfiguration createHelloConsumes() {
         final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
                 EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
-        consumes.setParameter(new QName(CDK_JBI_NS, "mep"), "InOut");
-        consumes.setParameter(new QName(CDK_JBI_NS, "operation"), HELLO_OPERATION.toString());
+        consumes.setOperation(HELLO_OPERATION.getLocalPart());
+        consumes.setMEP(MEPType.IN_OUT);
         // let's use a smaller timeout time by default
-        consumes.setParameter(new QName(CDK_JBI_NS, "timeout"), "" + DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
+        consumes.setTimeout(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
         consumes.setParameter(new QName(SE_CAMEL_JBI_NS, "service-id"), EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
