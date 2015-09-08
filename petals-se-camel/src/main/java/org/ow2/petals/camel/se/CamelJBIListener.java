@@ -107,18 +107,20 @@ public class CamelJBIListener extends AbstractJBIListener {
     @Override
     public boolean onAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext) {
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(exchange, asyncContext, false);
+        handleAsyncJBIMessage(exchange, asyncContext, false);
+        // always return false, we will take care of answering
+        return false;
     }
 
     @NonNullByDefault(false)
     @Override
-    public boolean onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
+    public void onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
         // this is when I sent something asynchronously but it timeouted!
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(originalExchange, asyncContext, true);
+        handleAsyncJBIMessage(originalExchange, asyncContext, true);
     }
 
-    private boolean handleAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext,
+    private void handleAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext,
             final boolean timedOut) {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
             this.getLogger().warning("Got an async context not from me for the exchange " + exchange.getExchangeId());
@@ -134,9 +136,6 @@ public class CamelJBIListener extends AbstractJBIListener {
 
             context.getCallback().done(timedOut);
         }
-
-        // always return false, we will take care of answering
-        return false;
     }
 
     @SuppressWarnings("null")
