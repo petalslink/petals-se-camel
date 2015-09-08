@@ -78,7 +78,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
             throws MessagingException {
         sender.sendAsync(exchange,
-                new PetalsCamelAsyncContext(exchange, timeout, callback, PetalsExecutionContext.getFlowAttributes()));
+                new PetalsCamelAsyncContext(timeout, callback, PetalsExecutionContext.getFlowAttributes()));
     }
 
     @Override

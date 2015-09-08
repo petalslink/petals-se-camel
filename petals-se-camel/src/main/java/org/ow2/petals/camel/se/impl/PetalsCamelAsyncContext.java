@@ -27,9 +27,9 @@ public class PetalsCamelAsyncContext extends AsyncContext {
 
     private final FlowAttributes flowAttributes;
 
-    public PetalsCamelAsyncContext(final org.ow2.petals.component.framework.api.message.Exchange originalExchange,
-            final long ttl, final SendAsyncCallback callback, final FlowAttributes flowAttributes) {
-        super(originalExchange, ttl);
+    public PetalsCamelAsyncContext(final long ttl, final SendAsyncCallback callback,
+            final FlowAttributes flowAttributes) {
+        super(ttl);
         this.callback = callback;
         this.flowAttributes = flowAttributes;
     }
