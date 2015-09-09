@@ -60,10 +60,6 @@ public class Conversions {
 
         camelExchange.setExchangeId(exchange.getExchangeId());
 
-        for (String prop : exchange.getPropertyNames()) {
-            camelExchange.setProperty(prop, exchange.getProperty(prop));
-        }
-
         populateCamelMessage(camelExchange.getIn(), exchange.getInMessage());
     }
 
@@ -125,11 +121,6 @@ public class Conversions {
     public static void populateNewPetalsExchange(
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final Exchange camelExchange)
             throws MessagingException {
-
-        for (final Entry<String, Object> e : camelExchange.getProperties().entrySet()) {
-            exchange.setProperty(e.getKey(), e.getValue());
-        }
-
         Conversions.populateNormalizedMessage(exchange.getInMessage(), camelExchange.getIn());
     }
 
