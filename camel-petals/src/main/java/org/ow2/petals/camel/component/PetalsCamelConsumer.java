@@ -122,7 +122,11 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                     } else {
                         final URI mep = exchange.getPattern();
                         if (expectingAnswer && exchange.isDoneStatus()) {
-                            provides.getLogger().info("Correctly received acknowledgment for our previous answer");
+                            if (provides.getLogger().isLoggable(Level.FINE)) {
+                                provides.getLogger()
+                                        .fine("Correctly received acknowledgment for our previous answer (id: "
+                                                + exchange.getExchangeId() + ")");
+                            }
                             // TODO shouldn't that be transfered back to the original caller?!
                         } else if (MEPConstants.IN_OPTIONAL_OUT_PATTERN.equals(mep) && wasOut
                                 && exchange.getFault() != null) {
