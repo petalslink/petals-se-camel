@@ -18,27 +18,18 @@
 package org.ow2.petals.camel.se.impl;
 
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
-import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
 
 public class PetalsCamelAsyncContext extends AsyncContext {
 
     private final SendAsyncCallback callback;
 
-    private final FlowAttributes flowAttributes;
-
-    public PetalsCamelAsyncContext(final long ttl, final SendAsyncCallback callback,
-            final FlowAttributes flowAttributes) {
+    public PetalsCamelAsyncContext(final long ttl, final SendAsyncCallback callback) {
         super(ttl);
         this.callback = callback;
-        this.flowAttributes = flowAttributes;
     }
 
     public SendAsyncCallback getCallback() {
         return callback;
-    }
-
-    public FlowAttributes getFlowAttributes() {
-        return flowAttributes;
     }
 }

@@ -26,7 +26,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
@@ -130,9 +129,6 @@ public class CamelJBIListener extends AbstractJBIListener {
                     + exchange.getExchangeId());
 
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
-
-            // let's reinitialise the flow attributes of the current thread with the right data
-            PetalsExecutionContext.putFlowAttributes(context.getFlowAttributes());
 
             context.getCallback().done(timedOut);
         }
