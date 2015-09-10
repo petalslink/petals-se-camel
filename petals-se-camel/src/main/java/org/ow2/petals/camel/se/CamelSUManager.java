@@ -20,8 +20,11 @@ package org.ow2.petals.camel.se;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+
+import javax.jbi.JBIException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
@@ -91,10 +94,17 @@ public class CamelSUManager extends AbstractServiceUnitManager {
 
     private CamelSU createCamelSU(final String serviceUnitName) throws PetalsCamelSEException {
 
+        final Logger suLogger;
+        try {
+            suLogger = this.component.getContext().getLogger(serviceUnitName, null);
+        } catch (MissingResourceException | JBIException e) {
+            throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
+        }
+
         final ServiceUnitDataHandler suDH = getSUDataHandler(serviceUnitName);
 
         final Map<String, ServiceEndpointOperation> sid2seo = PetalsCamelJBIHelper
-                .extractServicesIdAndEndpointOperations(suDH, getCamelSE());
+                .extractServicesIdAndEndpointOperations(suDH, new PetalsCamelSender(getCamelSE(), suLogger));
 
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
@@ -108,7 +118,7 @@ public class CamelSUManager extends AbstractServiceUnitManager {
                 .getClassLoader());
 
         return new CamelSU(ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
-                ImmutableList.copyOf(xmlNames), classLoader, this);
+                ImmutableList.copyOf(xmlNames), classLoader, suLogger, this);
     }
 
     /**
@@ -170,11 +180,6 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         }
 
         return ppo;
-    }
-
-    @SuppressWarnings("null")
-    public Logger getLogger() {
-        return this.logger;
     }
 
     private EndpointOperationKey buildEOK(final ServiceEndpointOperation seo) {

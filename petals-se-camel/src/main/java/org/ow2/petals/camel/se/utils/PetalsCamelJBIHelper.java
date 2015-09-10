@@ -33,7 +33,6 @@ import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLReader;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.camel.se.CamelSE;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
@@ -86,7 +85,7 @@ public class PetalsCamelJBIHelper {
      * @throws InvalidJBIConfigurationException
      */
     public static Map<String, ServiceEndpointOperation> extractServicesIdAndEndpointOperations(
-            final ServiceUnitDataHandler suDH, final CamelSE component)
+            final ServiceUnitDataHandler suDH, final PetalsCamelSender sender)
             throws InvalidJBIConfigurationException {
 
         final Jbi jbiDescriptor = suDH.getDescriptor();
@@ -114,8 +113,8 @@ public class PetalsCamelJBIHelper {
                     throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + od.serviceId
                             + ") in the operation " + od.operation);
                 }
-                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep,
-                        new PetalsCamelSender(component, p));
+                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep, sender,
+                        p);
                 if (sid2seo.containsValue(seo)) {
                     throw new InvalidJBIConfigurationException("Duplicate service " + seo);
                 }
@@ -126,8 +125,7 @@ public class PetalsCamelJBIHelper {
         // for consumes, there is one serviceId per consumes (because it includes the operation)
         for (final Consumes c : jbiDescriptor.getServices().getConsumes()) {
 
-            final ServiceEndpointOperation seo = new ServiceEndpointOperationConsumes(new PetalsCamelSender(component,
-                    c));
+            final ServiceEndpointOperation seo = new ServiceEndpointOperationConsumes(sender, c);
 
             final String serviceId = getServiceId(c, suDH);
 

@@ -21,7 +21,6 @@ import java.net.URI;
 
 import javax.jbi.messaging.MessagingException;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -32,22 +31,23 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 
 public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOperation implements PetalsConsumesChannel {
 
-    private final PetalsCamelSender sender;
+    private final Consumes consumes;
 
-    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender)
+    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender, final Consumes consumes)
             throws InvalidJBIConfigurationException {
-        super(sender.getConsumes().getServiceName(), sender.getConsumes().getInterfaceName(), sender.getConsumes()
-                .getEndpointName(), sender.getConsumes().getOperation(), ServiceType.CONSUMES, toMEP(sender
-                .getConsumes().getMep(), sender.getConsumes()), sender);
-        this.sender = sender;
+        super(consumes.getServiceName(), consumes.getInterfaceName(), consumes.getEndpointName(),
+                consumes.getOperation(), ServiceType.CONSUMES, toMEP(consumes), sender);
+        this.consumes = consumes;
     }
 
     @Override
     public Exchange newExchange() throws MessagingException {
-        return sender.createConsumeExchange(sender.getConsumes());
+        return sender.createConsumeExchange(consumes);
     }
 
-    private static URI toMEP(@Nullable final MEPType mep, final Consumes c) throws InvalidJBIConfigurationException {
+    private static URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
+
+        final MEPType mep = c.getMep();
 
         // default MEP in Camel SE
         if (mep == null) {

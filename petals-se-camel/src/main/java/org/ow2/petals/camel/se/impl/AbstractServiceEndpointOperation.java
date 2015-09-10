@@ -29,6 +29,14 @@ import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
+/**
+ * 
+ * Note: {@link PetalsCamelSender} overrides {@link PetalsCamelSender#getLogger()} in order to have a SU-specific
+ * logger. Also it has no consumes nor provides, so they shouldn't be relied on.
+ * 
+ * @author vnoel
+ *
+ */
 public abstract class AbstractServiceEndpointOperation implements ServiceEndpointOperation, PetalsChannel {
 
     private final QName service;
@@ -43,11 +51,11 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
 
     private final URI mep;
 
-    private final PetalsCamelSender sender;
+    protected final PetalsCamelSender sender;
 
     public AbstractServiceEndpointOperation(final QName service, final QName interfaceName, final String endpoint,
             final QName operation, final ServiceType type, final URI mep, final PetalsCamelSender sender)
-            throws InvalidJBIConfigurationException {
+                    throws InvalidJBIConfigurationException {
         this.service = service;
         this.interfaceName = interfaceName;
         this.endpoint = endpoint;
@@ -114,9 +122,8 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
         return mep;
     }
 
-    @SuppressWarnings("null")
     @Override
     public Logger getLogger() {
-        return sender.getLogger();
+        return this.sender.getLogger();
     }
 }

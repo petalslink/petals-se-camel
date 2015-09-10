@@ -73,12 +73,15 @@ public class CamelSU implements PetalsCamelContext {
 
     private final CamelSUManager manager;
 
-    public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo,
-            final ImmutableList<String> classNames, final ImmutableList<String> xmlNames,
-            final URLClassLoader classLoader, final CamelSUManager manager) throws PetalsCamelSEException {
+    private final Logger suLogger;
+
+    public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo, final ImmutableList<String> classNames,
+            final ImmutableList<String> xmlNames, final URLClassLoader classLoader, final Logger suLogger,
+            final CamelSUManager manager) throws PetalsCamelSEException {
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
         this.manager = manager;
+        this.suLogger = suLogger;
 
         this.context = new DefaultCamelContext();
 
@@ -182,6 +185,6 @@ public class CamelSU implements PetalsCamelContext {
 
     @Override
     public Logger getLogger() {
-        return this.manager.getLogger();
+        return this.suLogger;
     }
 }
