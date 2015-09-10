@@ -17,7 +17,7 @@
  */
 package org.ow2.petals.camel.component;
 
-import javax.jbi.JBIException;
+import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
@@ -83,7 +83,6 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
      *            a callback to call after, can be null
      * 
      * @return <code>true</code> if the processing was done synchronously
-     * @throws JBIException
      */
     private boolean process(final Exchange camelExchange, final boolean doSync, final AsyncCallback callback) {
 
@@ -122,7 +121,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                 });
                 return doneSync;
             }
-        } catch (final JBIException e) {
+        } catch (final MessagingException e) {
             // these exceptions can only happens before the message is sent (or if the send fails), so before
             // handleAnswer could be called, thus this is done synchronously in either case of doSync and the callback
             // must be called

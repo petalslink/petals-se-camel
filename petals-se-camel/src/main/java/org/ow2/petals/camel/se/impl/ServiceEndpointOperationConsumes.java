@@ -19,7 +19,7 @@ package org.ow2.petals.camel.se.impl;
 
 import java.net.URI;
 
-import javax.jbi.JBIException;
+import javax.jbi.messaging.MessagingException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -43,7 +43,7 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     }
 
     @Override
-    public Exchange newExchange() throws JBIException {
+    public Exchange newExchange() throws MessagingException {
         return sender.createConsumeExchange(sender.getConsumes());
     }
 

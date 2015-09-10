@@ -21,7 +21,6 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.jbi.JBIException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -263,7 +262,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
 
         @Override
-        public Exchange newExchange() throws JBIException {
+        public Exchange newExchange() throws MessagingException {
             return PetalsCamelContextMock.this.createExchange(serviceId);
         }
 
