@@ -69,18 +69,17 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     }
 
     /**
-     * There is three possible ways of doing the processing:
+     * There is two possible ways of doing the processing:
      * <ul>
      * <li>Asynchronously with a callback</li>
      * <li>Synchronously with a callback</li>
-     * <li>Synchronously and no callback</li>
      * </ul>
      * 
      * @param camelExchange
      * @param doSync
      *            if this processing must be done synchronously
      * @param callback
-     *            a callback to call after, can be null
+     *            a callback to call after, can't be null but can be no-op
      * 
      * @return <code>true</code> if the processing was done synchronously
      */
