@@ -108,7 +108,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
             // anything)
             // TODO and actually, shouldn't I WAIT for it before letting other continue, or before letting this method
             // to return... which others? maybe not then!
-            // TODO for now the timeout is not settable, let's use -1 as a starter...
+            // TODO for now the timeout is not settable, let's use default provides value (-1) as a starter...
             final boolean wasFault = exchange.getFault() != null;
             final boolean wasOut = exchange.isOutMessage();
             final boolean expectingAnswer = wasFault || wasOut;
