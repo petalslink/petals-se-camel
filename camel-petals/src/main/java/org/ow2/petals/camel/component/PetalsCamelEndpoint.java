@@ -64,7 +64,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         this.service = component.getContext().getService(serviceId);
 
         String mep = service.getMEP().toString();
-        if (mep.contains("in-opt-out")) {
+        if (mep.endsWith("/in-opt-out")) {
             // TODO It seems camel has the wrong URI for the pattern InOptionalOut!
             // This is fixed in version 2.16 of camel!
             mep = mep.substring(0, mep.lastIndexOf("/")) + "/in-optional-out";
