@@ -19,6 +19,8 @@
 
    <properties>
       <sonar.skip>true</sonar.skip>
+      <petals-se-camel.version>1.0.0-SNAPSHOT</petals-se-camel.version>
+      <camel.version>2.15.3</camel.version>
    </properties>
 
    <modules>
@@ -36,7 +38,25 @@
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${petals-se-camel.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version}</version>
+            <!-- provided by petals-se-camel -->
+            <scope>provided</scope>
+            <exclusions>
+               <!-- Provided by petals-se-camel -->
+               <exclusion>
+                  <artifactId>jaxb-core</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>jaxb-impl</artifactId>
+                  <groupId>com.sun.xml.bind</groupId>
+               </exclusion>
+            </exclusions>
          </dependency>
       </dependencies>
    </dependencyManagement>

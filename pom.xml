@@ -66,20 +66,10 @@
          </dependency>
          <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-parent</artifactId>
             <version>${camel.version}</version>
-            <exclusions>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-impl</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-core</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-            </exclusions>
+            <type>pom</type>
+            <scope>import</scope>
          </dependency>
          <dependency>
             <groupId>org.apache.camel</groupId>
@@ -87,16 +77,6 @@
             <version>${camel.version}</version>
             <scope>provided</scope>
             <exclusions>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-impl</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-core</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
                <exclusion>
                   <!-- Already in camel-core -->
                   <groupId>org.apache.camel</groupId>
@@ -109,18 +89,6 @@
             <artifactId>spi-annotations</artifactId>
             <version>${camel.version}</version>
             <scope>provided</scope>
-            <exclusions>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-impl</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-core</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-            </exclusions>
          </dependency>
          <dependency>
             <groupId>org.easymock</groupId>
@@ -138,39 +106,22 @@
             <version>1.6</version>
          </dependency>
          <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test</artifactId>
-            <version>${camel.version}</version>
-            <scope>test</scope>
-            <exclusions>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-impl</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-               <exclusion>
-                  <!-- Let's use the version from easy* -->
-                  <artifactId>jaxb-core</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-         </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <!-- We can use the latest version, it is backward compatible -->
-            <version>1.7.12</version>
-         </dependency>
-         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.12</version>
             <scope>runtime</scope>
+         </dependency>
+         <dependency>
+            <!-- Overrides camel-parent version to use the latest one -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
+         </dependency>
+         <dependency>
+            <!-- Overrides petals-root-parent version to use the one from camel -->
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
