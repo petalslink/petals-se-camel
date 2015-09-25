@@ -38,6 +38,13 @@
             <scope>import</scope>
          </dependency>
          <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-parent</artifactId>
+            <version>${camel.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-message-exchange</artifactId>
             <version>1.2.3-SNAPSHOT</version>
@@ -63,13 +70,6 @@
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-cdk-jbidescriptor</artifactId>
             <version>2.4.1-SNAPSHOT</version>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-parent</artifactId>
-            <version>${camel.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
          </dependency>
          <dependency>
             <groupId>org.apache.camel</groupId>
