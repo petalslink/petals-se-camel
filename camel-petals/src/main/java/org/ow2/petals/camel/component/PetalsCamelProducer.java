@@ -23,10 +23,8 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultAsyncProducer;
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
-import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.component.utils.Conversions;
 
 /**
@@ -36,6 +34,15 @@ import org.ow2.petals.camel.component.utils.Conversions;
  *
  */
 public class PetalsCamelProducer extends DefaultAsyncProducer {
+
+    // this is not really used as an exception for knowing where it happened
+    // we can thus reuse it and avoid the overhead of creating the exception
+    public static final MessagingException TIMEOUT_EXCEPTION = new MessagingException(
+            "A timeout happened while Camel sent an exchange to a JBI service");
+
+    static {
+        TIMEOUT_EXCEPTION.setStackTrace(new StackTraceElement[0]);
+    }
 
     private final PetalsConsumesChannel consumes;
 
@@ -97,16 +104,12 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
-            // let's create it now in case there is a timeout, because:
-            // 1) we still have ownership and need it to create the exception (not mandatory...)
-            // 2) it will record the correct location where the timeout occured!
-            final TimeoutException timeoutException = new TimeoutException(exchange);
             if (doSync) {
                 // false means timed out!
                 final boolean timedOut = !this.consumes.sendSync(exchange, timeout);
                 // this has been done synchronously
                 final boolean doneSync = true;
-                handleAnswer(camelExchange, exchange, timedOut ? timeoutException : null, doneSync, callback);
+                handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                 return doneSync;
             } else {
                 // this is done asynchronously (except if the send fail, but then the value of this variable won't be
@@ -115,7 +118,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                 this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
                     @Override
                     public void done(final boolean timedOut) {
-                        handleAnswer(camelExchange, exchange, timedOut ? timeoutException : null, doneSync, callback);
+                        handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                     }
                 });
                 return doneSync;
@@ -133,10 +136,10 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange,
-            @Nullable final Exception timeoutException,
+ final boolean timedOut,
             final boolean doneSync, final AsyncCallback callback) {
-        if (timeoutException != null) {
-            camelExchange.setException(timeoutException);
+        if (timedOut) {
+            camelExchange.setException(TIMEOUT_EXCEPTION);
         } else {
             // TODO should properties of the camel exchange be updated with those of the received response?!
             Conversions.populateAnswerCamelExchange(camelExchange, exchange);

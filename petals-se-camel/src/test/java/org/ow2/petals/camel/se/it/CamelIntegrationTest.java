@@ -24,7 +24,7 @@ import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
-import org.ow2.petals.camel.component.exceptions.TimeoutException;
+import org.ow2.petals.camel.component.PetalsCamelProducer;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -98,7 +98,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         assertNotNull(response.getError());
         assertTrue(response.getError() instanceof MessagingException);
-        assertTrue(response.getError().getMessage().contains(TimeoutException.class.getName()));
+        assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
 
         // let's wait for the external service to finally answer before clearing the channel
         Thread.sleep(2000);
