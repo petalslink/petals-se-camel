@@ -20,8 +20,6 @@ package org.ow2.petals.camel.se.it;
 import java.util.List;
 import java.util.logging.LogRecord;
 
-import javax.jbi.messaging.MessagingException;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
 import org.ow2.petals.camel.component.PetalsCamelProducer;
@@ -97,21 +95,42 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         }, isHelloRequest());
 
         assertNotNull(response.getError());
-        assertTrue(response.getError() instanceof MessagingException);
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
 
-        // let's wait for the external service to finally answer before clearing the channel
+        // let's wait for the external service to finally answer before continuing
         Thread.sleep(2000);
 
-        // there will be left-overs (the timeout answer to the external service), let's remove them!
-        COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
-        // let's also clear logs
+        // the answer should be handled by the CDK at that point
+        assertEquals(0, COMPONENT_UNDER_TEST.getRequestsFromConsumerCount());
+
+        assertMONITFailureOK();
+
+        // let's clear logs
         IN_MEMORY_LOG_HANDLER.clear();
 
         // and now let's send another message that should work
         sendHelloIdentity(SU_NAME);
 
         assertMONITOk();
+    }
+
+    public void assertMONITFailureOK() {
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(4, monitLogs.size());
+        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, null, HELLO_OPERATION,
+                monitLogs.get(0));
+        
+        // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
+        // doesn't see the timeout
+        assertMonitProviderFailureLog(firstLog, monitLogs.get(2));
+
+        final FlowLogData secondLog = assertMonitProviderBeginLog(
+                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
+                HELLO_SERVICE, null, HELLO_OPERATION, monitLogs.get(1));
+        // TODO this assert won't work because of the timeout and the fact that the provider can't see it, see also
+        // PETALSCDK-101
+        // assertMonitProviderFailureLog(secondLog, monitLogs.get(2));
     }
 
     public void assertMONITOk() {
