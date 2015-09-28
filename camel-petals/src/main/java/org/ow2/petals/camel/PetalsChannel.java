@@ -45,6 +45,7 @@ public interface PetalsChannel {
      * If timeout is less than 0 then we use the consumes or provides default timeout value, if equals to 0 then no
      * timeout.
      * 
+     * @return true if the send did not timeout
      * @throws MessagingException
      * 
      */

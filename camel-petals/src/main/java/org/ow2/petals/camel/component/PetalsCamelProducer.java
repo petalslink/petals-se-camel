@@ -134,8 +134,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     }
 
     private void handleAnswer(final Exchange camelExchange,
-            final org.ow2.petals.component.framework.api.message.Exchange exchange,
- final boolean timedOut,
+            final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
             final boolean doneSync, final AsyncCallback callback) {
         if (timedOut) {
             camelExchange.setException(TIMEOUT_EXCEPTION);
