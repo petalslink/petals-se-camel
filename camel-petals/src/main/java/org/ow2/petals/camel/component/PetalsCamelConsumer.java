@@ -30,7 +30,11 @@ import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
+import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Message.MEPConstants;
+import org.ow2.petals.component.framework.message.ExchangeImpl;
 
 // TODO should I be suspendable?
 public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelRoute {
@@ -103,6 +107,24 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                                 .fine("Handling a Camel exchange (with id: " + exchange.getExchangeId()
                                         + ") processed by the route in async mode "
                                         + (doneSync ? "(but executed in sync mode apparently)" : ""));
+                    }
+
+                    // Here, we are not sure if we are in the same thread as before because we went potentially went
+                    // through Camel, and we need the context to be filled if possible for the sendAsync to work as best
+                    // as possible
+                    if (PetalsExecutionContext.getFlowAttributes() == null) {
+                        final FlowAttributes flowAttributes = FlowAttributesExchangeHelper
+                                .getFlowAttributes(((ExchangeImpl) exchange).getMessageExchange());
+
+                        if (PetalsCamelConsumer.this.provides.getLogger().isLoggable(Level.FINE)) {
+                            PetalsCamelConsumer.this.provides.getLogger()
+                                    .fine("Missing flow attributes in the context (we were in async mode in Camel, so we may have switched threads or something like that...), trying to set it with those from the Petals exchange (with id "
+                                            + exchange.getExchangeId() + "): " + flowAttributes);
+                        }
+
+                        if (flowAttributes != null) {
+                            PetalsExecutionContext.putFlowAttributes(flowAttributes);
+                        }
                     }
 
                     handleAnswer(camelExchange, exchange);
