@@ -66,6 +66,12 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
 
         if (getEndpoint().isSynchronous()) {
             // in that case, this method won't return until the route is fully executed
+
+            if (this.provides.getLogger().isLoggable(Level.FINE)) {
+                this.provides.getLogger().fine("Processing a Camel exchange (with id: " + exchange.getExchangeId()
+                        + ") with the route in sync mode");
+            }
+
             try {
                 getProcessor().process(camelExchange);
             } catch (final Exception e) {
@@ -73,14 +79,32 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                         "Just set an error on the Petals Exchange " + exchange.getExchangeId(), e);
                 exchange.setError(e);
             }
+
+            if (PetalsCamelConsumer.this.provides.getLogger().isLoggable(Level.FINE)) {
+                PetalsCamelConsumer.this.provides.getLogger().fine("Handling a Camel exchange (with id: "
+                        + exchange.getExchangeId() + ") processed by the route in sync mode ");
+            }
+
             handleAnswer(camelExchange, exchange);
             return true;
         } else {
+            if (this.provides.getLogger().isLoggable(Level.FINE)) {
+                this.provides.getLogger().fine("Processing a Camel exchange (with id: " + exchange.getExchangeId()
+                        + ") with the route in async mode");
+            }
             return getAsyncProcessor().process(camelExchange, new AsyncCallback() {
                 @Override
                 public void done(final boolean doneSync) {
                     // no need to use doneSync: if it is true it just means we are being executed synchronously (w.r.t.
                     // the execution of process from this class).
+
+                    if (PetalsCamelConsumer.this.provides.getLogger().isLoggable(Level.FINE)) {
+                        PetalsCamelConsumer.this.provides.getLogger()
+                                .fine("Handling a Camel exchange (with id: " + exchange.getExchangeId()
+                                        + ") processed by the route in async mode "
+                                        + (doneSync ? "(but executed in sync mode apparently)" : ""));
+                    }
+
                     handleAnswer(camelExchange, exchange);
                 }
             });
