@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.util.logging.Level;
+
 import javax.jbi.JBIException;
 import javax.jbi.messaging.MessagingException;
 
@@ -127,6 +129,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             // handleAnswer could be called, thus this is done synchronously in either case of doSync and the callback
             // must be called
             final boolean doneSync = true;
+            this.consumes.getLogger().log(Level.SEVERE,
+                    "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             camelExchange.setException(e);
             callback.done(doneSync);
             return doneSync;
