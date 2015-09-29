@@ -25,6 +25,7 @@ import javax.jbi.messaging.MessagingException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
@@ -132,6 +133,12 @@ public class CamelJBIListener extends AbstractJBIListener {
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
 
             // let's reinitialise the flow attributes of the current thread with the right data
+            final FlowAttributes flowAttributes = context.getFlowAttributes();
+            if (flowAttributes != null) {
+                // this can happen if there was no flow attributes in the message at the beginning
+                PetalsExecutionContext.putFlowAttributes(flowAttributes);
+            }
+
             PetalsExecutionContext.putFlowAttributes(context.getFlowAttributes());
 
             context.getCallback().done(timedOut);
