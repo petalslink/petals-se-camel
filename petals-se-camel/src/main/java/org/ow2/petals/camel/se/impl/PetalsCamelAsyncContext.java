@@ -26,6 +26,7 @@ public class PetalsCamelAsyncContext extends AsyncContext {
 
     public PetalsCamelAsyncContext(final long ttl, final SendAsyncCallback callback) {
         super(ttl);
+        assert callback != null;
         this.callback = callback;
     }
 
