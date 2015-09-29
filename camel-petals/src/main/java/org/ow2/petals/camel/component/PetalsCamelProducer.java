@@ -107,19 +107,45 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
 
             if (doSync) {
+
+                if (this.consumes.getLogger().isLoggable(Level.FINE)) {
+                    this.consumes.getLogger().log(Level.FINE,
+                            "Sending a Petals exchange (with id: " + exchange.getExchangeId() + ") in sync mode");
+                }
+
                 // false means timed out!
                 final boolean timedOut = !this.consumes.sendSync(exchange, timeout);
                 // this has been done synchronously
                 final boolean doneSync = true;
+
+                if (this.consumes.getLogger().isLoggable(Level.FINE)) {
+                    this.consumes.getLogger().log(Level.FINE, "Handling a Petals exchange (with id: "
+                            + exchange.getExchangeId() + ") back from a send in sync mode ");
+                }
+
                 handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                 return doneSync;
             } else {
                 // this is done asynchronously (except if the send fail, but then the value of this variable won't be
                 // used because the callback will never be called)
                 final boolean doneSync = false;
+
+                if (this.consumes.getLogger().isLoggable(Level.FINE)) {
+                    this.consumes.getLogger().log(Level.FINE,
+                            "Sending a Petals exchange (with id: " + exchange.getExchangeId() + ") in async mode");
+                }
+
                 this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
                     @Override
                     public void done(final boolean timedOut) {
+
+                        if (PetalsCamelProducer.this.consumes.getLogger().isLoggable(Level.FINE)) {
+                            PetalsCamelProducer.this.consumes.getLogger().log(Level.FINE,
+                                    "Handling a Petals exchange (with id: " + exchange.getExchangeId()
+                                            + ") back from a send in async mode "
+                                            + (doneSync ? "(but executed in sync mode apparently)" : ""));
+                        }
+
                         handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
                     }
                 });
