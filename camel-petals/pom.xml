@@ -25,6 +25,10 @@
          <artifactId>easywsdl-wsdl</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.ow2.easycommons</groupId>
+         <artifactId>easycommons-lang</artifactId>
+      </dependency>
+      <dependency>
          <!-- Should we be depending on that in camel-petals?! -->
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-api</artifactId>
@@ -48,6 +52,11 @@
          <!-- And on that?! -->
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-core</artifactId>
+      </dependency>
+      <dependency>
+         <!-- And on that?! -->
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-steplog</artifactId>
       </dependency>
       <dependency>
          <groupId>javax.activation</groupId>

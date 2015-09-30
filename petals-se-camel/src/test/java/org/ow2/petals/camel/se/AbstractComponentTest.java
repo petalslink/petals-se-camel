@@ -40,6 +40,7 @@ import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.Message;
@@ -129,6 +130,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
         COMPONENT_UNDER_TEST.clearResponsesFromProvider();
         // note: incoming messages queue can't be cleared because it is the job of the tested component to well handle
         // any situation
+        // JUnit is susceptible to reuse threads apparently
+        PetalsExecutionContext.clear();
     }
 
     /**

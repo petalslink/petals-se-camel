@@ -17,11 +17,15 @@
  */
 package org.ow2.petals.camel.se.it;
 
+import java.io.File;
 import java.util.List;
 import java.util.logging.LogRecord;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.commons.io.FileUtils;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.ow2.petals.camel.component.PetalsCamelProducer;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
@@ -114,6 +118,47 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         assertMONITOk();
     }
 
+    @ClassRule
+    public static final TemporaryFolder AS_BC_FOLDER = new TemporaryFolder();
+
+    public static final String CAMEL_IN_FOLDER = "in";
+
+    public static class RouteBC extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+
+            from("file://" + new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER).getAbsolutePath())
+                    .to("petals:theConsumesId");
+        }
+    }
+
+    @Test
+    public void testAsBC() throws Exception {
+        // we won't be using the provides, but it's ok
+        deployHello(SU_NAME, WSDL11, RouteBC.class);
+
+        final File file = AS_BC_FOLDER.newFile("test");
+        FileUtils.writeStringToFile(file, "<a />");
+        final File camelInFolder = new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER);
+
+        final File fileInCamelFolder = new File(camelInFolder, file.getName());
+
+        assertTrue(file.renameTo(fileInCamelFolder));
+
+        assertTrue(fileInCamelFolder.exists());
+
+        receiveAsExternalProvider(ExternalServiceImplementation.outMessage("<b />"), 3000);
+
+        // let's sleep a bit for things to end
+        Thread.sleep(1000);
+
+        assertFalse(fileInCamelFolder.exists());
+        assertTrue(new File(new File(camelInFolder, ".camel"), fileInCamelFolder.getName()).exists());
+
+        assertMONITasBCOk();
+
+    }
+
     public void assertMONITFailureOK() {
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
@@ -127,7 +172,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         final FlowLogData secondLog = assertMonitProviderBeginLog(
                 (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
-                HELLO_SERVICE, null, HELLO_OPERATION, monitLogs.get(1));
+                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
         // TODO this assert won't work because of the timeout and the fact that the provider can't see it, see also
         // PETALSCDK-101
         // assertMonitProviderFailureLog(secondLog, monitLogs.get(2));
@@ -143,7 +188,23 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         final FlowLogData secondLog = assertMonitProviderBeginLog(
                 (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
-                HELLO_SERVICE, null, HELLO_OPERATION, monitLogs.get(1));
+                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+        assertMonitProviderEndLog(secondLog, monitLogs.get(2));
+    }
+
+    private void assertMONITasBCOk() {
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(4, monitLogs.size());
+
+        final FlowLogData firstLog = assertMonitConsumerBeginLog(HELLO_INTERFACE, HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME,
+                HELLO_OPERATION,
+                monitLogs.get(0));
+        assertMonitConsumerEndLog(firstLog, monitLogs.get(3));
+
+        final FlowLogData secondLog = assertMonitProviderBeginLog(
+                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
+                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
         assertMonitProviderEndLog(secondLog, monitLogs.get(2));
     }
 }
