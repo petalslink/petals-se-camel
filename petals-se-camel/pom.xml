@@ -14,6 +14,7 @@
    <name>Petals ESB - Components - SE Camel</name>
    <artifactId>petals-se-camel</artifactId>
    <packaging>jbi-component</packaging>
+   <version>1.0.0-SNAPSHOT</version>
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
@@ -132,15 +133,6 @@
 
    <build>
       <plugins>
-         <plugin>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>maven-petals-plugin</artifactId>
-            <version>2.4.0-SNAPSHOT</version>
-            <extensions>true</extensions>
-            <configuration>
-               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
-            </configuration>
-         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
