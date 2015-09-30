@@ -49,11 +49,6 @@
             <version>1.2.3</version>
          </dependency>
          <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-commons-log</artifactId>
-            <version>1.0.3</version>
-         </dependency>
-         <dependency>
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>org.eclipse.jdt.annotation</artifactId>
             <version>1.1.0</version>
@@ -61,16 +56,7 @@
             <scope>provided</scope>
          </dependency>
          <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-cdk-api</artifactId>
-            <version>2.4.1</version>
-         </dependency>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-cdk-jbidescriptor</artifactId>
-            <version>2.4.1</version>
-         </dependency>
-         <dependency>
+            <!-- Remove when it is added to petals-cdkbased-components-parent -->
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-cdk-steplog</artifactId>
             <version>1.0.0</version>
