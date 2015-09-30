@@ -17,18 +17,26 @@
  */
 package org.ow2.petals.camel.component;
 
-import java.util.logging.Level;
 
 import javax.jbi.JBIException;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultAsyncProducer;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
+import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
+import org.ow2.petals.component.framework.logger.ConsumeFlowStepBeginLogData;
+import org.ow2.petals.component.framework.logger.Utils;
+
+import com.ebmwebsourcing.easycommons.lang.StringHelper;
 
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
@@ -98,12 +106,42 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
         final long timeout = getEndpoint().getTimeout();
 
+        final FlowAttributes faAsBC;
+        if (PetalsExecutionContext.getFlowAttributes() == null) {
+            // if there is no flow attributes set, it can means 3 things:
+            // 1) we received an exchange from petals without flow attributes in the beginning of this route
+            // 2) we lost the context flow attributes because we switched threads (because of async execution)
+            // 3) we never received a petals and we are acting as a BC
+            this.consumes.getLogger().log(Level.WARNING,
+                    "There is no flow attributes in the Execution Context: "
+                            + "either we lost them somewhere in the route, "
+                            + "either we received a petals exchange without flow attributes "
+                            + "or we are acting as a BC and we are starting a new flow. "
+                            + "We assume the later and initialise a new flow.");
+            PetalsExecutionContext.clear();
+            PetalsExecutionContext.initFlowInstanceId();
+            PetalsExecutionContext.nextFlowStepId();
+            faAsBC = PetalsExecutionContext.getFlowAttributes();
+        } else {
+            faAsBC = null;
+        }
+
         try {
+
             final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
 
             // TODO should I check that the camel exchange has the same MEP as the consumes MEP?
 
             Conversions.populateNewPetalsExchange(exchange, camelExchange);
+
+            if (faAsBC != null) {
+                this.consumes.getLogger().log(Level.MONIT, "",
+                        new ConsumeFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(),
+                                StringHelper.nonNullValue(exchange.getInterfaceName()),
+                                StringHelper.nonNullValue(exchange.getService()),
+                                StringHelper.nonNullValue(exchange.getEndpointName()),
+                                StringHelper.nonNullValue(exchange.getOperation())));
+            }
 
             if (doSync) {
 
@@ -122,7 +160,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                             + exchange.getExchangeId() + ") back from a send in sync mode ");
                 }
 
-                handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
+                handleAnswer(camelExchange, exchange, timedOut, doneSync, callback, faAsBC);
                 return doneSync;
             } else {
                 // this is done async (except if the send fail, but then the value of this variable won't be used
@@ -145,7 +183,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                                             + (doneSync ? "(but executed in sync mode apparently)" : ""));
                         }
 
-                        handleAnswer(camelExchange, exchange, timedOut, doneSync, callback);
+                        handleAnswer(camelExchange, exchange, timedOut, doneSync, callback, faAsBC);
                     }
                 });
                 return doneSync;
@@ -157,6 +195,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             final boolean doneSync = true;
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
+            if (faAsBC != null) {
+                Utils.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e.getMessage(), Role.CONSUMER);
+            }
             camelExchange.setException(e);
             callback.done(doneSync);
             return doneSync;
@@ -165,13 +206,17 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
-            final boolean doneSync, final AsyncCallback callback) {
+            final boolean doneSync, final AsyncCallback callback, @Nullable final FlowAttributes faAsBC) {
         if (timedOut) {
             camelExchange.setException(TIMEOUT_EXCEPTION);
         } else {
             // TODO should properties of the camel exchange be updated with those of the received response?!
             Conversions.populateAnswerCamelExchange(camelExchange, exchange);
         }
+        if (faAsBC != null) {
+            Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
+        }
+
         callback.done(doneSync);
     }
 

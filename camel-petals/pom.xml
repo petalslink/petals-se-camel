@@ -24,6 +24,10 @@
          <artifactId>easywsdl-wsdl</artifactId>
       </dependency>
       <dependency>
+         <groupId>com.ebmwebsourcing.easycommons</groupId>
+         <artifactId>easycommons-lang</artifactId>
+      </dependency>
+      <dependency>
          <!-- Should we be depending on that in camel-petals?! -->
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-api</artifactId>
