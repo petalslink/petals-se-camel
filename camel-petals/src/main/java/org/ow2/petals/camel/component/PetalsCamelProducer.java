@@ -139,7 +139,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                         new ConsumeFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(),
                                 StringHelper.nonNullValue(exchange.getInterfaceName()),
                                 StringHelper.nonNullValue(exchange.getService()),
-                                StringHelper.nonNullValue(exchange.getEndpointName()),
+                                exchange.getEndpoint() == null ? null
+                                        : StringHelper.nonNullValue(exchange.getEndpoint().getEndpointName()),
                                 StringHelper.nonNullValue(exchange.getOperation())));
             }
 
