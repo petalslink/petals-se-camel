@@ -139,8 +139,6 @@ public class CamelJBIListener extends AbstractJBIListener {
                 PetalsExecutionContext.putFlowAttributes(flowAttributes);
             }
 
-            PetalsExecutionContext.putFlowAttributes(context.getFlowAttributes());
-
             context.getCallback().done(timedOut);
         }
 
