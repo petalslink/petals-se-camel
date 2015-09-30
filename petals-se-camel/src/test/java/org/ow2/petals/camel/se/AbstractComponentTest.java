@@ -275,13 +275,18 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
         COMPONENT_UNDER_TEST.pushRequestToProvider(request);
 
-        final RequestMessage requestFromConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeoutForth);
+        receiveAsExternalProvider(service, timeoutForth);
+
+        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
+    }
+
+    protected static void receiveAsExternalProvider(final ExternalServiceImplementation service, final long timeout)
+            throws Exception {
+        final RequestMessage requestFromConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeout);
         if (requestFromConsumer != null) {
             final ResponseMessage responseToConsumer = service.provides(requestFromConsumer);
             COMPONENT_UNDER_TEST.pushResponseToConsumer(responseToConsumer);
         }
-
-        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
     }
 
     protected static ResponseMessage sendAndCheck(final RequestMessage request,
