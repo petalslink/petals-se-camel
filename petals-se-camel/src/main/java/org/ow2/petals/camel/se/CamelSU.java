@@ -81,36 +81,47 @@ public class CamelSU implements PetalsCamelContext {
 
         this.context = new DefaultCamelContext();
 
-        // needed so that routes are executed with the correct context classloader
-        // (for example JAXB uses it to load classes)
-        this.context.setApplicationContextClassLoader(classLoader);
+        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 
-        // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent to
-        // initialise itself
-        ((JndiRegistry) ((PropertyPlaceholderDelegateRegistry) this.context.getRegistry()).getRegistry()).bind(
-                PetalsCamelContext.class.getName(), this);
+        try {
+            // this is needed because this version of Camel does not properly use
+            // the application class loader during initialisation and start.
+            Thread.currentThread().setContextClassLoader(classLoader);
 
-        for (final String className : classNames) {
-            final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
+            // needed so that routes are executed with the correct context classloader
+            // (for example JAXB uses it to load classes)
+            this.context.setApplicationContextClassLoader(classLoader);
 
-            try {
-                context.addRoutes(routes);
-            } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException("Can't add routes from class " + className
-                        + " to Camel context", e);
+            // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent
+            // to
+            // initialise itself
+            ((JndiRegistry) ((PropertyPlaceholderDelegateRegistry) this.context.getRegistry()).getRegistry())
+                    .bind(PetalsCamelContext.class.getName(), this);
+
+            for (final String className : classNames) {
+                final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
+
+                try {
+                    context.addRoutes(routes);
+                } catch (final Exception e) {
+                    throw new InvalidCamelRouteDefinitionException(
+                            "Can't add routes from class " + className + " to Camel context", e);
+                }
             }
-        }
 
-        for (final String xmlName : xmlNames) {
-            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
-                    getLogger());
+            for (final String xmlName : xmlNames) {
+                final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
+                        getLogger());
 
-            try {
-                context.addRouteDefinitions(routes.getRoutes());
-            } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException("Can't add routes from xml file " + xmlName
-                        + " to Camel context", e);
+                try {
+                    context.addRouteDefinitions(routes.getRoutes());
+                } catch (final Exception e) {
+                    throw new InvalidCamelRouteDefinitionException(
+                            "Can't add routes from xml file " + xmlName + " to Camel context", e);
+                }
             }
+        } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
         }
     }
 
@@ -125,10 +136,16 @@ public class CamelSU implements PetalsCamelContext {
 
     public void start() throws PetalsCamelSEException {
         // TODO other things?
+        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
         try {
+            // this is needed because this version of Camel does not properly use
+            // the application class loader during initialisation and start.
+            Thread.currentThread().setContextClassLoader(classLoader);
             context.start();
         } catch (final Exception e) {
             throw new PetalsCamelSEException("Problem starting the Camel context", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
         }
     }
 
