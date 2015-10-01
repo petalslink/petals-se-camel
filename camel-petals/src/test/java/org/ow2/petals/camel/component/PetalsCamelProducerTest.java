@@ -176,8 +176,7 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
         }
     }
 
-    private static void assertCoherentWithSEO(final Exchange exchange, final ServiceEndpointOperation seo)
-            throws Exception {
+    private static void assertCoherentWithSEO(final Exchange exchange, final ServiceEndpointOperation seo) {
 
         assertEquals(seo.getEndpoint(), exchange.getEndpointName());
         assertEquals(seo.getService(), exchange.getService());
