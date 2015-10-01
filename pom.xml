@@ -12,7 +12,7 @@
    <groupId>org.ow2.petals</groupId>
    <artifactId>petals-camel-parent</artifactId>
    <name>Petals ESB - Components - Camel</name>
-   <version>0.5.1</version>
+   <version>0.5.2-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <modules>
