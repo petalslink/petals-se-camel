@@ -107,6 +107,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-junit</artifactId>
+         <version>1.0.1-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
       <dependency>

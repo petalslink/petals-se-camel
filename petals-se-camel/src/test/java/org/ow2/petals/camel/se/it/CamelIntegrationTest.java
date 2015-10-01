@@ -162,8 +162,8 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void assertMONITFailureOK() {
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
-        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, null, HELLO_OPERATION,
-                monitLogs.get(0));
+        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
+                HELLO_OPERATION, monitLogs.get(0));
         
         // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
         // doesn't see the timeout
@@ -181,8 +181,8 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void assertMONITOk() {
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
-        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, null, HELLO_OPERATION,
-                monitLogs.get(0));
+        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
+                HELLO_OPERATION, monitLogs.get(0));
         assertMonitProviderEndLog(firstLog, monitLogs.get(3));
 
         final FlowLogData secondLog = assertMonitProviderBeginLog(
@@ -196,10 +196,9 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
 
-        final FlowLogData firstLog = assertMonitConsumerBeginLog(HELLO_INTERFACE, HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME,
-                HELLO_OPERATION,
-                monitLogs.get(0));
-        assertMonitConsumerEndLog(firstLog, monitLogs.get(3));
+        final FlowLogData firstLog = assertMonitConsumerExtBeginLog(HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(0));
+        assertMonitConsumerExtEndLog(firstLog, monitLogs.get(3));
 
         final FlowLogData secondLog = assertMonitProviderBeginLog(
                 (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
