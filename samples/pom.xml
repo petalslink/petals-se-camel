@@ -19,7 +19,7 @@
 
    <properties>
       <sonar.skip>true</sonar.skip>
-      <petals-se-camel.version>1.0.0-SNAPSHOT</petals-se-camel.version>
+      <petals-se-camel.version>1.0.1-SNAPSHOT</petals-se-camel.version>
       <camel.version>2.15.3</camel.version>
    </properties>
 
