@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +13,7 @@
    <name>Petals ESB - Components - SE Camel</name>
    <artifactId>petals-se-camel</artifactId>
    <packaging>jbi-component</packaging>
-   <version>1.0.0-SNAPSHOT</version>
+   <version>1.0.0</version>
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
@@ -172,5 +171,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-   </scm>
+     <tag>petas-se-camel-1.0.0</tag>
+  </scm>
 </project>
