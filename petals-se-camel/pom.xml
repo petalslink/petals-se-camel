@@ -17,7 +17,7 @@
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
-      <camel.version>2.15.3</camel.version>
+      <camel.version>2.16.0</camel.version>
       <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
       <sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
    </properties>
@@ -107,7 +107,6 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-junit</artifactId>
-         <version>1.0.1-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
       <dependency>
