@@ -35,7 +35,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -96,30 +95,27 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final String EXTERNAL_ENDPOINT_NAME = "externalHelloEndpoint";
 
-    protected static final long DEFAULT_TIMEOUT_FOR_COMPONENT_SEND = 10000;
+    protected static final long DEFAULT_TIMEOUT_FOR_COMPONENT_SEND = 2000;
 
     protected static final long TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE = 1000;
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
-    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest();
+    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
+            // we need faster checks for our tests, 2000 is too small!
+            .setParameter(new QName(CDK_JBI_NS, "time-beetween-async-cleaner-runs"), "100")
+            .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
+            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
 
     /**
      * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
      * that successive deploy and undeploy do not create problems.
+     * 
+     * Note: it must be declared after the previous methods so that parameters added are taken into account in the
+     * before of the chain.
      */
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
-
-    @BeforeClass
-    public static void registerExternalService() {
-        COMPONENT_UNDER_TEST.registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME);
-    }
-
-    @BeforeClass
-    public static void attachInMemoryLoggerToLogger() {
-        COMPONENT_UNDER_TEST.addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
-    }
 
     /**
      * All log traces must be cleared before starting a unit test (because the log handler is static and lives during

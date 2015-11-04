@@ -92,7 +92,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
             @Override
             public ResponseMessage provides(final RequestMessage request) throws Exception {
                 // let's wait more than the timeout duration
-                Thread.sleep(2000);
+                Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
                 // this shouldn't be returned normally...
                 return outMessage("<bb/>").provides(request);
             }
