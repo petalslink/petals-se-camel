@@ -43,8 +43,6 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
-import org.ow2.petals.component.framework.util.ServiceEndpointKey;
-import org.ow2.petals.component.framework.util.ServiceProviderEndpointKey;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -97,9 +95,7 @@ public class PetalsCamelJBIHelper {
         // for provides, there is one serviceId per operation of each provides
         for (final Provides p : jbiDescriptor.getServices().getProvides()) {
 
-            final ServiceEndpointKey key = new ServiceProviderEndpointKey(p);
-
-            final Document wsdlDoc = suDH.getEpServiceDesc().get(key);
+            final Document wsdlDoc = suDH.getEndpointDescription(p);
 
             final List<OperationData> seos;
             try {
