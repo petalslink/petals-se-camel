@@ -93,7 +93,8 @@ public class CamelIntegrationTest extends AbstractComponentTest {
             public ResponseMessage provides(final RequestMessage request) throws Exception {
                 // let's wait more than the timeout duration
                 Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
-                // this shouldn't be returned normally...
+                
+                // this will arrive too late
                 return outMessage("<bb/>").provides(request);
             }
         }, isHelloRequest());
@@ -102,9 +103,9 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
 
         // let's wait for the external service to finally answer before continuing
-        Thread.sleep(2000);
+        Thread.sleep(1500);
 
-        // the answer should be handled by the CDK at that point
+        // the answer should have been handled by the CDK at that point
         assertEquals(0, COMPONENT_UNDER_TEST.getRequestsFromConsumerCount());
 
         assertMONITFailureOK();
@@ -164,18 +165,18 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         assertEquals(4, monitLogs.size());
         final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
                 HELLO_OPERATION, monitLogs.get(0));
-        
-        // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
-        // doesn't see the timeout
-        assertMonitProviderFailureLog(firstLog, monitLogs.get(2));
 
         final FlowLogData secondLog = assertMonitProviderBeginLog(
                 (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
                 HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
-        // TODO this assert won't work because of the timeout and the fact that the provider can't see it, see also
-        // PETALSCDK-101
-        // assertMonitProviderFailureLog(secondLog, monitLogs.get(2));
+
+        // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
+        // doesn't see the timeout
+        assertMonitProviderFailureLog(firstLog, monitLogs.get(2));
+
+        // the provider answers, but too late, so it happens AFTER the failure of the consumer
+        assertMonitProviderEndLog(secondLog, monitLogs.get(3));
     }
 
     public void assertMONITOk() {
