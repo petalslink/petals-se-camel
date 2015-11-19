@@ -33,8 +33,7 @@ import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.su.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
@@ -53,7 +52,7 @@ import com.google.common.collect.Maps;
  * @author vnoel
  *
  */
-public class CamelSUManager extends AbstractServiceUnitManager {
+public class CamelSUManager extends ServiceEngineServiceUnitManager {
 
     /**
      * Store the CamelSU for each SU's name
@@ -81,18 +80,19 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
-            throws PetalsCamelSEException {
+    protected synchronized void doDeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
 
-        final CamelSU camelSU = createCamelSU(serviceUnitName);
+        final CamelSU camelSU = createCamelSU(suDH);
 
         // No need to check if it isn't here: the CDK did that for us.
-        su2camel.put(serviceUnitName, camelSU);
+        su2camel.put(suDH.getName(), camelSU);
 
         // TODO checks that there is at least one route per operation
     }
 
-    private CamelSU createCamelSU(final String serviceUnitName) throws PetalsCamelSEException {
+    private CamelSU createCamelSU(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
+
+        final String serviceUnitName = suDH.getName();
 
         final Logger suLogger;
         try {
@@ -100,8 +100,6 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         } catch (MissingResourceException | JBIException e) {
             throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
         }
-
-        final ServiceUnitDataHandler suDH = getSUDataHandler(serviceUnitName);
 
         final Map<String, ServiceEndpointOperation> sid2seo = PetalsCamelJBIHelper
                 .extractServicesIdAndEndpointOperations(suDH, new PetalsCamelSender(getCamelSE(), suLogger));
@@ -126,9 +124,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doUndeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         // TODO should I force stop of camel in case it is not stopped yet?
-        final CamelSU camelSU = this.su2camel.remove(serviceUnitName);
+        final CamelSU camelSU = this.su2camel.remove(suDH.getName());
         camelSU.undeploy();
     }
 
@@ -137,9 +135,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStart(final String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doStart(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to resume?
-        su2camel.get(serviceUnitName).start();
+        su2camel.get(suDH.getName()).start();
     }
 
     /**
@@ -147,9 +145,9 @@ public class CamelSUManager extends AbstractServiceUnitManager {
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStop(final String serviceUnitName) throws PetalsCamelSEException {
+    protected synchronized void doStop(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         // TODO is there something in petals corresponding to suspend?
-        su2camel.get(serviceUnitName).stop();
+        su2camel.get(suDH.getName()).stop();
     }
 
     public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {
