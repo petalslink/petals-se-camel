@@ -34,6 +34,7 @@ import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.logger.ConsumeFlowStepBeginLogData;
+import org.ow2.petals.component.framework.logger.ConsumeFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.Utils;
 
 import com.ebmwebsourcing.easycommons.lang.StringHelper;
@@ -210,12 +211,21 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             final boolean doneSync, final AsyncCallback callback, @Nullable final FlowAttributes faAsBC) {
         if (timedOut) {
             camelExchange.setException(TIMEOUT_EXCEPTION);
+
+            if (faAsBC != null) {
+                // we should log the trace ourselves without touching the message here because we don't have the
+                // ownership!
+                this.consumes.getLogger().log(Level.MONIT, "", new ConsumeFlowStepFailureLogData(
+                        faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
+            }
+
         } else {
             // TODO should properties of the camel exchange be updated with those of the received response?!
             Conversions.populateAnswerCamelExchange(camelExchange, exchange);
-        }
-        if (faAsBC != null) {
-            Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
+
+            if (faAsBC != null) {
+                Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
+            }
         }
 
         callback.done(doneSync);
