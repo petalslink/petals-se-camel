@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.camel.se.it;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.to;
+import static com.jayway.awaitility.Duration.TWO_SECONDS;
+import static org.hamcrest.Matchers.equalTo;
+
 import java.io.File;
 import java.util.List;
 import java.util.logging.LogRecord;
@@ -89,24 +94,22 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, "<aa/>"),
                 new ExternalServiceImplementation() {
-            @Override
-            public ResponseMessage provides(final RequestMessage request) throws Exception {
-                // let's wait more than the timeout duration
-                Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
-                
-                // this will arrive too late
-                return outMessage("<bb/>").provides(request);
-            }
-        }, isHelloRequest());
+                    @Override
+                    public ResponseMessage provides(final RequestMessage request) throws Exception {
+                        // let's wait more than the configured timeout duration
+                        Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
+
+                        // this will arrive too late
+                        return outMessage("<bb/>").provides(request);
+                    }
+                }, isHelloRequest());
 
         assertNotNull(response.getError());
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
 
-        // let's wait for the external service to finally answer before continuing
-        Thread.sleep(1500);
-
-        // the answer should have been handled by the CDK at that point
-        assertEquals(0, COMPONENT_UNDER_TEST.getRequestsFromConsumerCount());
+        // let's wait for the answer to have been handled by the CDK
+        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getRequestsFromConsumerCount(),
+                equalTo(0));
 
         assertMONITFailureOK();
 
@@ -150,10 +153,9 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         receiveAsExternalProvider(ExternalServiceImplementation.outMessage("<b />"), 3000);
 
-        // let's sleep a bit for things to end
-        Thread.sleep(1000);
+        // let's wait for the folder to be processed
+        await().atMost(TWO_SECONDS).untilCall(to(fileInCamelFolder).exists(), equalTo(false));
 
-        assertFalse(fileInCamelFolder.exists());
         assertTrue(new File(new File(camelInFolder, ".camel"), fileInCamelFolder.getName()).exists());
 
         assertMONITasBCOk();
