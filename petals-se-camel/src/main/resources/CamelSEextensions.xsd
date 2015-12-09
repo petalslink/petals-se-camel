@@ -17,29 +17,53 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://petals.ow2.org/components/petals-se-camel/version-1.0"
-   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-camel="http://petals.ow2.org/components/petals-se-camel/version-1.0"
-   elementFormDefault="qualified">
-   
-   <xs:import namespace="http://petals.ow2.org/components/extensions/version-5" schemaLocation="CDKextensions.xsd" />
+   xmlns:cdk="http://petals.ow2.org/components/extensions/version-5" xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:camel="http://petals.ow2.org/components/petals-se-camel/version-1.0" elementFormDefault="qualified">
+
+   <xs:import namespace="http://java.sun.com/xml/ns/jbi" />
+   <xs:import namespace="http://petals.ow2.org/components/extensions/version-5" />
 
    <!-- SU configuration -->
-    <!-- Camel provide configuration -->
-   <xs:element name="service-id" type="petalsCDK:settablestring" default="">
-      <xs:annotation>
-         <xs:documentation>A unique id to identify the service in Camel routes</xs:documentation>
-      </xs:annotation>
-   </xs:element>
    
-   <xs:element name="java-routes" type="xs:string">
-      <xs:annotation>
-         <xs:documentation>Java Routes that will be instantiated in the Camel Service Engine. Must extends Camel's RouteBuilder.</xs:documentation>
-      </xs:annotation>
-   </xs:element>
+   <!-- Services configuration -->
+
+   <xs:complexType name="Services">
+      <xs:complexContent>
+         <xs:extension base="jbi:Services">
+            <xs:sequence>
+               <xs:element name="java-routes" type="xs:string">
+                  <xs:annotation>
+                     <xs:documentation>Java Routes that will be instantiated in the Camel Service Engine. Must extends
+                        Camel's RouteBuilder.
+                     </xs:documentation>
+                  </xs:annotation>
+               </xs:element>
+               <xs:element name="xml-routes" type="cdk:File">
+                  <xs:annotation>
+                     <xs:documentation>XML Routes that will be instantiated in the Camel Service Engine. Must have the
+                        Spring Camel namespace.
+                     </xs:documentation>
+                  </xs:annotation>
+               </xs:element>
+            </xs:sequence>
+         </xs:extension>
+      </xs:complexContent>
+   </xs:complexType>
    
-   <xs:element name="xml-routes" type="petalsCDK:File">
-      <xs:annotation>
-         <xs:documentation>XML Routes that will be instantiated in the Camel Service Engine. Must have the Spring Camel namespace.</xs:documentation>
-      </xs:annotation>
-   </xs:element>
+   <!-- Provides configuration -->
+
+   <xs:complexType name="Provides">
+      <xs:complexContent>
+         <xs:extension base="jbi:Provides">
+            <xs:sequence>
+               <xs:element name="service-id" type="cdk:settablestring" default="">
+                  <xs:annotation>
+                     <xs:documentation>A unique id to identify the service in Camel routes</xs:documentation>
+                  </xs:annotation>
+               </xs:element>
+            </xs:sequence>
+         </xs:extension>
+      </xs:complexContent>
+   </xs:complexType>
 
 </xs:schema>
