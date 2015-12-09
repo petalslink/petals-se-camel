@@ -102,7 +102,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            // we need faster checks for our tests, 2000 is too small!
+            // we need faster checks for our tests, 2000 is too long!
             .setParameter(new QName(CDK_JBI_NS, "time-beetween-async-cleaner-runs"), "100")
             .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
@@ -111,8 +111,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
      * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
      * that successive deploy and undeploy do not create problems.
      * 
-     * Note: it must be declared after the previous methods so that parameters added are taken into account in the
-     * before of the chain.
      */
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
