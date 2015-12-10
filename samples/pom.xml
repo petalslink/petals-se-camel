@@ -7,7 +7,7 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.2.3</version>
+      <version>20.2.4-SNAPSHOT</version>
       <relativePath />
    </parent>
 
@@ -70,6 +70,7 @@
                <version>2.4.1-SNAPSHOT</version>
                <extensions>true</extensions>
             </plugin>
+            
          </plugins>
       </pluginManagement>
    </build>
