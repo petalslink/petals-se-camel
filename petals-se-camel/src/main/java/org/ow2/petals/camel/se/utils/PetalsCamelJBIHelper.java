@@ -61,19 +61,21 @@ import com.google.common.collect.Lists;
  */
 public class PetalsCamelJBIHelper {
 
-    private static final String SERVICE_ID_PROPERTY = "service-id";
+    public static final String CDK_JBI_NS = "http://petals.ow2.org/components/extensions/version-5";
 
-    private static final String PETALS_CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
+    public static final String CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
-    private static final QName PETALS_CAMEL_JBI_ROUTE_CLASS = new QName(PETALS_CAMEL_JBI_NS_URI, "java-routes");
+    private static final String CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
 
-    private static final QName PETALS_CAMEL_JBI_ROUTE_XML = new QName(PETALS_CAMEL_JBI_NS_URI, "xml-routes");
+    public static final String EL_CONSUMES_SERVICE_ID = "service-id";
 
-    private static final String PETALS_CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
+    public static final QName EL_SERVICES_ROUTE_CLASS = new QName(CAMEL_JBI_NS_URI, "java-routes");
 
-    private static final QName PETALS_CAMEL_WSDL_OPERATION = new QName(PETALS_CAMEL_WSDL_NS_URI, "operation");
+    public static final QName EL_SERVICES_ROUTE_XML = new QName(CAMEL_JBI_NS_URI, "xml-routes");
 
-    private static final String PETALS_CAMEL_WSDL_OPERATION_SERVICEID = "service-id";
+    private static final QName EL_WSDL_OPERATION = new QName(CAMEL_WSDL_NS_URI, "operation");
+
+    private static final String ATTR_WSDL_OPERATION_SERVICEID = "service-id";
 
     private PetalsCamelJBIHelper() {
     }
@@ -110,7 +112,8 @@ public class PetalsCamelJBIHelper {
 
             for (final OperationData od : seos) {
                 if (sid2seo.containsKey(od.serviceId)) {
-                    throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + od.serviceId
+                    throw new InvalidJBIConfigurationException("Duplicate " + ATTR_WSDL_OPERATION_SERVICEID + " ("
+                            + od.serviceId
                             + ") in the operation " + od.operation);
                 }
                 final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep, sender,
@@ -130,7 +133,7 @@ public class PetalsCamelJBIHelper {
             final String serviceId = getServiceId(c, suDH);
 
             if (sid2seo.containsKey(serviceId)) {
-                throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + serviceId
+                throw new InvalidJBIConfigurationException("Duplicate " + EL_CONSUMES_SERVICE_ID + " (" + serviceId
                         + ") in the consumes " + c.getServiceName());
             }
 
@@ -143,9 +146,9 @@ public class PetalsCamelJBIHelper {
     public static void populateRouteLists(final Services servicesNode, final List<String> classNames,
             final List<String> xmlNames) {
         for (final Element e : servicesNode.getAnyOrAny()) {
-            if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_CLASS)) {
+            if (hasQName(e, EL_SERVICES_ROUTE_CLASS)) {
                 classNames.add(e.getTextContent());
-            } else if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_XML)) {
+            } else if (hasQName(e, EL_SERVICES_ROUTE_XML)) {
                 xmlNames.add(e.getTextContent());
             }
         }
@@ -172,23 +175,26 @@ public class PetalsCamelJBIHelper {
 
                 Element camelOperation = null;
                 for (final Element e : operation.getOtherElements()) {
-                    if (hasQName(e, PETALS_CAMEL_WSDL_OPERATION)) {
+                    if (hasQName(e, EL_WSDL_OPERATION)) {
                         if (camelOperation != null) {
-                            throw new InvalidJBIConfigurationException("Duplicate " + PETALS_CAMEL_WSDL_OPERATION
+                            throw new InvalidJBIConfigurationException(
+                                    "Duplicate " + EL_WSDL_OPERATION
                                     + " available for the operation " + qName);
                         }
                         camelOperation = e;
                     }
                 }
                 if (camelOperation == null) {
-                    throw new InvalidJBIConfigurationException("No " + PETALS_CAMEL_WSDL_OPERATION
+                    throw new InvalidJBIConfigurationException(
+                            "No " + EL_WSDL_OPERATION
                             + " available for the operation " + qName);
                 }
 
-                final String serviceId = camelOperation.getAttribute(PETALS_CAMEL_WSDL_OPERATION_SERVICEID);
+                final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
 
-                if (serviceId == null || StringUtils.isEmpty(serviceId)) {
-                    throw new InvalidJBIConfigurationException("No " + PETALS_CAMEL_WSDL_OPERATION_SERVICEID
+                if (StringUtils.isEmpty(serviceId)) {
+                    throw new InvalidJBIConfigurationException(
+                            "No " + ATTR_WSDL_OPERATION_SERVICEID
                             + " attribute for the operation " + qName);
                 }
                 results.add(new OperationData(qName, mep.value(), serviceId));
@@ -205,10 +211,10 @@ public class PetalsCamelJBIHelper {
             throws InvalidJBIConfigurationException {
 
         final SuConfigurationParameters extensions = suDH.getConfigurationExtensions(s);
-        final String serviceId = extensions.get(SERVICE_ID_PROPERTY);
+        final String serviceId = extensions.get(EL_CONSUMES_SERVICE_ID);
 
         if (serviceId == null || serviceId.isEmpty()) {
-            throw new InvalidJBIConfigurationException("No " + SERVICE_ID_PROPERTY + " defined for the consumes "
+            throw new InvalidJBIConfigurationException("No " + EL_CONSUMES_SERVICE_ID + " defined for the consumes "
                     + s.getServiceName());
         }
 

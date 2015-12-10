@@ -101,7 +101,8 @@ public class CamelSETest extends AbstractComponentTest {
         // no implementations are provided
         COMPONENT_UNDER_TEST.deployService(SU_NAME, createHelloService(WSDL11, null, null));
 
-        final ResponseMessage response = send(helloRequest(SU_NAME, "<aa/>"), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+        final ResponseMessage response = COMPONENT.send(helloRequest(SU_NAME, "<aa/>"),
+                TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!

@@ -38,8 +38,11 @@ import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.junit.Component;
+import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
+import org.ow2.petals.component.framework.junit.helpers.ExternalServiceImplementation;
+import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 
 /**
  * Contains tests that cover both petals-se-camel and camel-petals classes.
@@ -95,7 +98,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, "<aa/>"),
                 new ExternalServiceImplementation() {
                     @Override
-                    public ResponseMessage provides(final RequestMessage request) throws Exception {
+                    public Message provides(final RequestMessage request) throws Exception {
                         // let's wait more than the configured timeout duration
                         Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
 
@@ -151,7 +154,9 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         assertTrue(fileInCamelFolder.exists());
 
-        receiveAsExternalProvider(ExternalServiceImplementation.outMessage("<b />"), 3000);
+        // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
+        // PetalsCamelConsumer)
+        COMPONENT.receiveAsExternalProvider(ExternalServiceImplementation.outMessage("<b />", null), 3000);
 
         // let's wait for the folder to be processed
         await().atMost(TWO_SECONDS).untilCall(to(fileInCamelFolder).exists(), equalTo(false));

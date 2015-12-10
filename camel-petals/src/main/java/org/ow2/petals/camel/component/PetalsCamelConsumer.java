@@ -136,7 +136,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
-        // TODO should I update the poperties of the exchange with those of the camel exchange?
+        // TODO should I update the properties of the exchange with those of the camel exchange?
         // Careful with the flow attributes... !
 
         try {
@@ -173,7 +173,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                                         .fine("Correctly received acknowledgment for our previous answer (id: "
                                                 + exchange.getExchangeId() + ")");
                             }
-                            // TODO shouldn't that be transfered back to the original caller?!
+                            // TODO that should be transfered back to the original caller!!!
                         } else if (MEPConstants.IN_OPTIONAL_OUT_PATTERN.equals(mep) && wasOut
                                 && exchange.getFault() != null) {
                             try {

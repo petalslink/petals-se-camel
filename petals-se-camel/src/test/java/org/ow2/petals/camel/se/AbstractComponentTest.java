@@ -24,21 +24,18 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
-import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
-import org.apache.camel.converter.jaxp.XmlConverter;
 import org.apache.commons.io.input.ReaderInputStream;
-import org.custommonkey.xmlunit.Diff;
 import org.eclipse.jdt.annotation.Nullable;
-import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Constants;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
@@ -46,26 +43,17 @@ import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
+import org.ow2.petals.component.framework.junit.helpers.ExternalServiceImplementation;
+import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
+import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedFaultToConsumerMessage;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusToConsumerMessage;
+import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 public abstract class AbstractComponentTest extends AbstractTest {
-
-    /**
-     * Converters from Camel
-     */
-    private static final XmlConverter CONVERTER = new XmlConverter();
-
-    protected static final String SE_CAMEL_JBI_NS = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
-
-    protected static final String CDK_JBI_NS = "http://petals.ow2.org/components/extensions/version-5";
 
     protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-1.1.wsdl");
@@ -103,9 +91,11 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
             // we need faster checks for our tests, 2000 is too long!
-            .setParameter(new QName(CDK_JBI_NS, "time-beetween-async-cleaner-runs"), "100")
+            .setParameter(new QName(PetalsCamelJBIHelper.CDK_JBI_NS, "time-beetween-async-cleaner-runs"), "100")
             .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
+
+    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
 
     /**
      * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
@@ -154,7 +144,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
         consumes.setMEP(MEPType.IN_OUT);
         // let's use a smaller timeout time by default
         consumes.setTimeout(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
-        consumes.setParameter(new QName(SE_CAMEL_JBI_NS, "service-id"), EXTERNAL_CAMEL_SERVICE_ID);
+        consumes.setParameter(
+                new QName(PetalsCamelJBIHelper.CAMEL_JBI_NS_URI, PetalsCamelJBIHelper.EL_CONSUMES_SERVICE_ID),
+                EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
 
@@ -167,12 +159,11 @@ public abstract class AbstractComponentTest extends AbstractTest {
         provides.addServiceConfigurationDependency(createHelloConsumes());
 
         if (clazz != null) {
-            provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "java-routes"), clazz.getName());
+            provides.setServicesSectionParameter(PetalsCamelJBIHelper.EL_SERVICES_ROUTE_CLASS, clazz.getName());
         }
 
         if (routes != null) {
-            provides.setServicesSectionParameter(new QName(SE_CAMEL_JBI_NS, "xml-routes"),
-                    new File(routes.toURI()).getName());
+            provides.setServicesSectionParameter(PetalsCamelJBIHelper.EL_SERVICES_ROUTE_XML, new File(routes.toURI()).getName());
             provides.addResource(routes);
         }
 
@@ -194,7 +185,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static ResponseMessage sendAndCheckConsumer(final RequestMessage request,
             final ExternalServiceImplementation consumer, final MessageChecks serviceChecks) throws Exception {
-        return sendAndCheck(request, consumer, serviceChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
+        return COMPONENT.sendAndCheck(request, consumer, serviceChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
                 MessageChecks.none(), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
     }
 
@@ -218,7 +209,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
         MessageChecks reqChecks = isHelloRequest();
         if (expectedRequest != null) {
-            reqChecks = reqChecks.andThen(hasXmlContent(expectedRequest));
+            reqChecks = reqChecks.andThen(MessageChecks.hasXmlContent(expectedRequest));
         }
         reqChecks = reqChecks.andThen(serviceChecks);
 
@@ -230,17 +221,21 @@ public abstract class AbstractComponentTest extends AbstractTest {
             respChecks = respChecks.andThen(MessageChecks.faultExists());
         }
         if (expectedResponse != null) {
-            respChecks = respChecks.andThen(hasXmlContent(expectedResponse));
+            respChecks = respChecks.andThen(MessageChecks.hasXmlContent(expectedResponse));
         }
 
-        return sendAndCheck(helloRequest(suName, request), ExternalServiceImplementation.outMessage(response),
+        // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
+        // PetalsCamelConsumer)
+        return COMPONENT.sendAndCheck(helloRequest(suName, request),
+                ExternalServiceImplementation.outMessage(response, null),
                 reqChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE, respChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
     }
 
     protected static MessageChecks isHelloRequest() {
         return new MessageChecks() {
             @Override
-            public void checks(Message request) throws Exception {
+            public void checks(@Nullable Message request) throws Exception {
+                assert request != null;
                 final MessageExchange exchange = request.getMessageExchange();
                 assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
                 assertEquals(exchange.getService(), HELLO_SERVICE);
@@ -250,220 +245,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
         };
     }
 
-    protected static MessageChecks hasXmlContent(final String expectedContent) {
-        return new MessageChecks() {
-            @Override
-            public void checks(final Message request) throws Exception {
-                final Diff diff = new Diff(CONVERTER.toDOMSource(request.getPayload(), null),
-                        CONVERTER.toDOMSource(expectedContent));
-
-                assertTrue(diff.similar());
-            }
-        };
-    }
-
     protected static RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
-        return new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
+        return new RequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
                 HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent == null ? null
                         : new ReaderInputStream(new StringReader(requestContent)));
-    }
-
-    // /////////////////// GENERIC METHODS /////////////////////////
-
-    protected static ResponseMessage send(final RequestMessage request, final ExternalServiceImplementation service,
-            final long timeoutForth, final long timeoutBack) throws Exception {
-
-        COMPONENT_UNDER_TEST.pushRequestToProvider(request);
-
-        receiveAsExternalProvider(service, timeoutForth);
-
-        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
-    }
-
-    protected static ResponseMessage send(final RequestMessage request, final long timeoutBack) throws Exception {
-
-        COMPONENT_UNDER_TEST.pushRequestToProvider(request);
-
-        return COMPONENT_UNDER_TEST.pollResponseFromProvider(timeoutBack);
-    }
-
-    protected static void receiveAsExternalProvider(final ExternalServiceImplementation service, final long timeout)
-            throws Exception {
-        final RequestMessage requestFromConsumer = COMPONENT_UNDER_TEST.pollRequestFromConsumer(timeout);
-        assertNotNull(requestFromConsumer);
-        final ResponseMessage responseToConsumer = service.provides(requestFromConsumer);
-        COMPONENT_UNDER_TEST.pushResponseToConsumer(responseToConsumer);
-    }
-
-    protected static ResponseMessage sendAndCheck(final RequestMessage request,
-            final ExternalServiceImplementation service, final MessageChecks serviceChecks, final long serviceTimeout,
-            final MessageChecks clientChecks, final long clientTimeout) throws Exception {
-
-        final ResponseMessage responseMessage = send(request, service.with(serviceChecks), serviceTimeout,
-                clientTimeout);
-
-        clientChecks.checks(responseMessage);
-
-        return responseMessage;
-    }
-
-    public static abstract class MessageChecks {
-
-        /**
-         * Checks to apply on a message.
-         * 
-         * @param message
-         * @throws Exception
-         */
-        public abstract void checks(final Message message) throws Exception;
-
-        public final MessageChecks andThen(final MessageChecks checks) {
-            final MessageChecks me = this;
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    me.checks(message);
-                    checks.checks(message);
-                }
-            };
-        }
-
-        public static MessageChecks none() {
-            return new MessageChecks() {
-                @Override
-                public void checks(Message message) throws Exception {
-                }
-            };
-        }
-
-        public static MessageChecks matches(final Matcher<Message> matcher) {
-            return new MessageChecks() {
-                @Override
-                public void checks(Message message) throws Exception {
-                    assertThat(message, matcher);
-                }
-            };
-        }
-
-        public static MessageChecks faultExists() {
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    assertNull(message.getMessageExchange().getFault());
-                }
-            };
-        }
-
-        public static MessageChecks errorExists() {
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    assertNull(message.getMessageExchange().getError());
-                }
-            };
-        }
-
-        public static MessageChecks propertyNotExists(final String property) {
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    assertNull(message.getMessageExchange().getProperty(property));
-                }
-            };
-        }
-
-        public static MessageChecks propertyExists(final String property) {
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    assertNotNull(message.getMessageExchange().getProperty(property));
-                }
-            };
-        }
-
-        public static MessageChecks propertyEquals(final String property, final Object value) {
-            return new MessageChecks() {
-                @Override
-                public void checks(final Message message) throws Exception {
-                    assertEquals(message.getMessageExchange().getProperty(property), value);
-                }
-            };
-        }
-    }
-
-    public static abstract class ExternalServiceImplementation {
-
-        /**
-         * The implementation of an external service.
-         * 
-         * @param request
-         * @return
-         * @throws Exception
-         */
-        public abstract ResponseMessage provides(final RequestMessage request) throws Exception;
-
-        /**
-         * Checks are executed before executing the consumer implementation
-         * 
-         * @param checks
-         * @return
-         */
-        public final ExternalServiceImplementation with(final MessageChecks checks) {
-            final ExternalServiceImplementation me = this;
-            return new ExternalServiceImplementation() {
-                @Override
-                public ResponseMessage provides(final RequestMessage request) throws Exception {
-                    checks.checks(request);
-                    return me.provides(request);
-                }
-            };
-        }
-
-        /**
-         * A service that returns a ResponseMessage with the givent content as out message.
-         * 
-         * @param content
-         * @return
-         */
-        public static ExternalServiceImplementation outMessage(final String content) {
-            return new ExternalServiceImplementation() {
-                @Override
-                public ResponseMessage provides(final RequestMessage request) throws Exception {
-                    return new WrappedResponseToConsumerMessage(request.getMessageExchange(), new ReaderInputStream(
-                            new StringReader(content)));
-                }
-            };
-        }
-
-        /**
-         * A service that returns a ResponseMessage with the given content as fault.
-         * 
-         * @param content
-         * @return
-         */
-        public static ExternalServiceImplementation faultMessage(final String content) {
-            return new ExternalServiceImplementation() {
-                @Override
-                public ResponseMessage provides(final RequestMessage request) throws Exception {
-                    return new WrappedFaultToConsumerMessage(request.getMessageExchange(), new ReaderInputStream(
-                            new StringReader(content)));
-                }
-            };
-        }
-
-        /**
-         * A service that returns a ResponseMessage with the given status.
-         * 
-         * @param status
-         * @return
-         */
-        public static ExternalServiceImplementation statusMessage(final ExchangeStatus status) {
-            return new ExternalServiceImplementation() {
-                @Override
-                public ResponseMessage provides(final RequestMessage request) throws Exception {
-                    return new WrappedStatusToConsumerMessage(request.getMessageExchange(), status);
-                }
-            };
-        }
     }
 }
