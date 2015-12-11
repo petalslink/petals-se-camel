@@ -18,7 +18,6 @@
 package org.ow2.petals.camel.se;
 
 import java.io.File;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -27,7 +26,6 @@ import java.util.logging.SimpleFormatter;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
@@ -40,11 +38,12 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Constants;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.Component;
+import org.ow2.petals.component.framework.junit.JbiConstants;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
-import org.ow2.petals.component.framework.junit.helpers.ExternalServiceImplementation;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
+import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
@@ -85,13 +84,11 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final long DEFAULT_TIMEOUT_FOR_COMPONENT_SEND = 2000;
 
-    protected static final long TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE = 1000;
-
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
             // we need faster checks for our tests, 2000 is too long!
-            .setParameter(new QName(PetalsCamelJBIHelper.CDK_JBI_NS, "time-beetween-async-cleaner-runs"), "100")
+            .setParameter(new QName(JbiConstants.CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
             .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
 
@@ -183,52 +180,41 @@ public abstract class AbstractComponentTest extends AbstractTest {
         COMPONENT_UNDER_TEST.deployService(suName, createHelloService(wsdl, null, routes));
     }
 
-    protected static ResponseMessage sendAndCheckConsumer(final RequestMessage request,
-            final ExternalServiceImplementation consumer, final MessageChecks serviceChecks) throws Exception {
-        return COMPONENT.sendAndCheck(request, consumer, serviceChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE,
-                MessageChecks.none(), TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+    protected static void sendHelloIdentity(final String suName) throws Exception {
+        sendHelloIdentity(suName, MessageChecks.none());
     }
 
-    protected static ResponseMessage sendHelloIdentity(final String suName) throws Exception {
-        return sendHelloIdentity(suName, MessageChecks.none());
-    }
-
-    protected static ResponseMessage sendHelloIdentity(final String suName, final MessageChecks serviceChecks)
+    protected static void sendHelloIdentity(final String suName, final MessageChecks serviceChecks)
             throws Exception {
         final String requestContent = "<aaa/>";
         final String responseContent = "<bbb/>";
 
-        return sendHello(suName, requestContent, requestContent, responseContent, responseContent, true, true,
-                serviceChecks);
+        sendHello(suName, requestContent, requestContent, responseContent, responseContent, serviceChecks);
     }
 
-    protected static ResponseMessage sendHello(final String suName, @Nullable final String request,
+    protected static void sendHello(final String suName, @Nullable final String request,
             @Nullable final String expectedRequest, final String response, @Nullable final String expectedResponse,
-            final boolean checkResponseNoError, final boolean checkResponseNoFault, final MessageChecks serviceChecks)
+            final MessageChecks serviceChecks)
             throws Exception {
 
-        MessageChecks reqChecks = isHelloRequest();
+        MessageChecks reqChecks = isHelloRequest().andThen(serviceChecks);
         if (expectedRequest != null) {
             reqChecks = reqChecks.andThen(MessageChecks.hasXmlContent(expectedRequest));
         }
-        reqChecks = reqChecks.andThen(serviceChecks);
 
-        MessageChecks respChecks = MessageChecks.none();
-        if (checkResponseNoError) {
-            respChecks = respChecks.andThen(MessageChecks.errorExists());
-        }
-        if (checkResponseNoFault) {
-            respChecks = respChecks.andThen(MessageChecks.faultExists());
-        }
+        MessageChecks respChecks = MessageChecks.noError().andThen(MessageChecks.noFault());
         if (expectedResponse != null) {
             respChecks = respChecks.andThen(MessageChecks.hasXmlContent(expectedResponse));
         }
 
         // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
         // PetalsCamelConsumer)
-        return COMPONENT.sendAndCheck(helloRequest(suName, request),
-                ExternalServiceImplementation.outMessage(response, null),
-                reqChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE, respChecks, TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+        final ResponseMessage responseM = COMPONENT.sendAndGetResponse(helloRequest(suName, request),
+                ServiceProviderImplementation.outMessage(response, null).with(reqChecks));
+
+        respChecks.checks(responseM);
+
+        COMPONENT.sendDoneStatus(responseM);
     }
 
     protected static MessageChecks isHelloRequest() {
@@ -246,8 +232,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     }
 
     protected static RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
-        return new RequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName),
-                HELLO_OPERATION, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent == null ? null
-                        : new ReaderInputStream(new StringReader(requestContent)));
+        return new RequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent);
     }
 }

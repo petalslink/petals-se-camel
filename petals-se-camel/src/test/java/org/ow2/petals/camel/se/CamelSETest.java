@@ -28,7 +28,7 @@ import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
-import org.ow2.petals.component.framework.junit.ResponseMessage;
+import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
@@ -101,8 +101,7 @@ public class CamelSETest extends AbstractComponentTest {
         // no implementations are provided
         COMPONENT_UNDER_TEST.deployService(SU_NAME, createHelloService(WSDL11, null, null));
 
-        final ResponseMessage response = COMPONENT.send(helloRequest(SU_NAME, "<aa/>"),
-                TIMEOUTS_FOR_TESTS_SEND_AND_RECEIVE);
+        final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"));
 
         assertTrue(response.getError() instanceof MessagingException);
         // the cause is in the message!!!

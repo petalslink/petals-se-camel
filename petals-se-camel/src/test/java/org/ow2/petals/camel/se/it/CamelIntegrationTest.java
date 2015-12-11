@@ -39,10 +39,9 @@ import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.Message;
-import org.ow2.petals.component.framework.junit.RequestMessage;
-import org.ow2.petals.component.framework.junit.ResponseMessage;
-import org.ow2.petals.component.framework.junit.helpers.ExternalServiceImplementation;
+import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
+import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 
 /**
  * Contains tests that cover both petals-se-camel and camel-petals classes.
@@ -95,24 +94,20 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     public void testMessageTimeoutAndSUStillWorks() throws Exception {
         deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
 
-        final ResponseMessage response = sendAndCheckConsumer(helloRequest(SU_NAME, "<aa/>"),
-                new ExternalServiceImplementation() {
+        final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.outMessage("<bb/>").with(new MessageChecks() {
                     @Override
-                    public Message provides(final RequestMessage request) throws Exception {
+                    public void checks(final Message message) throws Exception {
                         // let's wait more than the configured timeout duration
                         Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
-
-                        // this will arrive too late
-                        return outMessage("<bb/>").provides(request);
                     }
-                }, isHelloRequest());
+                }));
 
         assertNotNull(response.getError());
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
-
-        // let's wait for the answer to have been handled by the CDK
-        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getRequestsFromConsumerCount(),
-                equalTo(0));
+        
+        // let's wait for the answer from the ServiceProvider to have been handled by the CDK
+        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getRequestsFromConsumerCount(), equalTo(0));
 
         assertMONITFailureOK();
 
@@ -156,7 +151,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
         // PetalsCamelConsumer)
-        COMPONENT.receiveAsExternalProvider(ExternalServiceImplementation.outMessage("<b />", null), 3000);
+        COMPONENT.receiveAsExternalProvider(ServiceProviderImplementation.outMessage("<b />", null), 3000);
 
         // let's wait for the folder to be processed
         await().atMost(TWO_SECONDS).untilCall(to(fileInCamelFolder).exists(), equalTo(false));

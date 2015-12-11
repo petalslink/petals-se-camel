@@ -61,8 +61,6 @@ import com.google.common.collect.Lists;
  */
 public class PetalsCamelJBIHelper {
 
-    public static final String CDK_JBI_NS = "http://petals.ow2.org/components/extensions/version-5";
-
     public static final String CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
     private static final String CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
