@@ -129,7 +129,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         @Override
         public void configure() throws Exception {
 
-            from("file://" + new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER).getAbsolutePath())
+            from("file://" + new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER).getAbsolutePath() + "?initialDelay=500")
                     .to("petals:theConsumesId");
         }
     }
@@ -147,11 +147,9 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         assertTrue(file.renameTo(fileInCamelFolder));
 
-        assertTrue(fileInCamelFolder.exists());
-
-        // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
-        // PetalsCamelConsumer)
-        COMPONENT.receiveAsExternalProvider(ServiceProviderImplementation.outMessage("<b />", null), 3000);
+        // TODO for now we have to disable acknoledgement check (with the null parameter) because we don't forward DONE
+        // in Camel (see PetalsCamelConsumer)
+        COMPONENT.receiveAsExternalProvider(ServiceProviderImplementation.outMessage("<b />", null));
 
         // let's wait for the folder to be processed
         await().atMost(TWO_SECONDS).untilCall(to(fileInCamelFolder).exists(), equalTo(false));
