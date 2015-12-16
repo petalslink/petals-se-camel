@@ -18,7 +18,6 @@
    <modules>
       <module>petals-se-camel</module>
       <module>camel-petals</module>
-      <module>samples</module>
    </modules>
 
    <properties>
