@@ -32,8 +32,9 @@ import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
+import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.component.framework.su.ServiceEngineServiceUnitManager;
+import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
@@ -96,13 +97,13 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
 
         final Logger suLogger;
         try {
-            suLogger = this.component.getContext().getLogger(serviceUnitName, null);
+            suLogger = getComponent().getContext().getLogger(serviceUnitName, null);
         } catch (MissingResourceException | JBIException e) {
             throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
         }
 
         final Map<String, ServiceEndpointOperation> sid2seo = PetalsCamelJBIHelper
-                .extractServicesIdAndEndpointOperations(suDH, new PetalsCamelSender(getCamelSE(), suLogger));
+                .extractServicesIdAndEndpointOperations(suDH, new PetalsCamelSender(getComponent(), suLogger));
 
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
@@ -131,22 +132,32 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     }
 
     /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
+     * This is synchronised as we access the shared collection that must stay consistent during the whole method
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStart(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-        // TODO is there something in petals corresponding to resume?
+    protected synchronized void doInit(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         su2camel.get(suDH.getName()).start();
     }
 
+    @NonNullByDefault(false)
+    @Override
+    protected void doStart(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+        // TODO handle resume/suspend
+    }
+
+    @NonNullByDefault(false)
+    @Override
+    protected void doStop(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+        // TODO handle resume/suspend
+    }
+
     /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
+     * This is synchronised as we access the shared collection that must stay consistent during the whole method
      */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doStop(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-        // TODO is there something in petals corresponding to suspend?
+    protected synchronized void doShutdown(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         su2camel.get(suDH.getName()).stop();
     }
 
@@ -185,7 +196,8 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     }
 
     @SuppressWarnings("null")
-    private CamelSE getCamelSE() {
-        return (CamelSE) super.component;
+    @Override
+    protected CamelSE getComponent() {
+        return (CamelSE) super.getComponent();
     }
 }

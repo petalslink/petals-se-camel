@@ -18,7 +18,7 @@
 package org.ow2.petals.camel.se;
 
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 
 /**
  * This only manage the SUManager and provides a reference to the JBI Listener
@@ -34,7 +34,7 @@ public class CamelSE extends AbstractServiceEngine {
     }
 
     @Override
-    protected AbstractServiceUnitManager createServiceUnitManager() {
+    protected ServiceEngineServiceUnitManager createServiceUnitManager() {
         return new CamelSUManager(this);
     }
 }
