@@ -19,7 +19,7 @@
 
    <properties>
       <petals-se-camel.version>1.0.1-SNAPSHOT</petals-se-camel.version>
-      <camel.version>2.15.3</camel.version>
+      <camel.version>2.16.1</camel.version>
    </properties>
 
    <modules>
