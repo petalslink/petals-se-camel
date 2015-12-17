@@ -21,7 +21,7 @@
    </modules>
 
    <properties>
-      <camel.version>2.16.0</camel.version>
+      <camel.version>2.16.1</camel.version>
       <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
       <sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
    </properties>
