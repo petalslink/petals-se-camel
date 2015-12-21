@@ -22,15 +22,11 @@ import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Duration.TWO_SECONDS;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.io.File;
 import java.util.List;
 import java.util.logging.LogRecord;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.io.FileUtils;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.ow2.petals.camel.component.PetalsCamelProducer;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
@@ -120,16 +116,11 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         assertMONITOk();
     }
 
-    @ClassRule
-    public static final TemporaryFolder AS_BC_FOLDER = new TemporaryFolder();
-
-    public static final String CAMEL_IN_FOLDER = "in";
-
     public static class RouteBC extends RouteBuilder {
         @Override
         public void configure() throws Exception {
 
-            from("file://" + new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER).getAbsolutePath() + "?initialDelay=500")
+            from("timer://petalsTimer?delay=500&period=500&repeatCount=1")
                     .to("petals:theConsumesId");
         }
     }
@@ -139,22 +130,11 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         // we won't be using the provides, but it's ok
         deployHello(SU_NAME, WSDL11, RouteBC.class);
 
-        final File file = AS_BC_FOLDER.newFile("test");
-        FileUtils.writeStringToFile(file, "<a />");
-        final File camelInFolder = new File(AS_BC_FOLDER.getRoot(), CAMEL_IN_FOLDER);
-
-        final File fileInCamelFolder = new File(camelInFolder, file.getName());
-
-        assertTrue(file.renameTo(fileInCamelFolder));
-
         // TODO for now we have to disable acknoledgement check (with the null parameter) because we don't forward DONE
         // in Camel (see PetalsCamelConsumer)
-        COMPONENT.receiveAsExternalProvider(ServiceProviderImplementation.outMessage("<b />", null));
-
-        // let's wait for the folder to be processed
-        await().atMost(TWO_SECONDS).untilCall(to(fileInCamelFolder).exists(), equalTo(false));
-
-        assertTrue(new File(new File(camelInFolder, ".camel"), fileInCamelFolder.getName()).exists());
+        // Note: we need to wait for the end of the processing of the message by the component to be sure all the logs
+        // are here.
+        COMPONENT.receiveAsExternalProvider(ServiceProviderImplementation.outMessage("<bb/>", null), true);
 
         assertMONITasBCOk();
 
