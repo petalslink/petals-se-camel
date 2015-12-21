@@ -94,6 +94,7 @@ public class CamelSU implements PetalsCamelContext {
         this.context.getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this);
 
         for (final String className : classNames) {
+            assert className != null;
             final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
 
             try {
@@ -105,6 +106,7 @@ public class CamelSU implements PetalsCamelContext {
         }
 
         for (final String xmlName : xmlNames) {
+            assert xmlName != null;
             final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
                     getLogger());
 

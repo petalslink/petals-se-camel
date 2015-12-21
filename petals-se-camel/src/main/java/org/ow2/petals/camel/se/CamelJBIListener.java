@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
@@ -105,6 +106,8 @@ public class CamelJBIListener extends AbstractJBIListener {
     @NonNullByDefault(false)
     @Override
     public boolean onAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext) {
+        assert exchange != null;
+        assert asyncContext != null;
         // let's call the callback, the one that sent this message will take care of doing what it has to do
         handleAsyncJBIMessage(exchange, asyncContext, false);
         // always return false, we will take care of answering
@@ -114,6 +117,8 @@ public class CamelJBIListener extends AbstractJBIListener {
     @NonNullByDefault(false)
     @Override
     public void onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
+        assert originalExchange != null;
+        assert asyncContext != null;
         // this is when I sent something asynchronously but it timeouted!
         // let's call the callback, the one that sent this message will take care of doing what it has to do
         handleAsyncJBIMessage(originalExchange, asyncContext, true);
@@ -134,9 +139,10 @@ public class CamelJBIListener extends AbstractJBIListener {
         }
     }
 
-    @SuppressWarnings("null")
     public CamelSE getCamelSE() {
-        return (CamelSE) super.component;
+        final AbstractComponent component = super.getComponent();
+        assert component != null;
+        return (CamelSE) component;
     }
 
 }

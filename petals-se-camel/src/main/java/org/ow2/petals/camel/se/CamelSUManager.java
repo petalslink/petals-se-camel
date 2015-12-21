@@ -34,6 +34,7 @@ import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
@@ -82,7 +83,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @NonNullByDefault(false)
     @Override
     protected synchronized void doDeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-
+        assert suDH != null;
         final CamelSU camelSU = createCamelSU(suDH);
 
         // No need to check if it isn't here: the CDK did that for us.
@@ -98,6 +99,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         final Logger suLogger;
         try {
             suLogger = getComponent().getContext().getLogger(serviceUnitName, null);
+            assert suLogger != null;
         } catch (MissingResourceException | JBIException e) {
             throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
         }
@@ -108,13 +110,16 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
 
-        PetalsCamelJBIHelper.populateRouteLists(suDH.getDescriptor().getServices(), classNames, xmlNames);
+        final Services services = suDH.getDescriptor().getServices();
+        assert services != null;
+        PetalsCamelJBIHelper.populateRouteLists(services, classNames, xmlNames);
 
         // TODO why use this classloader and not the thread context classloader?
         // is it the same? normally yes according to JBI specs
         // TODO why use createClassLoader which runs with privilege?...
         final URLClassLoader classLoader = ClassLoaderUtil.createClassLoader(suDH.getInstallRoot(), getClass()
                 .getClassLoader());
+        assert classLoader != null;
 
         return new CamelSU(ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
                 ImmutableList.copyOf(xmlNames), classLoader, suLogger, this);
