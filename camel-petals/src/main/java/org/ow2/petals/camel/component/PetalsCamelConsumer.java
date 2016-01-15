@@ -156,7 +156,8 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
             final boolean expectingAnswer = wasFault || wasOut;
             this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
                 @Override
-                public void done(boolean timedOut) {
+                public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
+                        final boolean timedOut) {
                     if (timedOut) {
                         provides.getLogger().warning(
                                 "The exchange I sent back to the NMR never got acknowledged, it timed out: "

@@ -139,7 +139,7 @@ public class CamelJBIListener extends AbstractJBIListener {
                 PetalsExecutionContext.putFlowAttributes(flowAttributes);
             }
 
-            context.getCallback().done(timedOut);
+            context.getCallback().done(exchange, timedOut);
         }
 
         // always return false, we will take care of answering
