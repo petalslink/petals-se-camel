@@ -229,6 +229,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             }
         }
 
+        // TODO we never send the DONE back to the provider in the end... see also comments is PetalsCamelConsumer
         callback.done(doneSync);
     }
 
