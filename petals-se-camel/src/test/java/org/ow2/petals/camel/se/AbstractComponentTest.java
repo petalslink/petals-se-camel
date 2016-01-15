@@ -137,7 +137,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static ServiceConfiguration createHelloConsumes() {
         final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
                 EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
-        consumes.setOperation(HELLO_OPERATION.getLocalPart());
+        consumes.setOperation(HELLO_OPERATION);
         consumes.setMEP(MEPType.IN_OUT);
         // let's use a smaller timeout time by default
         consumes.setTimeout(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
