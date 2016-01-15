@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.camel.component;
 
-import java.net.URI;
 import java.util.logging.Level;
 
 import javax.jbi.messaging.MessagingException;
@@ -33,7 +32,6 @@ import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
-import org.ow2.petals.component.framework.api.Message.MEPConstants;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
 
 // TODO should I be suspendable?
@@ -149,47 +147,49 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
         }
 
         try {
-            // TODO maybe we should render that answer synchronicity configurable... for now let's use sendAsync in
-            // order not to tie resources for simple acknowledging (there is no need to block the current execution nor
-            // anything)
-            // TODO and actually, shouldn't I WAIT for it before letting other continue, or before letting this method
-            // to return... which others? maybe not then!
-            // TODO for now the timeout is not settable, let's use default provides value (-1) as a starter...
-            final boolean wasFault = exchange.getFault() != null;
-            final boolean wasOut = exchange.isOutMessage();
-            final boolean expectingAnswer = wasFault || wasOut;
-            this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
-                @Override
-                public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
-                        final boolean timedOut) {
-                    if (timedOut) {
-                        provides.getLogger().warning(
-                                "The exchange I sent back to the NMR never got acknowledged, it timed out: "
-                                        + exchange.getExchangeId());
-                    } else {
-                        final URI mep = exchange.getPattern();
-                        if (expectingAnswer && exchange.isDoneStatus()) {
-                            if (provides.getLogger().isLoggable(Level.FINE)) {
-                                provides.getLogger()
-                                        .fine("Correctly received acknowledgment for our previous answer (id: "
-                                                + exchange.getExchangeId() + ")");
+            if (!exchange.isActiveStatus()) {
+                this.provides.send(exchange);
+            } else {
+                // TODO maybe we should render that answer synchronicity configurable... for now let's use sendAsync in
+                // order not to tie resources for simple acknowledging (there is no need to block the current execution
+                // nor anything)
+                // TODO and actually, shouldn't I WAIT for it before letting other continue, or before letting this
+                // method to return... which others? maybe not then!
+                // TODO for now the timeout is not settable, let's use default provides value (-1) as a starter...
+                final boolean wasFault = exchange.getFault() != null;
+                final boolean wasOut = exchange.isOutMessage();
+                final boolean expectingAnswer = wasFault || wasOut;
+                this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
+                    @Override
+                    public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
+                            final boolean timedOut) {
+                        if (timedOut) {
+                            provides.getLogger().warning(
+                                    "The exchange I sent back to the NMR never got acknowledged, it timed out: "
+                                            + exchange.getExchangeId());
+                        } else {
+                            if (expectingAnswer && exchange.isDoneStatus()) {
+                                if (provides.getLogger().isLoggable(Level.FINE)) {
+                                    provides.getLogger()
+                                            .fine("Correctly received acknowledgment for our previous answer (id: "
+                                                    + exchange.getExchangeId() + ")");
+                                }
+                                // TODO that should be transfered back to the original caller!!!
+                            } else if (exchange.isInOptionalOutPattern() && wasOut && exchange.getFault() != null) {
+                                try {
+                                    exchange.setDoneStatus();
+                                    PetalsCamelConsumer.this.provides.send(exchange);
+                                } catch (final MessagingException e) {
+                                    provides.getLogger().log(Level.SEVERE,
+                                            "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
+                                }
                             }
-                            // TODO that should be transfered back to the original caller!!!
-                        } else if (MEPConstants.IN_OPTIONAL_OUT_PATTERN.equals(mep) && wasOut
-                                && exchange.getFault() != null) {
-                            try {
-                                exchange.setDoneStatus();
-                                PetalsCamelConsumer.this.provides.send(exchange);
-                            } catch (final MessagingException e) {
-                                provides.getLogger().log(Level.SEVERE,
-                                        "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
-                            }
+                            // TODO log for other (invalid) cases...
+                            // TODO and add tests for all of this!
                         }
-                        // TODO log for other (invalid) cases...
-                        // TODO and add tests for all of this!
                     }
-                }
-            });
+                });
+            }
         } catch (final MessagingException e) {
             // if the send fails, there is nothing we can do except logging the error
             provides.getLogger().log(Level.SEVERE,
