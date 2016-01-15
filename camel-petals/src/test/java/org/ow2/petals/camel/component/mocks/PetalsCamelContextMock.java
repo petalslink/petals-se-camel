@@ -200,7 +200,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
         public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
                 throws MessagingException {
-            callback.done(false);
+            callback.done(exchange, false);
         }
 
         public void send(final Exchange exchange) throws MessagingException {

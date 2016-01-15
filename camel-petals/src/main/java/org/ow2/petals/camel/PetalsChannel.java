@@ -77,9 +77,11 @@ public interface PetalsChannel {
 
         /**
          * 
+         * @param exchange
+         *            the exchange of the send async (which is different from the exchange that was sent!)
          * @param timedOut
          *            is true if the send async timed out
          */
-        public void done(boolean timedOut);
+        public void done(Exchange exchange, boolean timedOut);
     }
 }

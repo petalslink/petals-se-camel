@@ -135,7 +135,7 @@ public class CamelJBIListener extends AbstractJBIListener {
 
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
 
-            context.getCallback().done(timedOut);
+            context.getCallback().done(exchange, timedOut);
         }
     }
 

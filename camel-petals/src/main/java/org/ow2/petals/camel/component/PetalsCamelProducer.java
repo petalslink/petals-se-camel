@@ -174,7 +174,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
                 this.consumes.sendAsync(exchange, timeout, new SendAsyncCallback() {
                     @Override
-                    public void done(final boolean timedOut) {
+                    public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
+                            final boolean timedOut) {
 
                         if (PetalsCamelProducer.this.consumes.getLogger().isLoggable(Level.FINE)) {
                             PetalsCamelProducer.this.consumes.getLogger().log(Level.FINE,
