@@ -33,11 +33,11 @@ import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
-import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
+import org.ow2.petals.jbi.messaging.PetalsDeliveryChannel;
 
 /**
  * Contains tests that cover both petals-se-camel and camel-petals classes.
@@ -66,7 +66,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         deployHello(SU_NAME, WSDL11, RouteSyncFrom.class);
         // if the from is sync but not the to, then it shouldn't be send synchronously...
         // the only thing that should happen is that the route execution blocks the caller
-        sendHelloIdentity(SU_NAME, MessageChecks.propertyNotExists(Component.SENDSYNC_EXCHANGE_PROPERTY));
+        sendHelloIdentity(SU_NAME, MessageChecks.propertyNotExists(PetalsDeliveryChannel.PROPERTY_SENDSYNC));
 
         assertMONITOk();
     }
@@ -81,7 +81,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
     @Test
     public void testMessageGoThroughToSynchronous() throws Exception {
         deployHello(SU_NAME, WSDL11, RouteSyncTo.class);
-        sendHelloIdentity(SU_NAME, MessageChecks.propertyExists(Component.SENDSYNC_EXCHANGE_PROPERTY));
+        sendHelloIdentity(SU_NAME, MessageChecks.propertyExists(PetalsDeliveryChannel.PROPERTY_SENDSYNC));
 
         assertMONITOk();
     }
