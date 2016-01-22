@@ -86,6 +86,8 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         assert suDH != null;
         final CamelSU camelSU = createCamelSU(suDH);
 
+        camelSU.start();
+
         // No need to check if it isn't here: the CDK did that for us.
         su2camel.put(suDH.getName(), camelSU);
 
@@ -131,18 +133,9 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @NonNullByDefault(false)
     @Override
     protected synchronized void doUndeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-        // TODO should I force stop of camel in case it is not stopped yet?
         final CamelSU camelSU = this.su2camel.remove(suDH.getName());
+        camelSU.stop();
         camelSU.undeploy();
-    }
-
-    /**
-     * This is synchronised as we access the shared collection that must stay consistent during the whole method
-     */
-    @NonNullByDefault(false)
-    @Override
-    protected synchronized void doInit(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-        su2camel.get(suDH.getName()).start();
     }
 
     @NonNullByDefault(false)
@@ -155,15 +148,6 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @Override
     protected void doStop(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         // TODO handle resume/suspend
-    }
-
-    /**
-     * This is synchronised as we access the shared collection that must stay consistent during the whole method
-     */
-    @NonNullByDefault(false)
-    @Override
-    protected synchronized void doShutdown(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-        su2camel.get(suDH.getName()).stop();
     }
 
     public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {
