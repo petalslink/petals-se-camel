@@ -18,6 +18,7 @@
 package org.ow2.petals.camel.se;
 
 import java.net.URLClassLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.apache.camel.CamelContext;
@@ -80,6 +81,9 @@ public class CamelSU implements PetalsCamelContext {
         this.manager = manager;
 
         this.context = new DefaultCamelContext();
+
+        this.context.getShutdownStrategy().setTimeout(10);
+        this.context.getShutdownStrategy().setTimeUnit(TimeUnit.SECONDS);
 
         final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 
