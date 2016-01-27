@@ -25,12 +25,15 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.StringUtils;
+import org.ow2.easywsdl.extensions.wsdl4complexwsdl.WSDL4ComplexWsdlFactory;
+import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.WSDL4ComplexWsdlReader;
 import org.ow2.easywsdl.schema.api.XmlException;
-import org.ow2.easywsdl.wsdl.WSDLFactory;
 import org.ow2.easywsdl.wsdl.api.Binding;
 import org.ow2.easywsdl.wsdl.api.BindingOperation;
 import org.ow2.easywsdl.wsdl.api.Description;
-import org.ow2.easywsdl.wsdl.api.WSDLReader;
+import org.ow2.easywsdl.wsdl.api.Endpoint;
+import org.ow2.easywsdl.wsdl.api.InterfaceType;
+import org.ow2.easywsdl.wsdl.api.Service;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -103,7 +106,7 @@ public class PetalsCamelJBIHelper {
 
             final List<OperationData> seos;
             try {
-                seos = getOperationsAndServiceId(wsdlDoc, p.getInterfaceName());
+                seos = getOperationsAndServiceId(wsdlDoc, p);
             } catch (final URISyntaxException | XmlException e) {
                 throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
             }
@@ -152,51 +155,71 @@ public class PetalsCamelJBIHelper {
         }
     }
 
-    public static List<OperationData> getOperationsAndServiceId(final Document doc,
-            final QName interfaceName) throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
+    public static List<OperationData> getOperationsAndServiceId(final Document doc, final Provides provides)
+            throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
 
         final List<OperationData> results = Lists.newArrayList();
 
-        final WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+        final WSDL4ComplexWsdlReader reader = WSDL4ComplexWsdlFactory.newInstance().newWSDLReader();
 
         final Description desc = reader.read(doc);
 
-        for (final Binding binding : desc.getBindings()) {
-            if (!interfaceName.equals(binding.getInterface().getQName())) {
-                // let's skip it, it's not the one we are looking for
-                continue;
-            }
+        final Service service = desc.getService(provides.getServiceName());
+        if (service == null) {
+            throw new InvalidJBIConfigurationException(
+                    "Can't find the service '" + provides.getServiceName() + "' in the description");
+        }
 
-            for (final BindingOperation operation : binding.getBindingOperations()) {
-                final QName qName = operation.getQName();
-                final MEPPatternConstants mep = binding.getInterface().getOperation(qName).getPattern();
+        final Endpoint endpoint = service.getEndpoint(provides.getEndpointName());
+        if (endpoint == null) {
+            throw new InvalidJBIConfigurationException(
+                    "Can't find the endpoint '" + provides.getEndpointName() + "' in the description");
+        }
 
-                Element camelOperation = null;
-                for (final Element e : operation.getOtherElements()) {
-                    if (hasQName(e, EL_WSDL_OPERATION)) {
-                        if (camelOperation != null) {
-                            throw new InvalidJBIConfigurationException(
-                                    "Duplicate " + EL_WSDL_OPERATION
-                                    + " available for the operation " + qName);
-                        }
-                        camelOperation = e;
+        final Binding binding = endpoint.getBinding();
+
+        if (binding == null) {
+            throw new InvalidJBIConfigurationException(
+                    "No binding defined for the endpoint '" + provides.getEndpointName() + "' in the description");
+        }
+
+        final InterfaceType interfaceType = binding.getInterface();
+        if (interfaceType == null) {
+            throw new InvalidJBIConfigurationException("No interface defined for the binding of ednpoint '"
+                    + provides.getEndpointName() + "' in the description");
+        }
+
+        if (!provides.getInterfaceName().equals(interfaceType.getQName())) {
+            throw new InvalidJBIConfigurationException("The interface of the endpoint '" + provides.getEndpointName()
+                    + "' is invalid: '" + interfaceType.getQName() + "' instead of '" + interfaceType + "'");
+        }
+
+        for (final BindingOperation operation : binding.getBindingOperations()) {
+            final QName qName = operation.getQName();
+            final MEPPatternConstants mep = interfaceType.getOperation(qName).getPattern();
+
+            Element camelOperation = null;
+            for (final Element e : operation.getOtherElements()) {
+                if (hasQName(e, EL_WSDL_OPERATION)) {
+                    if (camelOperation != null) {
+                        throw new InvalidJBIConfigurationException(
+                                "Duplicate " + EL_WSDL_OPERATION + " available for the operation " + qName);
                     }
+                    camelOperation = e;
                 }
-                if (camelOperation == null) {
-                    throw new InvalidJBIConfigurationException(
-                            "No " + EL_WSDL_OPERATION
-                            + " available for the operation " + qName);
-                }
-
-                final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
-
-                if (StringUtils.isEmpty(serviceId)) {
-                    throw new InvalidJBIConfigurationException(
-                            "No " + ATTR_WSDL_OPERATION_SERVICEID
-                            + " attribute for the operation " + qName);
-                }
-                results.add(new OperationData(qName, mep.value(), serviceId));
             }
+            if (camelOperation == null) {
+                throw new InvalidJBIConfigurationException(
+                        "No " + EL_WSDL_OPERATION + " available for the operation " + qName);
+            }
+
+            final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
+
+            if (StringUtils.isEmpty(serviceId)) {
+                throw new InvalidJBIConfigurationException(
+                        "No " + ATTR_WSDL_OPERATION_SERVICEID + " attribute for the operation " + qName);
+            }
+            results.add(new OperationData(qName, mep.value(), serviceId));
         }
         return results;
     }

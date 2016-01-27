@@ -51,7 +51,7 @@
    </wsdl:binding>
 
    <wsdl:service name="HelloService" interface="hello:HelloInterface">
-      <wsdl:endpoint name="autogenerate" binding="hello:helloBinding" address="" />
+      <wsdl:endpoint name="autogenerate" binding="hello:HelloBinding" address="" />
    </wsdl:service>
 
 </wsdl:description>
