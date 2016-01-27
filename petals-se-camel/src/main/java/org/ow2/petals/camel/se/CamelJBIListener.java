@@ -126,10 +126,6 @@ public class CamelJBIListener extends AbstractJBIListener {
                     "Got an async context not from me for the exchange "
                             + asyncContext.getOriginalExchange().getExchangeId());
         } else {
-            this.getLogger().info(
-                    "Received an async answer, let's continue our execution for the exchange "
-                            + asyncContext.getOriginalExchange().getExchangeId());
-
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
 
             // let's reinitialise the flow attributes of the current thread with the right data
