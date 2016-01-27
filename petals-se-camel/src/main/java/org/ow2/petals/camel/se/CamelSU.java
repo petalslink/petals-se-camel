@@ -19,6 +19,7 @@ package org.ow2.petals.camel.se;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,6 +85,9 @@ public class CamelSU implements PetalsCamelContext {
         this.suLogger = suLogger;
 
         this.context = new DefaultCamelContext();
+
+        this.context.getShutdownStrategy().setTimeout(10);
+        this.context.getShutdownStrategy().setTimeUnit(TimeUnit.SECONDS);
 
         // needed so that routes are executed with the correct context classloader
         // (for example JAXB uses it to load classes)
