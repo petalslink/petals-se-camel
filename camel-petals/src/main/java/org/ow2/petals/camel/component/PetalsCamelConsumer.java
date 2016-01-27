@@ -58,7 +58,6 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
         super.doStop();
     }
 
-
     @Override
     public boolean process(final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
@@ -159,50 +158,56 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                 final boolean wasFault = exchange.getFault() != null;
                 final boolean wasOut = exchange.isOutMessage();
                 final boolean expectingAnswer = wasFault || wasOut;
-                this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
-                    @Override
-                    public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
-                            final boolean timedOut) {
-
-                        if (timedOut) {
-                            provides.getLogger().warning(
-                                    "The exchange I sent back to the NMR never got acknowledged, it timed out: "
-                                            + exchange.getExchangeId());
-                        } else {
-                            provides.getLogger().fine("Got an answer from my answer I sent to the NMR for exchange "
-                                    + exchange.getExchangeId());
-
-                            if (expectingAnswer && exchange.isDoneStatus()) {
-                                if (provides.getLogger().isLoggable(Level.FINE)) {
-                                    provides.getLogger()
-                                            .fine("Correctly received acknowledgment for our previous answer (id: "
-                                                    + exchange.getExchangeId() + ")");
-                                }
-                                // TODO that should be transfered back to the original caller!!! see PetalsCamelProducer
-                            } else if (exchange.isInOptionalOutPattern() && wasOut && exchange.getFault() != null) {
-                                try {
-                                    // TODO the fault should be transfered back to the original caller before we
-                                    // answer!!!
-                                    exchange.setDoneStatus();
-                                    PetalsCamelConsumer.this.provides.send(exchange);
-                                } catch (final MessagingException e) {
-                                    provides.getLogger().log(Level.SEVERE,
-                                            "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
-                                }
-                            } else {
-                                // TODO log nicely for other (invalid) cases...
-                                provides.getLogger()
-                                        .warning("Unknown situation in MEP for exchange " + exchange.getExchangeId());
-                            }
-                            // TODO and add tests for all of this!
+                if (getEndpoint().isSynchronous()) {
+                    final boolean ok = this.provides.sendSync(exchange, -1L);
+                    handleAnswerAnswer(wasOut, expectingAnswer, exchange, !ok);
+                } else {
+                    this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
+                        @Override
+                        public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
+                                final boolean timedOut) {
+                            handleAnswerAnswer(wasOut, expectingAnswer, exchange, timedOut);
                         }
-                    }
-                });
+                    });
+                }
             }
         } catch (final MessagingException e) {
             // if the send fails, there is nothing we can do except logging the error
             provides.getLogger().log(Level.SEVERE,
                     "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
+        }
+    }
+
+    private void handleAnswerAnswer(final boolean wasOut, final boolean expectingAnswer,
+            final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut) {
+        if (timedOut) {
+            provides.getLogger().warning("The exchange I sent back to the NMR never got acknowledged, it timed out: "
+                    + exchange.getExchangeId());
+        } else {
+            provides.getLogger()
+                    .fine("Got an answer from my answer I sent to the NMR for exchange " + exchange.getExchangeId());
+
+            if (expectingAnswer && exchange.isDoneStatus()) {
+                if (provides.getLogger().isLoggable(Level.FINE)) {
+                    provides.getLogger().fine("Correctly received acknowledgment for our previous answer (id: "
+                            + exchange.getExchangeId() + ")");
+                }
+                // TODO that should be transfered back to the original caller!!! see PetalsCamelProducer
+            } else if (exchange.isInOptionalOutPattern() && wasOut && exchange.getFault() != null) {
+                try {
+                    // TODO the fault should be transfered back to the original caller before we
+                    // answer!!!
+                    exchange.setDoneStatus();
+                    PetalsCamelConsumer.this.provides.send(exchange);
+                } catch (final MessagingException e) {
+                    provides.getLogger().log(Level.SEVERE,
+                            "An exchange (" + exchange.getExchangeId() + ") couldn't be sent back", e);
+                }
+            } else {
+                // TODO log nicely for other (invalid) cases...
+                provides.getLogger().warning("Unknown situation in MEP for exchange " + exchange.getExchangeId());
+            }
+            // TODO and add tests for all of this!
         }
     }
 
