@@ -129,12 +129,7 @@ public class CamelJBIListener extends AbstractJBIListener {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
             this.getLogger().warning("Got an async context not from me for the exchange " + exchange.getExchangeId());
         } else {
-            this.getLogger().info(
-                    "Received an async answer, let's continue our execution for the exchange "
-                    + exchange.getExchangeId());
-
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
-
             context.getCallback().done(exchange, timedOut);
         }
     }

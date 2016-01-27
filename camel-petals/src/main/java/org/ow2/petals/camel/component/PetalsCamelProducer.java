@@ -177,9 +177,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                     public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
                             final boolean timedOut) {
 
-                        if (PetalsCamelProducer.this.consumes.getLogger().isLoggable(Level.FINE)) {
-                            PetalsCamelProducer.this.consumes.getLogger().log(Level.FINE,
-                                    "Handling a Petals exchange (with id: " + exchange.getExchangeId()
+                        if (consumes.getLogger().isLoggable(Level.FINE)) {
+                            consumes.getLogger()
+                                    .fine("Handling a Petals exchange (with id: " + exchange.getExchangeId()
                                             + ") back from a send in async mode "
                                             + (doneSync ? "(but executed in sync mode apparently)" : ""));
                         }
@@ -209,6 +209,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
             final boolean doneSync, final AsyncCallback callback, @Nullable final FlowAttributes faAsBC) {
         if (timedOut) {
+            this.consumes.getLogger().warning(
+                    "The exchange I sent to the NMR never got acknowledged, it timed out: " + exchange.getExchangeId());
+
             camelExchange.setException(TIMEOUT_EXCEPTION);
 
             if (faAsBC != null) {
@@ -219,15 +222,30 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             }
 
         } else {
+            this.consumes.getLogger().fine("Got an answer for the request I sent to the NMR for exchange "
+                    + exchange.getExchangeId() + ", sending status DONE to provider and passing it back into Camel");
+
             // TODO should properties of the camel exchange be updated with those of the received response?!
             Conversions.populateAnswerCamelExchange(camelExchange, exchange);
 
             if (faAsBC != null) {
                 Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
             }
+
+            if (exchange.isActiveStatus()) {
+                // Note: even if it's InOptOut, we can send back done, so it's ok
+                try {
+                    // TODO We should send it only when we get the done as the provider...
+                    // see also comments is PetalsCamelConsumer
+                    exchange.setDoneStatus();
+                    this.consumes.send(exchange);
+                } catch (final MessagingException e) {
+                    this.consumes.getLogger().log(Level.WARNING,
+                            "Can't send back status DONE for exchange " + exchange.getExchangeId(), e);
+                }
+            }
         }
 
-        // TODO we never send the DONE back to the provider in the end... see also comments is PetalsCamelConsumer
         callback.done(doneSync);
     }
 
