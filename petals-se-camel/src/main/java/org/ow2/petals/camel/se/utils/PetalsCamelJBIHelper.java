@@ -54,6 +54,10 @@ import com.google.common.collect.Lists;
 
 /**
  * 
+ * Helper class to manipulate the jbi.xml according to the schema in the resources directory.
+ * 
+ * TODO one day we should actually exploit in an automatised way this schema in the CDK directly.
+ * 
  * @author vnoel
  *
  */
