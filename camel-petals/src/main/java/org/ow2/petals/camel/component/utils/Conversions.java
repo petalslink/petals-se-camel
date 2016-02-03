@@ -30,6 +30,7 @@ import javax.xml.transform.dom.DOMSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
+import org.ow2.petals.camel.component.PetalsCamelComponent;
 
 /**
  * Utils to convert between petals exchange and camel exchange.
@@ -60,6 +61,17 @@ public class Conversions {
         camelExchange.setExchangeId(exchange.getExchangeId());
 
         populateCamelMessage(camelExchange.getIn(), exchange.getInMessage());
+
+        camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_INTERFACE, exchange.getInterfaceName());
+        camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_SERVICE, exchange.getService());
+        camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_ENDPOINT, exchange.getEndpoint());
+        camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_OPERATION, exchange.getOperation());
+        camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_MEP, exchange.getPattern());
+
+        for (final Object prop : exchange.getPropertyNames()) {
+            camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_HEADER_PREFIX + prop,
+                    exchange.getProperty((String) prop));
+        }
     }
 
     /**
@@ -110,6 +122,13 @@ public class Conversions {
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final Exchange camelExchange)
             throws MessagingException {
         Conversions.populateNormalizedMessage(exchange.getInMessage(), camelExchange.getIn());
+
+        for (final Entry<String, Object> prop : camelExchange.getProperties().entrySet()) {
+            if (prop.getKey().startsWith(PetalsCamelComponent.EXCHANGE_HEADER_PREFIX)) {
+                exchange.setProperty(prop.getKey().substring(PetalsCamelComponent.EXCHANGE_HEADER_PREFIX.length()),
+                        prop.getValue());
+            }
+        }
     }
 
     public static void populateAnswerPetalsExchange(
@@ -127,6 +146,7 @@ public class Conversions {
         } else {
             final ExchangePattern mep = camelExchange.getPattern();
 
+            // TODO maybe we should be able to handle situations when the exchanges have different MEP
             if (mep == ExchangePattern.InOut) {
                 final Message out;
                 // sometimes camel exchange out is stored inplace of the in by Camel processors...

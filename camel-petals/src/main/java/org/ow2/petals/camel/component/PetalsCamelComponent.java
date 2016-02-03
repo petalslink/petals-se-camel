@@ -17,8 +17,13 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.io.Serializable;
+import java.net.URI;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
@@ -28,9 +33,46 @@ import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 
 public class PetalsCamelComponent extends UriEndpointComponent {
-
+    
     @SuppressWarnings("null")
     private static final Pattern URI_PATTERN = Pattern.compile("^\\w*$");
+
+    /**
+     * Prefix for a property that will be converted from a header in a new Petals exchange in Petals Consumers.
+     */
+    public static final String EXCHANGE_ORIGINAL_HEADER_PREFIX = "PetalsOriginalHeader.";
+
+    /**
+     * Prefix for a property that will be converted to a header in a new Petals exchange in Petals Producers.
+     * 
+     * Note that Petals expects {@link Serializable} properties!
+     */
+    public static final String EXCHANGE_HEADER_PREFIX = "PetalsHeader.";
+
+    /**
+     * Type is {@link QName}
+     */
+    public static final String EXCHANGE_ORIGINAL_INTERFACE = "PetalsOriginalInterface";
+
+    /**
+     * Type is {@link QName}
+     */
+    public static final String EXCHANGE_ORIGINAL_SERVICE = "PetalsOriginalService";
+
+    /**
+     * Type is {@link ServiceEndpoint}
+     */
+    public static final String EXCHANGE_ORIGINAL_ENDPOINT = "PetalsOriginalEndpoint";
+
+    /**
+     * Type is {@link QName}
+     */
+    public static final String EXCHANGE_ORIGINAL_OPERATION = "PetalsOriginalOperation";
+
+    /**
+     * Type is {@link URI}
+     */
+    public static final String EXCHANGE_ORIGINAL_MEP = "PetalsOriginalPattern";
 
     @Nullable
     private PetalsCamelContext pcc;
