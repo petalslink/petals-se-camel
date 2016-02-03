@@ -36,7 +36,7 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     private final PetalsCamelSender sender;
 
     public ServiceEndpointOperationConsumes(final PetalsCamelSender sender) throws InvalidJBIConfigurationException {
-        super(sender.getConsumes().getServiceName(), sender.getConsumes().getInterfaceName(),
+        super(sender.getConsumes().getInterfaceName(), sender.getConsumes().getServiceName(),
                 sender.getConsumes().getEndpointName(), sender.getConsumes().getOperation(),
                 toMEP(sender.getConsumes()), sender);
         this.sender = sender;

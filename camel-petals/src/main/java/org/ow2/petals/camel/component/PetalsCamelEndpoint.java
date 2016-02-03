@@ -188,7 +188,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
                         + " can't be set on a Consumes endpoint if it already declares a MEP.");
             }
 
-            this.mep = MEPPatternConstants.valueOf(ExchangePattern.valueOf(mepParameter).getWsdlUri());
+            this.mep = MEPPatternConstants.valueOf(URI.create(ExchangePattern.valueOf(mepParameter).getWsdlUri()));
         }
         
         final String operation = (String) options.remove(PARAMETER_OPERATION);
