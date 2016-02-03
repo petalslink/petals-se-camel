@@ -94,7 +94,8 @@ public class CamelJBIListener extends AbstractJBIListener {
             } else if (exchange.isErrorStatus()) {
                 logger.warning(logHint + " received with a status 'ERROR', this shouldn't happen here. Skipped!");
             } else if (exchange.isDoneStatus()) {
-                logger.warning(logHint + " received with a status 'DONE', this shouldn't happen here. Skipped");
+                // this can happen because of PETALSSECAMEL-20
+                logger.fine(logHint + " received with a status 'DONE'.");
             }
 
             // let the CDK handle the response (either an error occured or it is an error message or a done message)

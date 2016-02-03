@@ -27,7 +27,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
@@ -161,13 +160,8 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                     final boolean ok = this.provides.sendSync(exchange, -1L);
                     handleAnswerAnswer(wasOut, expectingAnswer, exchange, !ok);
                 } else {
-                    this.provides.sendAsync(exchange, -1L, new SendAsyncCallback() {
-                        @Override
-                        public void done(final org.ow2.petals.component.framework.api.message.Exchange exchange,
-                                final boolean timedOut) {
-                            handleAnswerAnswer(wasOut, expectingAnswer, exchange, timedOut);
-                        }
-                    });
+                    // Petals 4.3.x does not support sendAsync, see PETALSSECAMEL-20
+                    this.provides.send(exchange);
                 }
             }
         } catch (final MessagingException e) {
