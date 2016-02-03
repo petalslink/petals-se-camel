@@ -18,6 +18,7 @@
 package org.ow2.petals.camel.component;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.ExchangePattern;
@@ -31,10 +32,13 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
-import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 
 @UriEndpoint(scheme = "petals", consumerClass = PetalsCamelConsumer.class)
 public class PetalsCamelEndpoint extends DefaultEndpoint {
+
+    @SuppressWarnings("null")
+    private static final Pattern URI_PATTERN = Pattern.compile("^[a-zA-Z][\\w.-]*$");
 
     private static final String PARAMETER_TIMEOUT = "timeout";
 
@@ -50,12 +54,17 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private final ServiceEndpointOperation service;
 
-    public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String serviceId)
-            throws UnknownServiceException {
-
+    public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String remaining)
+            throws Exception {
         super(endpointUri, component);
 
-        this.serviceId = serviceId;
+        // remaining can ONLY be the unique id attributed either in the WSDL for provides (consumers)
+        // or in the JBI for consumes (providers)!!
+        if (!URI_PATTERN.matcher(remaining).matches()) {
+            throw new InvalidURIException(remaining);
+        }
+
+        this.serviceId = remaining;
         
         this.service = component.getContext().getService(serviceId);
 
@@ -128,6 +137,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         if (this.service.getType() != ServiceType.PROVIDES) {
             throw new IncompatibleEndpointUsageException(this.service, ServiceType.PROVIDES);
         }
+
+        assert processor != null;
 
         // create the consumer for our JBI provides
         return new PetalsCamelConsumer(this, processor);

@@ -20,7 +20,6 @@ package org.ow2.petals.camel.component;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
@@ -30,12 +29,8 @@ import org.apache.camel.impl.UriEndpointComponent;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsCamelContext;
-import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 
 public class PetalsCamelComponent extends UriEndpointComponent {
-    
-    @SuppressWarnings("null")
-    private static final Pattern URI_PATTERN = Pattern.compile("^\\w*$");
 
     /**
      * Prefix for a property that will be converted from a header in a new Petals exchange in Petals Consumers.
@@ -85,13 +80,8 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     @Override
     protected Endpoint createEndpoint(final String uri, final String remaining, final Map<String, Object> parameters)
             throws Exception {
-
-        // remaining can ONLY be the unique id attributed either in the WSDL for provides (consumers)
-        // or in the JBI for consumes (providers)!!
-        if (!URI_PATTERN.matcher(remaining).matches()) {
-            throw new InvalidURIException(remaining);
-        }
-
+        assert uri != null;
+        assert remaining != null;
         // parameters will be set from the class's configureProperties
         return new PetalsCamelEndpoint(uri, this, remaining);
     }
