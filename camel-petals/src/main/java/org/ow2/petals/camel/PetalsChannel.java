@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 /**
@@ -66,6 +67,8 @@ public interface PetalsChannel {
     public interface PetalsConsumesChannel extends PetalsChannel {
 
         public Exchange newExchange() throws MessagingException;
+
+        public Exchange newExchange(MEPPatternConstants mep) throws MessagingException;
 
     }
 

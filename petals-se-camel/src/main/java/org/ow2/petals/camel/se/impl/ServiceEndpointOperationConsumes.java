@@ -21,6 +21,7 @@ import java.net.URI;
 
 import javax.jbi.messaging.MessagingException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -35,9 +36,14 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
 
     public ServiceEndpointOperationConsumes(final PetalsCamelSender sender, final Consumes consumes)
             throws InvalidJBIConfigurationException {
-        super(consumes.getServiceName(), consumes.getInterfaceName(), consumes.getEndpointName(),
-                consumes.getOperation(), ServiceType.CONSUMES, toMEP(consumes), sender);
+        super(consumes.getInterfaceName(), consumes.getServiceName(), consumes.getEndpointName(),
+                consumes.getOperation(), toMEP(consumes), sender);
         this.consumes = consumes;
+    }
+
+    @Override
+    public ServiceType getType() {
+        return ServiceType.CONSUMES;
     }
 
     @Override
@@ -45,13 +51,17 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
         return sender.createConsumeExchange(consumes);
     }
 
-    private static URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
+    @Override
+    public Exchange newExchange(final MEPPatternConstants mep) throws MessagingException {
+        return sender.createConsumeExchange(consumes, mep);
+    }
+
+    private static @Nullable URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
 
         final MEPType mep = c.getMep();
 
-        // default MEP in Camel SE
         if (mep == null) {
-            return MEPPatternConstants.IN_OUT.value();
+            return null;
         }
 
         switch (mep) {
@@ -64,8 +74,9 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
             case ROBUST_IN_ONLY:
                 return MEPPatternConstants.ROBUST_IN_ONLY.value();
             default:
-                throw new InvalidJBIConfigurationException("No MEP set for operation " + c.getOperation()
-                        + " of service " + c.getServiceName());
+                throw new InvalidJBIConfigurationException(
+                        "Unknown MEP '" + mep + "' set for operation " + c.getOperation() + " of interface "
+                                + c.getInterfaceName() + " and service " + c.getServiceName());
         }
     }
 }

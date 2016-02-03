@@ -21,6 +21,7 @@ import java.net.URI;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
@@ -52,7 +53,7 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public QName getService() {
+    public @Nullable QName getService() {
         return service;
     }
 
@@ -62,12 +63,12 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public String getEndpoint() {
+    public @Nullable String getEndpoint() {
         return endpoint;
     }
 
     @Override
-    public QName getOperation() {
+    public @Nullable QName getOperation() {
         return operation;
     }
 
@@ -77,7 +78,7 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public URI getMEP() {
+    public @Nullable URI getMEP() {
         return mep;
     }
 

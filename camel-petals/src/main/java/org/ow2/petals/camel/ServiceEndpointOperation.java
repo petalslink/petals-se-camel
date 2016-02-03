@@ -21,6 +21,8 @@ import java.net.URI;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Represent a Service Endpoint's operation.
  * 
@@ -33,16 +35,16 @@ public interface ServiceEndpointOperation {
         PROVIDES, CONSUMES
     }
 
-    public QName getService();
+    public @Nullable QName getService();
 
     public QName getInterface();
 
-    public String getEndpoint();
+    public @Nullable String getEndpoint();
 
-    public QName getOperation();
+    public @Nullable QName getOperation();
 
     public ServiceType getType();
 
-    public URI getMEP();
+    public @Nullable URI getMEP();
 
 }

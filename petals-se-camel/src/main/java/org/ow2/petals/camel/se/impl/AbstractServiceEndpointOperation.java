@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -39,28 +40,30 @@ import org.ow2.petals.component.framework.api.message.Exchange;
  */
 public abstract class AbstractServiceEndpointOperation implements ServiceEndpointOperation, PetalsChannel {
 
-    private final QName service;
-
     private final QName interfaceName;
 
+    @Nullable
+    private final QName service;
+
+    @Nullable
     private final String endpoint;
 
+    @Nullable
     private final QName operation;
 
-    private final ServiceType type;
-
+    @Nullable
     private final URI mep;
 
     protected final PetalsCamelSender sender;
 
-    public AbstractServiceEndpointOperation(final QName service, final QName interfaceName, final String endpoint,
-            final QName operation, final ServiceType type, final URI mep, final PetalsCamelSender sender)
+    public AbstractServiceEndpointOperation(final QName interfaceName, final @Nullable QName service,
+            final @Nullable String endpoint, final @Nullable QName operation, 
+            @Nullable final URI mep, final PetalsCamelSender sender)
                     throws InvalidJBIConfigurationException {
         this.service = service;
         this.interfaceName = interfaceName;
         this.endpoint = endpoint;
         this.operation = operation;
-        this.type = type;
         this.mep = mep;
         this.sender = sender;
     }
@@ -68,7 +71,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     @Override
     public String toString() {
         return "ServiceEndpointOperation [service=" + service + ", endpoint=" + endpoint + ", operation=" + operation
-                + ", type=" + type + ", mep=" + mep + "]";
+                + ", type=" + getType() + ", mep=" + mep + "]";
     }
 
 
@@ -93,7 +96,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     }
 
     @Override
-    public QName getService() {
+    public @Nullable QName getService() {
         return service;
     }
 
@@ -103,22 +106,17 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     }
 
     @Override
-    public String getEndpoint() {
+    public @Nullable String getEndpoint() {
         return endpoint;
     }
 
     @Override
-    public QName getOperation() {
+    public @Nullable QName getOperation() {
         return operation;
     }
 
     @Override
-    public ServiceType getType() {
-        return type;
-    }
-
-    @Override
-    public URI getMEP() {
+    public @Nullable URI getMEP() {
         return mep;
     }
 

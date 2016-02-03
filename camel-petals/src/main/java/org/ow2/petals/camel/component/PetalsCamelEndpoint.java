@@ -17,8 +17,11 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.xml.namespace.QName;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.ExchangePattern;
@@ -32,6 +35,8 @@ import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
@@ -45,9 +50,17 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private static final String PARAMETER_TIMEOUT = "timeout";
 
+    private static final String PARAMETER_OPERATION = "operation";
+
+    private static final String PARAMETER_SERVICE = "serviceName";
+
+    private static final String PARAMETER_ENDPOINT = "endpointName";
+
     private static final String PARAMETER_SYNCHRONOUS = "synchronous";
 
     private static final String PARAMETER_MEP = "exchangePattern";
+
+    private final ServiceEndpointOperation service;
 
     @UriPath
     @Metadata(required = "true")
@@ -56,7 +69,21 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @UriParam(defaultValue = "-1", name = PARAMETER_TIMEOUT, description = "If 0 then no timeout, if <0 then use the default timeout from the component else specify the timeout in milliseconds")
     private long timeout = -1;
 
-    private final ServiceEndpointOperation service;
+    @Nullable
+    @UriParam(name = PARAMETER_OPERATION, description = "If set and the Consumes does not declare any operation, this will be used as the operation of created Exchanges for this endpoint")
+    private QName operation;
+
+    @Nullable
+    @UriParam(name = PARAMETER_MEP, description = "If set and the Consumes does not declare any MEP, this will be used as the MEP of created Exchanges for this endpoint")
+    private MEPPatternConstants mep;
+
+    @Nullable
+    @UriParam(name = PARAMETER_SERVICE, description = "If set and the Consumes does not declare any service name, this will be used as the service of created Exchanges for this endpoint")
+    private QName serviceName;
+
+    @Nullable
+    @UriParam(name = PARAMETER_ENDPOINT, description = "If set and the Consumes does not declare any endpoint name, this will be used as the endpoint name of created Exchanges for this endpoint. A service name must also be set.")
+    private String endpointName;
 
     public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String remaining)
             throws Exception {
@@ -72,7 +99,13 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         
         this.service = component.getContext().getService(serviceId);
 
-        setExchangePattern(ExchangePattern.fromWsdlUri(service.getMEP().toString()));
+        if (this.service.getType() == ServiceType.PROVIDES) {
+            final URI serviceMEP = this.service.getMEP();
+            assert serviceMEP != null;
+
+            // this will be used to set the Camel Exchange MEP
+            setExchangePattern(ExchangePattern.fromWsdlUri(serviceMEP.toString()));
+        }
     }
 
     /**
@@ -93,8 +126,8 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
             if (this.service.getType() == ServiceType.CONSUMES) {
                 this.timeout = Long.parseLong(timeoutParameter);
             } else {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_TIMEOUT
-                        + " can't be set on a Provides endpoint.");
+                throw new RuntimeCamelException(
+                        "The parameter " + PARAMETER_TIMEOUT + " can't be set on a Provides endpoint.");
             }
         }
 
@@ -105,26 +138,93 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
             this.setSynchronous(Boolean.parseBoolean(synchronousParameter));
         }
 
+        final String serviceParameter = (String) options.remove(PARAMETER_SERVICE);
+        if (serviceParameter != null) {
+            if (this.service.getType() == ServiceType.PROVIDES) {
+                throw new RuntimeCamelException(
+                        "The parameter " + PARAMETER_SERVICE + " can't be set on a Provides endpoint.");
+            }
+
+            if (this.service.getService() != null) {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_SERVICE
+                        + " can't be set on a Consumes endpoint if it already declares a service.");
+            }
+
+            // TODO shouldn't I use the namespace of... the consumes? the interface?
+            this.serviceName = QName.valueOf(serviceParameter);
+        }
+
+        final String endpointParameter = (String) options.remove(PARAMETER_ENDPOINT);
+        if (endpointParameter != null) {
+            if (this.service.getType() == ServiceType.PROVIDES) {
+                throw new RuntimeCamelException(
+                        "The parameter " + PARAMETER_ENDPOINT + " can't be set on a Provides endpoint.");
+            }
+
+            if (this.service.getService() != null) {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_ENDPOINT
+                        + " can't be set on a Consumes endpoint if it already declares an endpoint name.");
+            }
+
+            if (this.serviceName == null) {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_ENDPOINT
+                        + " can't be set on an endpoint if it does not also declare a service name.");
+            }
+
+            this.endpointName = endpointParameter;
+        }
+
         final String mepParameter = (String) options.remove(PARAMETER_MEP);
         if (mepParameter != null) {
-            final ExchangePattern mep;
-            try {
-                mep = ExchangePattern.valueOf(mepParameter);
-            } catch (final IllegalArgumentException e) {
-                throw new ResolveEndpointFailedException(this.getEndpointUri(), e);
+            if (this.service.getType() == ServiceType.PROVIDES) {
+                // TODO instead, we should handle these cases with some kind of subtyping...
+                throw new RuntimeCamelException(
+                        "The parameter " + PARAMETER_MEP + " can't be set on a Provides endpoint.");
             }
-            // TODO is there some kind of subtyping of MEP?
-            // it also depends if it's a consumes or a provides!
-            if (!mep.equals(this.getExchangePattern())) {
+
+            if (this.service.getMEP() != null) {
                 throw new RuntimeCamelException("The parameter " + PARAMETER_MEP
-                        + " can't be set with a value incompatible with the Petals service (parameter is '" + mep
-                        + "', service's is '" + this.getExchangePattern() + "').");
+                        + " can't be set on a Consumes endpoint if it already declares a MEP.");
             }
+
+            this.mep = MEPPatternConstants.fromString(ExchangePattern.valueOf(mepParameter).getWsdlUri());
+        }
+        
+        final String operation = (String) options.remove(PARAMETER_OPERATION);
+        if (operation != null) {
+            if (this.service.getType() == ServiceType.PROVIDES) {
+                throw new RuntimeCamelException(
+                        "The parameter " + PARAMETER_OPERATION + " can't be set on a Provides endpoint.");
+            }
+
+            if (this.service.getOperation() != null) {
+                throw new RuntimeCamelException("The parameter " + PARAMETER_OPERATION
+                        + " can't be set on a Consumes endpoint if it already declares an operation.");
+            }
+
+            // TODO shouldn't I use the namespace of... the consumes? the interface?
+            this.operation = QName.valueOf(operation);
         }
     }
 
     public long getTimeout() {
         return timeout;
+    }
+
+    public @Nullable QName getOperation() {
+        return operation;
+    }
+
+    public @Nullable QName getServiceName() {
+        return serviceName;
+    }
+
+    public @Nullable String getEndpointName() {
+        return endpointName;
+    }
+
+    public @Nullable MEPPatternConstants getMep() {
+        return mep;
     }
 
     public ServiceEndpointOperation getService() {
