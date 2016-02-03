@@ -61,6 +61,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
     public boolean process(final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
         final Exchange camelExchange = getEndpoint().createExchange();
+        assert camelExchange != null;
 
         Conversions.populateNewCamelExchange(camelExchange, exchange);
 

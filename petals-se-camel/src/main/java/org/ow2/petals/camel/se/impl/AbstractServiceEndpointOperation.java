@@ -32,28 +32,25 @@ import org.ow2.petals.component.framework.api.message.Exchange;
 
 public abstract class AbstractServiceEndpointOperation implements ServiceEndpointOperation, PetalsChannel {
 
-    private final QName service;
-
     private final QName interfaceName;
+
+    private final QName service;
 
     private final String endpoint;
 
     private final QName operation;
 
-    private final ServiceType type;
-
     private final URI mep;
 
     private final PetalsCamelSender sender;
 
-    public AbstractServiceEndpointOperation(final QName service, final QName interfaceName, final String endpoint,
-            final QName operation, final ServiceType type, final URI mep, final PetalsCamelSender sender)
+    public AbstractServiceEndpointOperation(final QName interfaceName, final QName service, final String endpoint,
+            final QName operation, final URI mep, final PetalsCamelSender sender)
             throws InvalidJBIConfigurationException {
         this.service = service;
         this.interfaceName = interfaceName;
         this.endpoint = endpoint;
         this.operation = operation;
-        this.type = type;
         this.mep = mep;
         this.sender = sender;
     }
@@ -61,7 +58,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     @Override
     public String toString() {
         return "ServiceEndpointOperation [service=" + service + ", endpoint=" + endpoint + ", operation=" + operation
-                + ", type=" + type + ", mep=" + mep + "]";
+                + ", type=" + getType() + ", mep=" + mep + "]";
     }
 
 
@@ -104,11 +101,6 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     @Override
     public QName getOperation() {
         return operation;
-    }
-
-    @Override
-    public ServiceType getType() {
-        return type;
     }
 
     @Override

@@ -21,12 +21,15 @@ package org.ow2.petals.camel.component;
 import javax.jbi.JBIException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultAsyncProducer;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
@@ -36,6 +39,7 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.logger.ConsumeFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.Utils;
+import org.w3c.dom.DocumentFragment;
 
 import com.ebmwebsourcing.easycommons.lang.StringHelper;
 
@@ -66,6 +70,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     @NonNullByDefault(false)
     @Override
     public void process(final Exchange camelExchange) {
+        assert camelExchange != null;
         final boolean sync = this.process(camelExchange, true, new AsyncCallback() {
             @Override
             public void done(final boolean doneSync) {
@@ -78,6 +83,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     @NonNullByDefault(false)
     @Override
     public boolean process(final Exchange camelExchange, final AsyncCallback callback) {
+        assert camelExchange != null;
+        assert callback != null;
         if (getEndpoint().isSynchronous()) {
             final boolean sync = this.process(camelExchange, true, callback);
             assert sync;
@@ -129,11 +136,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
         try {
 
-            final org.ow2.petals.component.framework.api.message.Exchange exchange = this.consumes.newExchange();
-
-            // TODO should I check that the camel exchange has the same MEP as the consumes MEP?
-
-            Conversions.populateNewPetalsExchange(exchange, camelExchange);
+            final org.ow2.petals.component.framework.api.message.Exchange exchange = createPetalsExchange(
+                    camelExchange);
 
             if (faAsBC != null) {
                 this.consumes.getLogger().log(Level.MONIT, "",
@@ -205,6 +209,64 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             callback.done(doneSync);
             return doneSync;
         }
+    }
+
+    private org.ow2.petals.component.framework.api.message.Exchange createPetalsExchange(final Exchange camelExchange)
+            throws JBIException {
+
+        final org.ow2.petals.component.framework.api.message.Exchange exchange;
+
+        final MEPPatternConstants mep = getEndpoint().getMep();
+        if (mep != null) {
+            exchange = this.consumes.newExchange(mep);
+        } else {
+            exchange = this.consumes.newExchange();
+        }
+
+        final QName serviceName = getEndpoint().getServiceName();
+        if (serviceName != null) {
+            exchange.setService(serviceName);
+
+            final String endpointName = getEndpoint().getEndpointName();
+            if (endpointName != null) {
+                // TODO theoretically we should resolve the endpoint with the context...
+                exchange.setEndpoint(new ServiceEndpoint() {
+
+                    @Override
+                    public QName getServiceName() {
+                        return serviceName;
+                    }
+
+                    @Override
+                    public QName[] getInterfaces() {
+                        return new QName[] { getEndpoint().getService().getInterface() };
+                    }
+
+                    @Override
+                    public String getEndpointName() {
+                        return endpointName;
+                    }
+
+                    @Override
+                    public @Nullable DocumentFragment getAsReference(final @Nullable QName operationName) {
+                        return null;
+                    }
+                });
+            }
+        }
+
+        final QName operation = getEndpoint().getOperation();
+        if (operation != null) {
+            exchange.setOperation(operation);
+        }
+
+        // TODO should I check that the camel exchange has the same MEP as the consumes MEP? or compatibility?
+        // for example if I have a inonly exchange sent to an inout service, then I just discard the out
+        // while an InOut exchange for an InOnly service is not possible!
+        // TODO and also I should take into account the MEP of the endpoint??!!
+
+        Conversions.populateNewPetalsExchange(exchange, camelExchange);
+        return exchange;
     }
 
     private void handleAnswer(final Exchange camelExchange,

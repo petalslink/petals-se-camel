@@ -21,11 +21,12 @@ import java.net.URI;
 
 import javax.jbi.JBIException;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.component.framework.api.Message.MEPConstants;
+import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
@@ -34,24 +35,50 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
 
     private final PetalsCamelSender sender;
 
-    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender)
-            throws InvalidJBIConfigurationException {
-        super(sender.getConsumes().getServiceName(), sender.getConsumes().getInterfaceName(), sender.getConsumes()
-                .getEndpointName(), sender.getConsumes().getOperation(), ServiceType.CONSUMES, toMEP(sender
-                .getConsumes().getMep(), sender.getConsumes()), sender);
+    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender) throws InvalidJBIConfigurationException {
+        super(sender.getConsumes().getServiceName(), sender.getConsumes().getInterfaceName(),
+                sender.getConsumes().getEndpointName(), sender.getConsumes().getOperation(),
+                toMEP(sender.getConsumes()), sender);
         this.sender = sender;
     }
 
     @Override
-    public Exchange newExchange() throws JBIException {
-        return sender.createConsumeExchange(sender.getConsumes());
+    public ServiceType getType() {
+        return ServiceType.CONSUMES;
     }
 
-    private static URI toMEP(@Nullable final MEPType mep, final Consumes c) throws InvalidJBIConfigurationException {
+    @Override
+    public Exchange newExchange() throws JBIException {
+        return sender.createConsumeExchange(this.sender.getConsumes());
+    }
 
-        // default MEP in Camel SE
+    @Override
+    public Exchange newExchange(final MEPPatternConstants mep) throws JBIException {
+        return sender.createConsumeExchange(this.sender.getConsumes(), toMEP(mep));
+    }
+
+    private static MEPConstants toMEP(final MEPPatternConstants mep) throws PEtALSCDKException {
+        switch (mep) {
+            case IN_ONLY:
+                return MEPConstants.IN_ONLY_PATTERN;
+            case IN_OUT:
+                return MEPConstants.IN_OUT_PATTERN;
+            case IN_OPTIONAL_OUT:
+                return MEPConstants.IN_OPTIONAL_OUT_PATTERN;
+            case ROBUST_IN_ONLY:
+                return MEPConstants.ROBUST_IN_ONLY_PATTERN;
+            default:
+                // this can't happen because the mep originally comes from the jbi.xml
+                throw new PEtALSCDKException("Impossible case");
+        }
+    }
+
+    private static URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
+
+        final MEPType mep = c.getMep();
+
         if (mep == null) {
-            return MEPPatternConstants.IN_OUT.value();
+            return null;
         }
 
         switch (mep) {
@@ -64,8 +91,9 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
             case ROBUST_IN_ONLY:
                 return MEPPatternConstants.ROBUST_IN_ONLY.value();
             default:
-                throw new InvalidJBIConfigurationException("No MEP set for operation " + c.getOperation()
-                        + " of service " + c.getServiceName());
+                throw new InvalidJBIConfigurationException(
+                        "Unknown MEP '" + mep + "' set for operation " + c.getOperation() + " of interface "
+                                + c.getInterfaceName() + " and service " + c.getServiceName());
         }
     }
 }

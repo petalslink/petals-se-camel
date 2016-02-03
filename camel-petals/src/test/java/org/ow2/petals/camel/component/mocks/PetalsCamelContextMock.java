@@ -30,6 +30,7 @@ import org.apache.camel.CamelContext;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel;
@@ -153,35 +154,42 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     public Exchange createExchange(final String serviceId) {
+        return createExchange(serviceId, (MEPPatternConstants) null);
+    }
+
+    private Exchange createExchange(final String serviceId, final @Nullable MEPPatternConstants mep) {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
         final MessageExchangeImpl msg = new MessageExchangeImpl();
         msg.setExchangeId(new QualifiedUUIDGenerator(Constants.UUID_DOMAIN).getNewID());
         // msg.setConsumerEndpoint(consumerEndpoint);
-        msg.setEndpoint(new ServiceEndpoint() {
+        final QName service = seo.getService();
+        final String endpoint = seo.getEndpoint();
+        if (service != null && endpoint != null) {
+            msg.setEndpoint(new ServiceEndpoint() {
+                @Override
+                public QName getServiceName() {
+                    return service;
+                }
 
-            @Override
-            public QName getServiceName() {
-                return seo.getService();
-            }
+                @Override
+                public QName[] getInterfaces() {
+                    return new QName[] { seo.getInterface() };
+                }
 
-            @Override
-            public QName[] getInterfaces() {
-                return new QName[] { seo.getInterface() };
-            }
+                @Override
+                public String getEndpointName() {
+                    return endpoint;
+                }
 
-            @Override
-            public String getEndpointName() {
-                return seo.getEndpoint();
-            }
-
-            @Override
-            public @Nullable DocumentFragment getAsReference(@Nullable QName operationName) {
-                return null;
-            }
-        });
+                @Override
+                public @Nullable DocumentFragment getAsReference(@Nullable QName operationName) {
+                    return null;
+                }
+            });
+        }
         msg.setInterfaceName(seo.getInterface());
-        msg.setService(seo.getService());
+        msg.setService(service);
         msg.setPattern(seo.getMEP());
         msg.setOperation(seo.getOperation());
         return new ExchangeImpl(msg);
@@ -244,10 +252,14 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
 
         @Override
-        public Exchange newExchange() throws JBIException {
+        public Exchange newExchange() throws MessagingException {
             return PetalsCamelContextMock.this.createExchange(serviceId);
         }
 
+        @Override
+        public Exchange newExchange(final MEPPatternConstants mep) throws MessagingException {
+            return PetalsCamelContextMock.this.createExchange(serviceId, mep);
+        }
     }
 
     public class MockProvidesChannel extends MockChannel implements PetalsProvidesChannel {
