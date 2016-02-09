@@ -29,6 +29,7 @@ import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
+import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
@@ -111,35 +112,32 @@ public class CamelSUManager extends AbstractServiceUnitManager {
                 ImmutableList.copyOf(xmlNames), classLoader, this);
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
-    @NonNullByDefault(false)
     @Override
-    protected synchronized void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
-        // TODO should I force stop of camel in case it is not stopped yet?
+    protected void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
         final CamelSU camelSU = this.su2camel.remove(serviceUnitName);
         camelSU.undeploy();
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
-    @NonNullByDefault(false)
     @Override
-    protected synchronized void doStart(final String serviceUnitName) throws PetalsCamelSEException {
-        // TODO is there something in petals corresponding to resume?
-        su2camel.get(serviceUnitName).start();
+    protected void doInit(final String serviceUnitName, final String suRootPath) throws PEtALSCDKException {
+        this.su2camel.get(serviceUnitName).init();
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
-    @NonNullByDefault(false)
     @Override
-    protected synchronized void doStop(final String serviceUnitName) throws PetalsCamelSEException {
-        // TODO is there something in petals corresponding to suspend?
-        su2camel.get(serviceUnitName).stop();
+    protected void doShutdown(final String serviceUnitName) throws PEtALSCDKException {
+        this.su2camel.get(serviceUnitName).shutdown();
+    }
+
+    @Override
+    protected void doStart(final String serviceUnitName) throws PEtALSCDKException {
+        // TODO handle resume/suspend
+        this.su2camel.get(serviceUnitName).start();
+    }
+
+    @Override
+    protected void doStop(final String serviceUnitName) throws PEtALSCDKException {
+        // TODO handle resume/suspend
+        this.su2camel.get(serviceUnitName).stop();
     }
 
     public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {

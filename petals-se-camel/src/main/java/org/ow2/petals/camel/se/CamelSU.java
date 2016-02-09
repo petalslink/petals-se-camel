@@ -17,7 +17,11 @@
  */
 package org.ow2.petals.camel.se;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -39,6 +43,7 @@ import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
 import org.ow2.petals.camel.se.utils.CamelRoutesHelper;
+import org.ow2.petals.commons.log.Level;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -60,6 +65,8 @@ public class CamelSU implements PetalsCamelContext {
      * Needed by the camel endpoint to resolve the URI in a from() or a to()
      */
     private final ImmutableMap<String, ServiceEndpointOperation> sid2seo;
+
+    private final Set<RouteBuilder> classRoutes = new HashSet<RouteBuilder>();
 
     /**
      * The Camel engine dedicated to this SU
@@ -111,8 +118,10 @@ public class CamelSU implements PetalsCamelContext {
                     throw new InvalidCamelRouteDefinitionException(
                             "Can't add routes from class " + className + " to Camel context", e);
                 }
-            }
 
+                this.classRoutes.add(routes);
+            }
+            
             for (final String xmlName : xmlNames) {
                 final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
                         getLogger());
@@ -124,37 +133,83 @@ public class CamelSU implements PetalsCamelContext {
                             "Can't add routes from xml file " + xmlName + " to Camel context", e);
                 }
             }
+
+            try {
+                context.start();
+            } catch (final Exception e) {
+                throw new PetalsCamelSEException("Problem starting the Camel context", e);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(ccl);
         }
+
+        callMethods("deploy");
+    }
+
+    public void init() throws PetalsCamelSEException {
+        callMethods("init");
+    }
+
+    public void shutdown() throws PetalsCamelSEException {
+        callMethods("shutdown");
     }
 
     public void stop() throws PetalsCamelSEException {
-        // TODO other things?
-        try {
-            context.stop();
-        } catch (final Exception e) {
-            throw new PetalsCamelSEException("Problem stopping the Camel context", e);
-        }
+        callMethods("stop");
     }
 
     public void start() throws PetalsCamelSEException {
-        // TODO other things?
-        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+        callMethods("start");
+    }
+
+    public void undeploy() throws PetalsCamelSEException {
         try {
-            // this is needed because this version of Camel does not properly use
-            // the application class loader during initialisation and start.
-            Thread.currentThread().setContextClassLoader(classLoader);
-            context.start();
+            callMethods("undeploy");
         } catch (final Exception e) {
-            throw new PetalsCamelSEException("Problem starting the Camel context", e);
+            getLogger().log(Level.SEVERE, "Can't undeploy the Route definitions of the SU", e);
+        }
+
+        try {
+            context.stop();
+        } catch (final Exception e) {
+            getLogger().log(Level.SEVERE, "Can't stop the Camel context of the SU", e);
+        }
+
+        // TODO normally we should close the classloader, but there is nothing to do so in Java6
+    }
+
+    private void callMethods(final String method) throws PetalsCamelSEException {
+        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        try {
+            for (final RouteBuilder routeBuilder : this.classRoutes) {
+                assert routeBuilder != null;
+                callMethod(method, routeBuilder);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(ccl);
         }
     }
 
-    public void undeploy() {
-        // TODO anything? when using Java 7, we can close the classloader at least
+    private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
+        try {
+            final Method method = object.getClass().getMethod(methodName);
+            method.invoke(object);
+        } catch (final NoSuchMethodException e) {
+            // do nothing
+        } catch (IllegalAccessException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (IllegalArgumentException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (InvocationTargetException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (final SecurityException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        }
     }
 
     @Override
