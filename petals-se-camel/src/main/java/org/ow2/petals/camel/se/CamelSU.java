@@ -155,26 +155,6 @@ public class CamelSU implements PetalsCamelContext {
         callMethods("start");
     }
 
-    private void callMethods(final String method) throws PetalsCamelSEException {
-        for (final RouteBuilder routeBuilder : this.classRoutes) {
-            assert routeBuilder != null;
-            callMethod(method, routeBuilder);
-        }
-    }
-
-    private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
-        try {
-            final Method method = object.getClass().getMethod(methodName);
-            method.invoke(object);
-        } catch (final SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new PetalsCamelSEException(
-                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
-        } catch (final NoSuchMethodException e) {
-            // do nothing
-        }
-    }
-
     public void undeploy() throws PetalsCamelSEException {
         try {
             callMethods("undeploy");
@@ -193,6 +173,32 @@ public class CamelSU implements PetalsCamelContext {
         } catch (final IOException e) {
             // let's log it, it is severe because it uses memory!
             getLogger().log(Level.SEVERE, "Can't close the classloader of the SU", e);
+        }
+    }
+
+    private void callMethods(final String method) throws PetalsCamelSEException {
+        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        try {
+            for (final RouteBuilder routeBuilder : this.classRoutes) {
+                assert routeBuilder != null;
+                callMethod(method, routeBuilder);
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
+        }
+    }
+
+    private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
+        try {
+            final Method method = object.getClass().getMethod(methodName);
+            method.invoke(object);
+        } catch (final SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (final NoSuchMethodException e) {
+            // do nothing
         }
     }
 
