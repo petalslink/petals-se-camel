@@ -18,7 +18,11 @@
 package org.ow2.petals.camel.se;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +65,8 @@ public class CamelSU implements PetalsCamelContext {
      * Needed by the camel endpoint to resolve the URI in a from() or a to()
      */
     private final ImmutableMap<String, ServiceEndpointOperation> sid2seo;
+
+    private final Set<RouteBuilder> classRoutes = new HashSet<>();
 
     /**
      * The Camel engine dedicated to this SU
@@ -107,6 +113,8 @@ public class CamelSU implements PetalsCamelContext {
                 throw new InvalidCamelRouteDefinitionException("Can't add routes from class " + className
                         + " to Camel context", e);
             }
+            
+            this.classRoutes.add(routes);
         }
 
         for (final String xmlName : xmlNames) {
@@ -121,28 +129,65 @@ public class CamelSU implements PetalsCamelContext {
                         + " to Camel context", e);
             }
         }
-    }
 
-    public void stop() throws PetalsCamelSEException {
-        // TODO other things?
-        try {
-            context.stop();
-        } catch (final Exception e) {
-            throw new PetalsCamelSEException("Problem stopping the Camel context", e);
-        }
-    }
-
-    public void start() throws PetalsCamelSEException {
-        // TODO other things?
         try {
             context.start();
         } catch (final Exception e) {
             throw new PetalsCamelSEException("Problem starting the Camel context", e);
         }
+
+        callMethods("deploy");
     }
 
-    public void undeploy() {
-        // TODO other things?
+    public void init() throws PetalsCamelSEException {
+        callMethods("init");
+    }
+
+    public void shutdown() throws PetalsCamelSEException {
+        callMethods("shutdown");
+    }
+
+    public void stop() throws PetalsCamelSEException {
+        callMethods("stop");
+    }
+
+    public void start() throws PetalsCamelSEException {
+        callMethods("start");
+    }
+
+    private void callMethods(final String method) throws PetalsCamelSEException {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            callMethod(method, routeBuilder);
+        }
+    }
+
+    private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
+        try {
+            final Method method = object.getClass().getMethod(methodName);
+            method.invoke(object);
+        } catch (final SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new PetalsCamelSEException(
+                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (final NoSuchMethodException e) {
+            // do nothing
+        }
+    }
+
+    public void undeploy() throws PetalsCamelSEException {
+        try {
+            callMethods("undeploy");
+        } catch (final Exception e) {
+            getLogger().log(Level.SEVERE, "Can't undeploy the Route definitions of the SU", e);
+        }
+
+        try {
+            context.stop();
+        } catch (final Exception e) {
+            getLogger().log(Level.SEVERE, "Can't stop the Camel context of the SU", e);
+        }
+
         try {
             this.classLoader.close();
         } catch (final IOException e) {
