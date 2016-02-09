@@ -6,7 +6,7 @@
    <parent>
       <artifactId>petals-camel-samples-parent</artifactId>
       <groupId>org.ow2.petals.samples</groupId>
-      <version>4.3.0-SNAPSHOT</version>
+      <version>4.3.2-SNAPSHOT</version>
    </parent>
 
    <artifactId>su-camel-jsr181-hello</artifactId>
@@ -23,7 +23,7 @@
       <dependency>
          <artifactId>petals-se-jsr181</artifactId>
          <groupId>org.ow2.petals</groupId>
-         <version>1.4.3-SNAPSHOT</version>
+         <version>1.4.4-SNAPSHOT</version>
          <type>jbi-component</type>
          <scope>provided</scope>
       </dependency>
