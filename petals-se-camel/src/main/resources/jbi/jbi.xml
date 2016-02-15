@@ -43,6 +43,7 @@
       <petalsCDK:processor-keep-alive-time />
       <petalsCDK:processor-stop-max-wait />
       <petalsCDK:time-beetween-async-cleaner-runs />
+      <petalsCDK:properties-file />
       <petalsCDK:monitoring-sampling-period />
 
       <petalsCDK:jbi-listener-class-name>org.ow2.petals.camel.se.CamelJBIListener</petalsCDK:jbi-listener-class-name>  
