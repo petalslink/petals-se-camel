@@ -33,12 +33,11 @@ import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
-import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
+import org.ow2.petals.camel.se.utils.JbiCamelConstants;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Constants;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.Component;
-import org.ow2.petals.component.framework.junit.JbiConstants;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -52,7 +51,7 @@ import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
-public abstract class AbstractComponentTest extends AbstractTest {
+public abstract class AbstractComponentTest extends AbstractTest implements JbiCamelConstants {
 
     protected static final URL WSDL11 = Thread.currentThread().getContextClassLoader()
             .getResource("tests/service-1.1.wsdl");
@@ -88,7 +87,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
             // we need faster checks for our tests, 2000 is too long!
-            .setParameter(new QName(JbiConstants.CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
+            .setParameter(new QName(CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
             .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
 
@@ -141,9 +140,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
         consumes.setMEP(MEPType.IN_OUT);
         // let's use a smaller timeout time by default
         consumes.setTimeout(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND);
-        consumes.setParameter(
-                new QName(PetalsCamelJBIHelper.CAMEL_JBI_NS_URI, PetalsCamelJBIHelper.EL_CONSUMES_SERVICE_ID),
-                EXTERNAL_CAMEL_SERVICE_ID);
+        consumes.setParameter(new QName(CAMEL_JBI_NS_URI, EL_CONSUMES_SERVICE_ID), EXTERNAL_CAMEL_SERVICE_ID);
         return consumes;
     }
 
@@ -156,11 +153,11 @@ public abstract class AbstractComponentTest extends AbstractTest {
         provides.addServiceConfigurationDependency(createHelloConsumes());
 
         if (clazz != null) {
-            provides.setServicesSectionParameter(PetalsCamelJBIHelper.EL_SERVICES_ROUTE_CLASS, clazz.getName());
+            provides.setServicesSectionParameter(EL_SERVICES_ROUTE_CLASS, clazz.getName());
         }
 
         if (routes != null) {
-            provides.setServicesSectionParameter(PetalsCamelJBIHelper.EL_SERVICES_ROUTE_XML, new File(routes.toURI()).getName());
+            provides.setServicesSectionParameter(EL_SERVICES_ROUTE_XML, new File(routes.toURI()).getName());
             provides.addResource(routes);
         }
 

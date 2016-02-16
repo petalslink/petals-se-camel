@@ -62,21 +62,7 @@ import com.google.common.collect.Lists;
  * @author vnoel
  *
  */
-public class PetalsCamelJBIHelper {
-
-    public static final String CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
-
-    private static final String CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
-
-    public static final String EL_CONSUMES_SERVICE_ID = "service-id";
-
-    public static final QName EL_SERVICES_ROUTE_CLASS = new QName(CAMEL_JBI_NS_URI, "java-routes");
-
-    public static final QName EL_SERVICES_ROUTE_XML = new QName(CAMEL_JBI_NS_URI, "xml-routes");
-
-    private static final QName EL_WSDL_OPERATION = new QName(CAMEL_WSDL_NS_URI, "operation");
-
-    private static final String ATTR_WSDL_OPERATION_SERVICEID = "service-id";
+public class PetalsCamelJBIHelper implements JbiCamelConstants {
 
     private PetalsCamelJBIHelper() {
     }
