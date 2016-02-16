@@ -8,5 +8,5 @@ trim_trailing_whitespace = true
 charset = utf-8
 max_line_length = 120
 
-[*.xml]
+[*.{xml,xsd,xjb}]
 indent_size = 3
