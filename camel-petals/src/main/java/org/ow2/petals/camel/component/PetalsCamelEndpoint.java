@@ -151,7 +151,6 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
                         + " can't be set on a Consumes endpoint if it already declares a service.");
             }
 
-            // TODO shouldn't I use the namespace of... the consumes? the interface?
             this.serviceName = QName.valueOf(serviceParameter);
         }
 
@@ -203,7 +202,6 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
                         + " can't be set on a Consumes endpoint if it already declares an operation.");
             }
 
-            // TODO shouldn't I use the namespace of... the consumes? the interface?
             this.operation = QName.valueOf(operation);
         }
     }
