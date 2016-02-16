@@ -19,9 +19,7 @@ package org.ow2.petals.camel.se.utils;
 
 import javax.xml.namespace.QName;
 
-import org.ow2.petals.component.framework.junit.JbiConstants;
-
-public interface JbiCamelConstants extends JbiConstants {
+public interface JbiCamelConstants {
 
     public static final String CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
