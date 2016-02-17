@@ -103,7 +103,11 @@ public class CamelIntegrationTest extends AbstractComponentTest {
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
         
         // let's wait for the answer from the ServiceProvider to have been handled by the CDK
-        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getRequestsFromConsumerCount(), equalTo(0));
+        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getExchangesInDeliveryChannelCount(),
+                equalTo(0));
+
+        // clear the potential errors the CDK sent back to the service that ansewered too late
+        COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
 
         assertMONITFailureOK();
 
