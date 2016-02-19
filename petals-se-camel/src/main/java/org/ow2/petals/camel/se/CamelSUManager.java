@@ -38,7 +38,7 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
+import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -71,7 +71,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
      * Needed to know where to send an arriving exchange (coming from the JBIListener)
      */
     @SuppressWarnings("null")
-    private final ConcurrentMap<EndpointOperationKey, PetalsCamelRoute> eo2routes = Maps.newConcurrentMap();
+    private final ConcurrentMap<ServiceEndpointOperationKey, PetalsCamelRoute> eo2routes = Maps.newConcurrentMap();
 
     public CamelSUManager(final CamelSE component) {
         super(component);
@@ -163,7 +163,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
 
     public void registerRoute(final ServiceEndpointOperation service, final PetalsCamelRoute route) {
 
-        final EndpointOperationKey key = buildEOK(service);
+        final ServiceEndpointOperationKey key = buildEOK(service);
 
         final PetalsCamelRoute put = this.eo2routes.put(key, route);
 
@@ -172,7 +172,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
 
     public void unregisterRoute(final ServiceEndpointOperation service) {
 
-        final EndpointOperationKey key = buildEOK(service);
+        final ServiceEndpointOperationKey key = buildEOK(service);
 
         final PetalsCamelRoute removed = this.eo2routes.remove(key);
 
@@ -180,7 +180,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     }
 
     public PetalsCamelRoute getRoute(final Exchange exchange) throws NotImplementedRouteException {
-        final EndpointOperationKey eo = new EndpointOperationKey(exchange);
+        final ServiceEndpointOperationKey eo = new ServiceEndpointOperationKey(exchange);
 
         final PetalsCamelRoute ppo = this.eo2routes.get(eo);
 
@@ -191,8 +191,8 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         return ppo;
     }
 
-    private EndpointOperationKey buildEOK(final ServiceEndpointOperation seo) {
-        return new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(), seo.getOperation());
+    private ServiceEndpointOperationKey buildEOK(final ServiceEndpointOperation seo) {
+        return new ServiceEndpointOperationKey(seo.getService(), seo.getEndpoint(), seo.getOperation());
     }
 
     @SuppressWarnings("null")

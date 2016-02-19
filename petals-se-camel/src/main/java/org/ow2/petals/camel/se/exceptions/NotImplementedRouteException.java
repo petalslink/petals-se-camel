@@ -18,7 +18,7 @@
 package org.ow2.petals.camel.se.exceptions;
 
 
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
+import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 
 public class NotImplementedRouteException extends PetalsCamelSEException {
 
@@ -26,7 +26,7 @@ public class NotImplementedRouteException extends PetalsCamelSEException {
 
     private static final String MESSAGE_PATTERN = "There is no route for the operation %s of the service endpoint %s";
 
-    public NotImplementedRouteException(final EndpointOperationKey eo) {
+    public NotImplementedRouteException(final ServiceEndpointOperationKey eo) {
         super(String.format(MESSAGE_PATTERN, eo.getOperation(), eo.getEndpointName()));
     }
 
