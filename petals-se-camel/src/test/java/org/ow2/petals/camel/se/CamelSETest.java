@@ -29,8 +29,8 @@ import org.ow2.petals.camel.se.exceptions.NotImplementedRouteException;
 import org.ow2.petals.camel.se.mocks.TestRoutesKO1;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.component.framework.junit.StatusMessage;
+import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 
 /**
@@ -52,8 +52,7 @@ public class CamelSETest extends AbstractComponentTest {
         COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
             @Override
             public ServiceConfiguration create() {
-                return new ServiceConfiguration(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", ServiceType.PROVIDE,
-                        WSDL11);
+                return new ProvidesServiceConfiguration(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", WSDL11);
             }
         });
     }

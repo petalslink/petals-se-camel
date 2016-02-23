@@ -45,8 +45,9 @@ import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
+import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
@@ -134,9 +135,9 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
         }
     }
 
-    protected static ServiceConfiguration createHelloConsumes() {
-        final ServiceConfiguration consumes = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
-                EXTERNAL_ENDPOINT_NAME, ServiceType.CONSUME);
+    protected static ConsumesServiceConfiguration createHelloConsumes() {
+        final ConsumesServiceConfiguration consumes = new ConsumesServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME);
         consumes.setOperation(HELLO_OPERATION);
         consumes.setMEP(MEPType.IN_OUT);
         // let's use a smaller timeout time by default
@@ -148,8 +149,8 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
     protected static ServiceConfigurationFactory createHelloService(final URL wsdl, final @Nullable Class<?> clazz,
             final @Nullable URL routes) throws Exception {
 
-        final ServiceConfiguration provides = new ServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
-                ServiceType.PROVIDE, wsdl);
+        final ProvidesServiceConfiguration provides = new ProvidesServiceConfiguration(HELLO_INTERFACE, HELLO_SERVICE,
+                HELLO_ENDPOINT, wsdl);
 
         provides.addServiceConfigurationDependency(createHelloConsumes());
 
