@@ -217,16 +217,23 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         final String endpointName = getEndpoint().getEndpointName();
         final QName operation = getEndpoint().getOperation();
 
+        // if mep is null, the consumes one will be used, and if not, we verified in deploy it was null in consumes
         final org.ow2.petals.component.framework.api.message.Exchange exchange = consumes.newExchange(mep);
 
-        if (serviceName != null && endpointName != null) {
+        // the idea is that if there was the service name in the consumes but not the endpoint name,
+        // we can still resolve the endpoint now
+        final QName actualServiceName = serviceName == null ? exchange.getService() : serviceName;
+
+        if (actualServiceName != null && endpointName != null) {
             assert exchange.getEndpoint() == null;
-            final ServiceEndpoint ep = consumes.resolveEndpoint(serviceName, endpointName);
+            final ServiceEndpoint ep = consumes.resolveEndpoint(actualServiceName, endpointName);
             if (ep == null) {
-                throw new MessagingException(
-                        "Can't resolve endpoint for service " + serviceName + " and endpoint name " + endpointName);
+                throw new MessagingException("Can't resolve endpoint for service " + actualServiceName
+                        + " and endpoint name " + endpointName);
             }
             exchange.setEndpoint(ep);
+            // let's set it anyway in case it's useful
+            exchange.setService(actualServiceName);
         } else if (serviceName != null) {
             assert exchange.getService() == null;
             exchange.setService(serviceName);
