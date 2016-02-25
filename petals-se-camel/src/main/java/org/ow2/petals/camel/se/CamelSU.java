@@ -189,6 +189,7 @@ public class CamelSU implements PetalsCamelContext {
         }
     }
 
+    @SuppressWarnings("squid:S1166")
     private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
         try {
             final Method method = object.getClass().getMethod(methodName);

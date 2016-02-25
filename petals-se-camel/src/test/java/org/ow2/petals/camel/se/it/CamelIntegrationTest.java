@@ -92,6 +92,7 @@ public class CamelIntegrationTest extends AbstractComponentTest {
 
         final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
                 ServiceProviderImplementation.outMessage("<bb/>").with(new MessageChecks() {
+                    @SuppressWarnings("squid:S2925")
                     @Override
                     public void checks(final Message message) throws Exception {
                         // let's wait more than the configured timeout duration
