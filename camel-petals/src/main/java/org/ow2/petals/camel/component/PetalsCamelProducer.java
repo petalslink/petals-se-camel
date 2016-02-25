@@ -107,7 +107,6 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
      *            a callback to call after, can't be null but can be no-op
      * 
      * @return <code>true</code> if the processing was done synchronously
-     * @throws JBIException
      */
     private boolean process(final Exchange camelExchange, final boolean doSync, final AsyncCallback callback) {
 
@@ -157,7 +156,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
                 // false means timed out!
                 final boolean timedOut = !this.consumes.sendSync(exchange, timeout);
-                // this has been done sync
+                // this has been done synchronously
                 final boolean doneSync = true;
 
                 if (this.consumes.getLogger().isLoggable(Level.FINE)) {
@@ -168,8 +167,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                 handleAnswer(camelExchange, exchange, timedOut, doneSync, callback, faAsBC);
                 return doneSync;
             } else {
-                // this is done async (except if the send fail, but then the value of this variable won't be used
-                // because the callback will never be called)
+                // this is done asynchronously (except if the send fail, but then the value of this variable won't be
+                // used because the callback will never be called)
                 final boolean doneSync = false;
 
                 if (this.consumes.getLogger().isLoggable(Level.FINE)) {
@@ -228,15 +227,21 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         } else {
             exchange = this.consumes.newExchange();
         }
-        
-        if (serviceName != null && endpointName != null) {
+
+        // the idea is that if there was the service name in the consumes but not the endpoint name,
+        // we can still resolve the endpoint now
+        final QName actualServiceName = serviceName == null ? exchange.getService() : serviceName;
+
+        if (actualServiceName != null && endpointName != null) {
             assert exchange.getEndpoint() == null;
-            final ServiceEndpoint ep = consumes.resolveEndpoint(serviceName, endpointName);
+            final ServiceEndpoint ep = consumes.resolveEndpoint(actualServiceName, endpointName);
             if (ep == null) {
-                throw new MessagingException(
-                        "Can't resolve endpoint for service " + serviceName + " and endpoint name " + endpointName);
+                throw new MessagingException("Can't resolve endpoint for service " + actualServiceName
+                        + " and endpoint name " + endpointName);
             }
             exchange.setEndpoint(ep);
+            // let's set it anyway in case it's useful
+            exchange.setService(actualServiceName);
         } else if (serviceName != null) {
             assert exchange.getService() == null;
             exchange.setService(serviceName);
