@@ -20,6 +20,8 @@ package org.ow2.petals.camel.se.impl;
 import java.net.URI;
 
 import javax.jbi.JBIException;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
@@ -55,6 +57,11 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     @Override
     public Exchange newExchange(final MEPPatternConstants mep) throws JBIException {
         return sender.createConsumeExchange(this.sender.getConsumes(), toMEP(mep));
+    }
+
+    @Override
+    public ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
+        return sender.getComponent().getContext().getEndpoint(serviceName, endpointName);
     }
 
     private static MEPConstants toMEP(final MEPPatternConstants mep) throws PEtALSCDKException {

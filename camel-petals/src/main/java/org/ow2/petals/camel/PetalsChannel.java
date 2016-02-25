@@ -21,7 +21,10 @@ import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
@@ -67,9 +70,11 @@ public interface PetalsChannel {
 
     public interface PetalsConsumesChannel extends PetalsChannel {
 
-        public Exchange newExchange() throws JBIException;
+        public ServiceEndpoint resolveEndpoint(QName serviceName, String endpointName);
 
         public Exchange newExchange(MEPPatternConstants mep) throws JBIException;
+
+        public Exchange newExchange() throws JBIException;
 
     }
 
