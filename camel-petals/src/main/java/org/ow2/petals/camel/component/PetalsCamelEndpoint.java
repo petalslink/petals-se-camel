@@ -58,6 +58,10 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private static final String PARAMETER_MEP = "exchangePattern";
 
+    private static final String FORBIDDEN_FROM_FORMAT = "The parameter %s can't be set on a from() endpoint";
+
+    private static final String FORBIDDEN_TO_FORMAT = "The parameter %s can't be set on a to() endpoint";
+
     private final ServiceEndpointOperation service;
 
     @UriPath
@@ -113,11 +117,13 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     /**
      * If there is parameters left in options, then Camel will complain, this serves as syntax checking
+     * 
+     * Optionally, we can throw an exception to customize the error (it will be wrapped in a
+     * {@link ResolveEndpointFailedException} by Camel).
      */
     @NonNullByDefault(false)
     @Override
     public void configureProperties(final Map<String, Object> options) {
-
         // this will setup some specific properties...
         super.configureProperties(options);
 
@@ -127,8 +133,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
             if (this.service.getType() == ServiceType.CONSUMES) {
                 this.timeout = Long.parseLong(timeoutParameter);
             } else {
-                throw new RuntimeCamelException(
-                        "The parameter " + PARAMETER_TIMEOUT + " can't be set on a from() endpoint.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_TIMEOUT));
             }
         }
 
@@ -142,13 +147,12 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         final String serviceParameter = (String) options.remove(PARAMETER_SERVICE);
         if (serviceParameter != null) {
             if (this.service.getType() == ServiceType.PROVIDES) {
-                throw new RuntimeCamelException(
-                        "The parameter " + PARAMETER_SERVICE + " can't be set on a from() endpoint.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_SERVICE));
             }
 
             if (this.service.getService() != null) {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_SERVICE
-                        + " can't be set on a to() endpoint if the corresponding Consumes already declares a service.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_SERVICE)
+                        + " if the corresponding Consumes already declares a service name");
             }
 
             this.serviceName = QName.valueOf(serviceParameter);
@@ -157,18 +161,17 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         final String endpointParameter = (String) options.remove(PARAMETER_ENDPOINT);
         if (endpointParameter != null) {
             if (this.service.getType() == ServiceType.PROVIDES) {
-                throw new RuntimeCamelException(
-                        "The parameter " + PARAMETER_ENDPOINT + " can't be set on a from() endpoint.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_ENDPOINT));
             }
 
             if (this.service.getEndpoint() != null) {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_ENDPOINT
-                        + " can't be set on a to() endpoint if the corresponding Consumes already declares an endpoint name.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_ENDPOINT)
+                        + " if the corresponding Consumes already declares an endpoint name");
             }
 
             if (this.serviceName == null && this.service.getService() == null) {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_ENDPOINT
-                        + " can't be set on a to() endpoint if the endpoint nor the corresponding Consumes also declares a service name.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_ENDPOINT)
+                        + " if the endpoint nor the corresponding Consumes declares a service name");
             }
 
             this.endpointName = endpointParameter;
@@ -178,33 +181,34 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         if (mepParameter != null) {
             if (this.service.getType() == ServiceType.PROVIDES) {
                 // TODO instead, we should handle these cases with some kind of subtyping...
-                throw new RuntimeCamelException(
-                        "The parameter " + PARAMETER_MEP + " can't be set on a from() endpoint.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_MEP));
             }
 
             if (this.service.getMEP() != null) {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_MEP
-                        + " can't be set on a to() endpoint if the corresponding Consumes already declares a MEP.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_MEP)
+                        + " if the corresponding Consumes already declares a MEP");
             }
 
             this.mep = MEPPatternConstants.valueOf(URI.create(ExchangePattern.valueOf(mepParameter).getWsdlUri()));
+        } else {
+            // see PetalsCamelComponent.afterConfiguration()
         }
         
         final String operation = (String) options.remove(PARAMETER_OPERATION);
         if (operation != null) {
             if (this.service.getType() == ServiceType.PROVIDES) {
-                throw new RuntimeCamelException(
-                        "The parameter " + PARAMETER_OPERATION + " can't be set on a from() endpoint.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_OPERATION));
             }
 
             if (this.service.getOperation() != null) {
-                throw new RuntimeCamelException("The parameter " + PARAMETER_OPERATION
-                        + " can't be set on a to() endpoint if the corresponding Consumes already declares an operation.");
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_OPERATION)
+                        + " if the corresponding Consumes already declares an operation");
             }
 
             this.operation = QName.valueOf(operation);
         }
     }
+
 
     public long getTimeout() {
         return timeout;

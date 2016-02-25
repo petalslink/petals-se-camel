@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
@@ -46,12 +47,13 @@ import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.jbi.messaging.exchange.MessageExchangeImpl;
 import org.w3c.dom.DocumentFragment;
 
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.uuid.QualifiedUUIDGenerator;
 import com.google.common.collect.Maps;
 
 public class PetalsCamelContextMock implements PetalsCamelContext {
 
-    private final Map<EndpointOperationKey, PetalsChannel> channels = Maps.newHashMap();
+    private final Map<ServiceEndpointOperation, PetalsChannel> channels = Maps.newHashMap();
 
     private final Map<String, ServiceEndpointOperation> seos = Maps.newHashMap();
 
@@ -69,11 +71,14 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         addMockService(serviceId, seo, new MockSendHandler());
     }
 
-    public void addMockService(final String serviceId, final ServiceEndpointOperation seo, final MockSendHandler handler) {
-
+    private EndpointOperationKey getEOK(final ServiceEndpointOperation seo) {
         final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
                 seo.getOperation());
-        final PetalsChannel pC = this.channels.put(key,
+        return key;
+    }
+
+    public void addMockService(final String serviceId, final ServiceEndpointOperation seo, final MockSendHandler handler) {
+        final PetalsChannel pC = this.channels.put(seo,
                 seo.getType() == ServiceType.CONSUMES ? new MockConsumesChannel(serviceId, handler)
                         : new MockProvidesChannel(handler));
         Assert.assertNull(pC);
@@ -92,9 +97,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     @Override
     public PetalsConsumesChannel getConsumesChannel(final ServiceEndpointOperation seo) {
-        final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
-                seo.getOperation());
-        final PetalsChannel channel = this.channels.get(key);
+        final PetalsChannel channel = this.channels.get(seo);
         Assert.assertNotNull(channel);
         Assert.assertTrue(channel instanceof PetalsConsumesChannel);
         return (PetalsConsumesChannel) channel;
@@ -102,9 +105,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     @Override
     public PetalsProvidesChannel getProvidesChannel(final ServiceEndpointOperation seo) {
-        final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
-                seo.getOperation());
-        final PetalsChannel channel = this.channels.get(key);
+        final PetalsChannel channel = this.channels.get(seo);
         Assert.assertNotNull(channel);
         Assert.assertTrue(channel instanceof PetalsProvidesChannel);
         return (PetalsProvidesChannel) channel;
@@ -112,16 +113,16 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     @Override
     public void registerRoute(final ServiceEndpointOperation seo, final PetalsCamelRoute ppo) {
-        final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
-                seo.getOperation());
+        Assert.assertEquals(ServiceType.PROVIDES, seo.getType());
+        final EndpointOperationKey key = getEOK(seo);
         final PetalsCamelRoute put = this.ppos.put(key, ppo);
         assert put == null;
     }
 
     @Override
-    public void unregisterRoute(ServiceEndpointOperation seo) {
-        final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
-                seo.getOperation());
+    public void unregisterRoute(final ServiceEndpointOperation seo) {
+        Assert.assertEquals(ServiceType.PROVIDES, seo.getType());
+        final EndpointOperationKey key = getEOK(seo);
         final PetalsCamelRoute removed = this.ppos.remove(key);
         assert removed != null;
     }
@@ -136,11 +137,13 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         return this.logger;
     }
 
+    /**
+     * Inject an exchange into Camel to a Petals's Provider (aka Camel's Consumer).
+     */
     public void process(final String serviceId, final Exchange exchange) {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
-        final EndpointOperationKey key = new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(),
-                seo.getOperation());
+        final EndpointOperationKey key = getEOK(seo);
         final PetalsCamelRoute route = this.ppos.get(key);
         assert route != null;
         route.process(exchange);

@@ -38,17 +38,15 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
     private final URI mep;
 
-    private final EndpointOperationKey key;
-
-    public ServiceEndpointOperationMock(final String service, final String interfaceName, final String endpoint,
-            final String operation, final ServiceType type, final URI mep) {
-        this.service = new QName("tests", service);
+    public ServiceEndpointOperationMock(final String service, final String interfaceName,
+            final String endpoint, final String operation, final ServiceType type,
+            final URI mep) {
+        this.service = service == null ? null : new QName("tests", service);
         this.interfaceName = new QName("tests", interfaceName);
         this.endpoint = endpoint;
-        this.operation = new QName("tests", operation);
+        this.operation = operation == null ? null : new QName("tests", operation);
         this.type = type;
         this.mep = mep;
-        this.key = new EndpointOperationKey(endpoint, this.interfaceName, this.operation);
     }
 
     @Override
@@ -80,9 +78,4 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     public URI getMEP() {
         return mep;
     }
-
-    public EndpointOperationKey getKey() {
-        return key;
-    }
-
 }

@@ -18,6 +18,8 @@
 package org.ow2.petals.camel.component;
 
 
+import java.net.URI;
+
 import javax.jbi.JBIException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
@@ -216,10 +218,16 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
     private org.ow2.petals.component.framework.api.message.Exchange createPetalsExchange(final Exchange camelExchange)
             throws JBIException {
 
-        final MEPPatternConstants mep = getEndpoint().getMep();
-        final QName serviceName = getEndpoint().getServiceName();
-        final String endpointName = getEndpoint().getEndpointName();
-        final QName operation = getEndpoint().getOperation();
+        final MEPPatternConstants mep;
+        if (getEndpoint().getService().getMEP() == null && getEndpoint().getMep() == null) {
+            mep = MEPPatternConstants.valueOf(URI.create(camelExchange.getPattern().getWsdlUri()));
+            if (mep == null) {
+                throw new MessagingException(
+                        "Can't resolve MEP on the Camel exchange: " + camelExchange.getPattern().getWsdlUri());
+            }
+        } else {
+            mep = getEndpoint().getMep();
+        }
 
         final org.ow2.petals.component.framework.api.message.Exchange exchange;
         if (mep != null) {
@@ -230,20 +238,29 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
         // the idea is that if there was the service name in the consumes but not the endpoint name,
         // we can still resolve the endpoint now
-        final QName actualServiceName = serviceName == null ? exchange.getService() : serviceName;
+        final QName serviceName;
+        if (getEndpoint().getServiceName() == null) {
+            // could be null, but it's ok
+            serviceName = exchange.getService();
+        } else {
+            assert exchange.getService() == null;
+            serviceName = getEndpoint().getServiceName();
+        }
 
-        if (actualServiceName != null && endpointName != null) {
+        final String endpointName = getEndpoint().getEndpointName();
+        final QName operation = getEndpoint().getOperation();
+
+        if (serviceName != null && endpointName != null) {
             assert exchange.getEndpoint() == null;
-            final ServiceEndpoint ep = consumes.resolveEndpoint(actualServiceName, endpointName);
+            final ServiceEndpoint ep = consumes.resolveEndpoint(serviceName, endpointName);
             if (ep == null) {
-                throw new MessagingException("Can't resolve endpoint for service " + actualServiceName
-                        + " and endpoint name " + endpointName);
+                throw new MessagingException(
+                        "Can't resolve endpoint for service " + serviceName + " and endpoint name " + endpointName);
             }
             exchange.setEndpoint(ep);
             // let's set it anyway in case it's useful
-            exchange.setService(actualServiceName);
+            exchange.setService(serviceName);
         } else if (serviceName != null) {
-            assert exchange.getService() == null;
             exchange.setService(serviceName);
         }
 
