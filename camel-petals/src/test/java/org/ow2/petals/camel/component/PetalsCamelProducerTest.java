@@ -108,8 +108,7 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
                 { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.IN_ONLY.value()), NOTHING,
                         ExchangePattern.InOnly },
                 { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.ROBUST_IN_ONLY.value()), NOTHING,
-                        ExchangePattern.RobustInOnly }
-        });
+                        ExchangePattern.RobustInOnly } });
     }
 
     @Parameter

@@ -23,33 +23,30 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 
 public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
-    private final QName service;
+    private final @Nullable QName service;
 
     private final QName interfaceName;
 
-    private final String endpoint;
+    private final @Nullable String endpoint;
 
-    private final QName operation;
+    private final @Nullable QName operation;
 
     private final ServiceType type;
 
-    private final URI mep;
+    private final @Nullable URI mep;
 
-    private final ServiceEndpointOperationKey key;
-
-    public ServiceEndpointOperationMock(final String service, final String interfaceName, final String endpoint,
-            final String operation, final ServiceType type, final URI mep) {
-        this.service = new QName("tests", service);
+    public ServiceEndpointOperationMock(final @Nullable String service, final String interfaceName,
+            final @Nullable String endpoint, final @Nullable String operation, final ServiceType type,
+            final @Nullable URI mep) {
+        this.service = service == null ? null : new QName("tests", service);
         this.interfaceName = new QName("tests", interfaceName);
         this.endpoint = endpoint;
-        this.operation = new QName("tests", operation);
+        this.operation = operation == null ? null : new QName("tests", operation);
         this.type = type;
         this.mep = mep;
-        this.key = new ServiceEndpointOperationKey(this.service, endpoint, this.operation);
     }
 
     @Override
@@ -81,9 +78,4 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     public @Nullable URI getMEP() {
         return mep;
     }
-
-    public ServiceEndpointOperationKey getKey() {
-        return key;
-    }
-
 }

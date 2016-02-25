@@ -25,10 +25,12 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsCamelContext;
+import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 
 public class PetalsCamelComponent extends UriEndpointComponent {
 
@@ -90,6 +92,24 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     protected boolean useIntrospectionOnEndpoint() {
         // we want to handle manually the setting of parameters because producers and consumers are different
         return false;
+    }
+
+    /**
+     * We have to do this test here because {@link DefaultEndpoint#configureProperties(Map)} is not called if there is
+     * no parameter set on the endpoint.
+     */
+    @Override
+    protected void afterConfiguration(final @Nullable String uri, final @Nullable String remaining,
+            final @Nullable Endpoint endpoint, @Nullable Map<String, Object> parameters) throws Exception {
+        if (endpoint instanceof PetalsCamelEndpoint) {
+            final PetalsCamelEndpoint pce = (PetalsCamelEndpoint) endpoint;
+            if (pce.getService().getType() == ServiceType.CONSUMES && pce.getMep() == null
+                    && pce.getService().getMEP() == null) {
+                getContext().getLogger()
+                        .warning("No MEP specified neither as an endpoint parameter or in the corresponding Consumes:"
+                                + " the MEP specified on the Camel exchange will be used when creating a Petals exchange");
+            }
+        }
     }
 
     public PetalsCamelContext getContext() {
