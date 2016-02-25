@@ -38,7 +38,6 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.Utils;
-import org.w3c.dom.DocumentFragment;
 
 import com.ebmwebsourcing.easycommons.lang.StringHelper;
 
@@ -206,52 +205,36 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         }
     }
 
+    /**
+     * we tested in deploy that the camel endpoint options do not conflict with the consumes parameters, hence the
+     * assert in the code.
+     */
     private org.ow2.petals.component.framework.api.message.Exchange createPetalsExchange(final Exchange camelExchange)
             throws MessagingException {
 
-        final org.ow2.petals.component.framework.api.message.Exchange exchange;
-
         final MEPPatternConstants mep = getEndpoint().getMep();
-        if (mep != null) {
-            exchange = this.consumes.newExchange(mep);
-        } else {
-            exchange = this.consumes.newExchange();
-        }
-
         final QName serviceName = getEndpoint().getServiceName();
-        if (serviceName != null) {
-            exchange.setService(serviceName);
+        final String endpointName = getEndpoint().getEndpointName();
+        final QName operation = getEndpoint().getOperation();
 
-            final String endpointName = getEndpoint().getEndpointName();
-            if (endpointName != null) {
-                // TODO theoretically we should resolve the endpoint with the context...
-                exchange.setEndpoint(new ServiceEndpoint() {
+        final org.ow2.petals.component.framework.api.message.Exchange exchange = consumes.newExchange(mep);
 
-                    @Override
-                    public QName getServiceName() {
-                        return serviceName;
-                    }
-
-                    @Override
-                    public QName[] getInterfaces() {
-                        return new QName[] { getEndpoint().getService().getInterface() };
-                    }
-
-                    @Override
-                    public String getEndpointName() {
-                        return endpointName;
-                    }
-
-                    @Override
-                    public @Nullable DocumentFragment getAsReference(final @Nullable QName operationName) {
-                        return null;
-                    }
-                });
+        if (serviceName != null && endpointName != null) {
+            assert exchange.getEndpoint() == null;
+            final ServiceEndpoint ep = consumes.resolveEndpoint(serviceName, endpointName);
+            if (ep == null) {
+                throw new MessagingException(
+                        "Can't resolve endpoint for service " + serviceName + " and endpoint name " + endpointName);
             }
+            exchange.setEndpoint(ep);
+        } else if (serviceName != null) {
+            assert exchange.getService() == null;
+            exchange.setService(serviceName);
         }
 
-        final QName operation = getEndpoint().getOperation();
         if (operation != null) {
+            // we tested in deploy that the camel endpoint options do not conflict with the consumes parameters
+            assert exchange.getOperation() == null;
             exchange.setOperation(operation);
         }
 

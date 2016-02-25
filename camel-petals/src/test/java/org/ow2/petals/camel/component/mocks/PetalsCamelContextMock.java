@@ -167,7 +167,6 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         assert seo != null;
         final MessageExchangeImpl msg = new MessageExchangeImpl(
                 new QualifiedUUIDGenerator(Constants.UUID_DOMAIN).getNewID());
-        // msg.setConsumerEndpoint(consumerEndpoint);
         final QName service = seo.getService();
         final String endpoint = seo.getEndpoint();
         if (service != null && endpoint != null) {
@@ -198,6 +197,37 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         msg.setPattern(seo.getMEP());
         msg.setOperation(seo.getOperation());
         return new ExchangeImpl(msg);
+    }
+
+    private @Nullable ServiceEndpoint resolveEndpoint(final String serviceId, final QName serviceName,
+            final String endpointName) {
+        final ServiceEndpointOperation seo = this.seos.get(serviceId);
+
+        // they should be null, if not this shouldn't be called!
+        assert seo.getService() == null;
+        assert seo.getEndpoint() == null;
+
+        return new ServiceEndpoint() {
+            @Override
+            public QName getServiceName() {
+                return serviceName;
+            }
+
+            @Override
+            public QName[] getInterfaces() {
+                return new QName[] { seo.getInterface() };
+            }
+
+            @Override
+            public String getEndpointName() {
+                return endpointName;
+            }
+
+            @Override
+            public @Nullable DocumentFragment getAsReference(@Nullable QName operationName) {
+                return null;
+            }
+        };
     }
 
     public static class MockSendHandler {
@@ -270,13 +300,13 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
 
         @Override
-        public Exchange newExchange() throws MessagingException {
-            return PetalsCamelContextMock.this.createExchange(serviceId);
+        public Exchange newExchange(final @Nullable MEPPatternConstants mep) throws MessagingException {
+            return PetalsCamelContextMock.this.createExchange(serviceId, mep);
         }
 
         @Override
-        public Exchange newExchange(final MEPPatternConstants mep) throws MessagingException {
-            return PetalsCamelContextMock.this.createExchange(serviceId, mep);
+        public @Nullable ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
+            return PetalsCamelContextMock.this.resolveEndpoint(serviceId, serviceName, endpointName);
         }
 
         @Override

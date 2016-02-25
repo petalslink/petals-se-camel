@@ -20,6 +20,8 @@ package org.ow2.petals.camel.se.impl;
 import java.net.URI;
 
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -28,7 +30,7 @@ import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
-import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
+import org.ow2.petals.component.framework.util.ServiceUnitUtil;
 
 public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOperation implements PetalsConsumesChannel {
 
@@ -47,36 +49,23 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     }
 
     @Override
-    public Exchange newExchange() throws MessagingException {
-        return sender.createConsumeExchange(consumes);
+    public Exchange newExchange(final @Nullable MEPPatternConstants mep) throws MessagingException {
+        final Exchange exchange = sender.createConsumeExchange(consumes, mep);
+        assert exchange != null;
+        return exchange;
     }
 
     @Override
-    public Exchange newExchange(final MEPPatternConstants mep) throws MessagingException {
-        return sender.createConsumeExchange(consumes, mep);
+    public @Nullable ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
+        return sender.getComponent().getContext().getEndpoint(serviceName, endpointName);
     }
 
     private static @Nullable URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
-
-        final MEPType mep = c.getMep();
-
-        if (mep == null) {
-            return null;
-        }
-
-        switch (mep) {
-            case IN_ONLY:
-                return MEPPatternConstants.IN_ONLY.value();
-            case IN_OPTIONAL_OUT:
-                return MEPPatternConstants.IN_OPTIONAL_OUT.value();
-            case IN_OUT:
-                return MEPPatternConstants.IN_OUT.value();
-            case ROBUST_IN_ONLY:
-                return MEPPatternConstants.ROBUST_IN_ONLY.value();
-            default:
-                throw new InvalidJBIConfigurationException(
-                        "Unknown MEP '" + mep + "' set for operation " + c.getOperation() + " of interface "
-                                + c.getInterfaceName() + " and service " + c.getServiceName());
+        try {
+            final MEPPatternConstants mep = ServiceUnitUtil.retrievePattern(c);
+            return mep == null ? null : mep.value();
+        } catch (final MessagingException e) {
+            throw new InvalidJBIConfigurationException("Can't retrieve pattern", e);
         }
     }
 }

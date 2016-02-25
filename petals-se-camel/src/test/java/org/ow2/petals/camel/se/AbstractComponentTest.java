@@ -90,7 +90,7 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
     protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
             // we need faster checks for our tests, 2000 is too long!
             .setParameter(new QName(CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
-            .registerExternalServiceProvider(HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME)
+            .registerExternalServiceProvider(EXTERNAL_ENDPOINT_NAME, HELLO_SERVICE, HELLO_INTERFACE)
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
 
     protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
@@ -222,10 +222,10 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
             public void checks(@Nullable Message request) throws Exception {
                 assert request != null;
                 final MessageExchange exchange = request.getMessageExchange();
-                assertEquals(exchange.getInterfaceName(), HELLO_INTERFACE);
-                assertEquals(exchange.getService(), HELLO_SERVICE);
-                assertEquals(exchange.getOperation(), HELLO_OPERATION);
-                assertEquals(exchange.getEndpoint().getEndpointName(), EXTERNAL_ENDPOINT_NAME);
+                assertEquals(HELLO_INTERFACE, exchange.getInterfaceName());
+                assertEquals(HELLO_SERVICE, exchange.getService());
+                assertEquals(HELLO_OPERATION, exchange.getOperation());
+                assertEquals(EXTERNAL_ENDPOINT_NAME, exchange.getEndpoint().getEndpointName());
             }
         };
     }
