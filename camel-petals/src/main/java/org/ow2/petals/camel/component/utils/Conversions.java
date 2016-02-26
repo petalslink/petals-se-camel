@@ -70,7 +70,7 @@ public class Conversions {
         camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_MEP, exchange.getPattern());
 
         for (final String prop : exchange.getPropertyNames()) {
-            camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_HEADER_PREFIX + prop,
+            camelExchange.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_PROPERTY_PREFIX + prop,
                     exchange.getProperty(prop));
         }
     }
@@ -136,8 +136,8 @@ public class Conversions {
         Conversions.populateNormalizedMessage(exchange.getInMessage(), camelExchange.getIn());
 
         for (final Entry<String, Object> prop : camelExchange.getProperties().entrySet()) {
-            if (prop.getKey().startsWith(PetalsCamelComponent.EXCHANGE_HEADER_PREFIX)) {
-                exchange.setProperty(prop.getKey().substring(PetalsCamelComponent.EXCHANGE_HEADER_PREFIX.length()),
+            if (prop.getKey().startsWith(PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX)) {
+                exchange.setProperty(prop.getKey().substring(PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX.length()),
                         prop.getValue());
             }
         }

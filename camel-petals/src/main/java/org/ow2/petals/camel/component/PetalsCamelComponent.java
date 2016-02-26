@@ -35,16 +35,16 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 public class PetalsCamelComponent extends UriEndpointComponent {
 
     /**
-     * Prefix for a property that will be converted from a header in a new Petals exchange in Petals Consumers.
+     * Prefix for a property that will be converted from a property in a new Petals exchange in Petals Consumers.
      */
-    public static final String EXCHANGE_ORIGINAL_HEADER_PREFIX = "PetalsOriginalHeader.";
+    public static final String EXCHANGE_ORIGINAL_PROPERTY_PREFIX = "PetalsOriginalProperty.";
 
     /**
-     * Prefix for a property that will be converted to a header in a new Petals exchange in Petals Producers.
+     * Prefix for a property that will be converted to a property in a new Petals exchange in Petals Producers.
      * 
      * Note that Petals expects {@link Serializable} properties!
      */
-    public static final String EXCHANGE_HEADER_PREFIX = "PetalsHeader.";
+    public static final String EXCHANGE_PROPERTY_PREFIX = "PetalsProperty.";
 
     /**
      * Type is {@link QName}
