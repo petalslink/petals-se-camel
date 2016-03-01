@@ -54,12 +54,6 @@
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
          </dependency>
-         <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <!-- Needed by awaitility -->
-            <version>2.1</version>
-         </dependency>
       </dependencies>
    </dependencyManagement>
 

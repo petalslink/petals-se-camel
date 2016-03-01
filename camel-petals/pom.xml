@@ -78,11 +78,6 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.ow2.easycommons</groupId>
-         <artifactId>easycommons-uuid</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>xmlunit</groupId>
          <artifactId>xmlunit</artifactId>
          <scope>test</scope>
