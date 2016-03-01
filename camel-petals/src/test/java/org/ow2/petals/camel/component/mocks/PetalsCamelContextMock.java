@@ -40,14 +40,15 @@ import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
-import org.ow2.petals.commons.Constants;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.junit.TestMessageExchangeFactory;
+import org.ow2.petals.component.framework.junit.impl.mock.TestMessageExchangeFactoryImpl;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
-import org.ow2.petals.jbi.messaging.exchange.impl.MessageExchangeImpl;
+import org.ow2.petals.jbi.messaging.exchange.PetalsMessageExchange;
 import org.w3c.dom.DocumentFragment;
 
-import com.ebmwebsourcing.easycommons.uuid.QualifiedUUIDGenerator;
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.google.common.collect.Maps;
 
 public class PetalsCamelContextMock implements PetalsCamelContext {
@@ -61,6 +62,8 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     private final CamelContext context;
 
     private final Logger logger = Logger.getLogger(PetalsCamelContextMock.class.getName());
+
+    private final TestMessageExchangeFactory factory = new TestMessageExchangeFactoryImpl(logger);
 
     public PetalsCamelContextMock(final CamelContext context) {
         this.context = context;
@@ -163,8 +166,12 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     private Exchange createExchange(final String serviceId, final @Nullable MEPPatternConstants mep) {
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
-        final MessageExchangeImpl msg = new MessageExchangeImpl(
-                new QualifiedUUIDGenerator(Constants.UUID_DOMAIN).getNewID());
+        final PetalsMessageExchange msg;
+        try {
+            msg = factory.createExchange(seo.getMEP());
+        } catch (final MessagingException e) {
+            throw new UncheckedException(e);
+        }
         final QName service = seo.getService();
         final String endpoint = seo.getEndpoint();
         if (service != null && endpoint != null) {
@@ -192,7 +199,6 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
         msg.setInterfaceName(seo.getInterface());
         msg.setService(service);
-        msg.setPattern(seo.getMEP());
         msg.setOperation(seo.getOperation());
         return new ExchangeImpl(msg);
     }
@@ -285,7 +291,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     }
 
     private static void setRole(final Exchange exchange, final Role role) {
-        ((MessageExchangeImpl) ((ExchangeImpl) exchange).getMessageExchange()).setRole(role);
+        ((PetalsMessageExchange) ((ExchangeImpl) exchange).getMessageExchange()).setRole(role);
     }
 
     public class MockConsumesChannel extends MockChannel implements PetalsConsumesChannel {
