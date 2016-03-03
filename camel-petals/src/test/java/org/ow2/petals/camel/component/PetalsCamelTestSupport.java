@@ -17,14 +17,22 @@
  */
 package org.ow2.petals.camel.component;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+
+import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.impl.PropertyPlaceholderDelegateRegistry;
 import org.apache.camel.test.junit4.ExchangeTestSupport;
+import org.custommonkey.xmlunit.Diff;
 import org.easymock.EasyMockSupport;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
@@ -35,8 +43,9 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandler;
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
+import org.xml.sax.SAXException;
 
-public class PetalsCamelTestSupport extends ExchangeTestSupport {
+public abstract class PetalsCamelTestSupport extends ExchangeTestSupport {
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
 
@@ -114,5 +123,35 @@ public class PetalsCamelTestSupport extends ExchangeTestSupport {
 
             }
         };
+    }
+
+    protected void expectBodyReceived(final MockEndpoint endpoint, final String content) {
+        endpoint.expects(new Runnable() {
+            public void run() {
+                List<org.apache.camel.Exchange> receivedExchanges = endpoint.getReceivedExchanges();
+                org.apache.camel.Exchange exchange = receivedExchanges.iterator().next();
+                assert exchange != null;
+
+                try {
+                    assertSimilar(new Diff(content, getContent(exchange.getIn())));
+                } catch (final SAXException e) {
+                    throw new RuntimeCamelException(e);
+                } catch (IOException e) {
+                    throw new RuntimeCamelException(e);
+                }
+            }
+        });
+    }
+
+    protected void assertSimilar(final Diff diff) {
+        assertTrue(diff.toString(), diff.similar());
+    }
+
+    protected String getContent(final NormalizedMessage msg) {
+        return context().getTypeConverter().convertTo(String.class, msg.getContent());
+    }
+
+    protected String getContent(final Message msg) {
+        return context().getTypeConverter().convertTo(String.class, msg.getExchange(), msg.getBody());
     }
 }

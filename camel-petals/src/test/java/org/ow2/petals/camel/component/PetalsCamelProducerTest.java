@@ -18,12 +18,17 @@
 package org.ow2.petals.camel.component;
 
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.custommonkey.xmlunit.Diff;
@@ -35,17 +40,38 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
-import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandler;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
+/**
+ * TODO we are missing tests for InOptOut with out + fault
+ * 
+ * TODO we are missing tests for parameters of the endpoint
+ */
 @RunWith(Parameterized.class)
 public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
+
+    protected static final String FAULT = "<c/>";
+
+    protected static final String OUT = "<b/>";
+
+    protected static final String IN = "<a/>";
+    
+    protected static final Exception ERROR = new Exception();
+    static {
+        // we don't really care about the stacktrace
+        ERROR.setStackTrace(new StackTraceElement[0]);
+    }
+    
+    @Before
+    public void before() {
+        receivedExchange = null;
+        applied = false;
+    }
 
     @Nullable
     private Exchange receivedExchange = null;
@@ -55,42 +81,54 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
         return receivedExchange;
     }
 
-    @SuppressWarnings("null")
-    private static final Predicate<Exchange> NOTHING = Predicates.alwaysTrue();
+    private boolean applied = false;
 
-    private static Predicate<Exchange> setWith(final String out) {
-        return new Predicate<Exchange>() {
-            @Override
-            public boolean apply(@Nullable final Exchange input) {
-                assert input != null;
-                try {
-                    input.setOutMessageContent(new ReaderInputStream(new StringReader(out)));
-                } catch (final MessagingException e) {
-                    fail(e.getMessage());
+    private void transform(final Exchange exchange) {
+        if (applied) {
+            return;
+        }
+        final Object c = content();
+        try {
+            if (c instanceof String) {
+                final Source msg = new StreamSource(new ReaderInputStream(new StringReader((String) c)));
+                if (isFault()) {
+                    final Fault fault = exchange.createFault();
+                    fault.setContent(msg);
+                    exchange.setFault(fault);
+                } else {
+                    exchange.setOutMessageContent(msg);
                 }
-                return true;
+            } else if (c instanceof Exception) {
+                exchange.setError((Exception) c);
+            } else if (c == null) {
+                exchange.setDoneStatus();
+            } else {
+                throw new UncheckedException("Shouldn't happen");
             }
-        };
+            applied = true;
+        } catch (final MessagingException e) {
+            throw new UncheckedException(e);
+        }
     }
 
     private final MockSendHandler handler = new MockSendHandler() {
         @Override
         public void send(final Exchange exchange) throws MessagingException {
             receivedExchange = exchange;
-            assertTrue(transformer().apply(exchange));
+            transform(exchange);
         }
 
         @Override
-        public void sendAsync(Exchange exchange, long timeout, SendAsyncCallback callback) throws MessagingException {
+        public void sendAsync(final Exchange exchange, final long timeout) throws MessagingException {
             receivedExchange = exchange;
-            assertTrue(transformer().apply(exchange));
-            super.sendAsync(exchange, timeout, callback);
+            transform(exchange);
+            super.sendAsync(exchange, timeout);
         }
 
         @Override
-        public boolean sendSync(Exchange exchange, long timeout) throws MessagingException {
+        public boolean sendSync(final Exchange exchange, final long timeout) throws MessagingException {
             receivedExchange = exchange;
-            assertTrue(transformer().apply(exchange));
+            transform(exchange);
             return super.sendSync(exchange, timeout);
         }
     };
@@ -99,37 +137,23 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()), setWith("<bb/>"),
-                        ExchangePattern.InOut },
-                { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.IN_OPTIONAL_OUT.value()), setWith("<bb/>"),
-                        ExchangePattern.InOptionalOut },
-                { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.IN_OPTIONAL_OUT.value()), NOTHING,
-                        ExchangePattern.InOptionalOut },
-                { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.IN_ONLY.value()), NOTHING,
-                        ExchangePattern.InOnly },
-                { createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.ROBUST_IN_ONLY.value()), NOTHING,
-                        ExchangePattern.RobustInOnly } });
+                { ExchangePattern.InOut, OUT, false },
+                // Petals 4 is broken with InOut and Errors...
+                // { ExchangePattern.InOut, ERROR, false },
+                { ExchangePattern.InOut, FAULT, true },
+                { ExchangePattern.InOptionalOut, OUT, false },
+                { ExchangePattern.InOptionalOut, ERROR, false },
+                { ExchangePattern.InOptionalOut, FAULT, true },
+                { ExchangePattern.InOptionalOut, null, false },
+                { ExchangePattern.InOnly, null, false },
+                { ExchangePattern.InOnly, ERROR, false },
+                { ExchangePattern.RobustInOnly, null, false },
+                { ExchangePattern.RobustInOnly, ERROR, false },
+                { ExchangePattern.RobustInOnly, FAULT, true } });
     }
+
 
     @Parameter
-    @Nullable
-    public ServiceEndpointOperation seo = null;
-
-    protected ServiceEndpointOperation seo() {
-        assert seo != null;
-        return seo;
-    }
-
-    @Parameter(1)
-    @Nullable
-    public Predicate<Exchange> transformer = null;
-
-    protected Predicate<Exchange> transformer() {
-        assert transformer != null;
-        return transformer;
-    }
-
-    @Parameter(2)
     @Nullable
     public ExchangePattern mep = null;
 
@@ -138,15 +162,37 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
         return mep;
     }
 
+    @Parameter(1)
+    @Nullable
+    public Object content = null;
+
+    protected @Nullable Object content() {
+        return content;
+    }
+
+    @Parameter(2)
+    @Nullable
+    public Boolean isFault = null;
+
+    protected boolean isFault() {
+        assert isFault != null;
+        return isFault;
+    }
+
+    @Nullable
+    private ServiceEndpointOperation seo = null;
+
+    protected ServiceEndpointOperation seo() {
+        assert seo != null;
+        return seo;
+    }
+
     @Override
     protected void initializeServices() {
         super.initializeServices();
+        this.seo = createMockSEO(ServiceType.CONSUMES,
+                MEPPatternConstants.valueOf(URI.create(mep().getWsdlUri())).value());
         pcc().addMockService("serviceId1", seo(), handler);
-    }
-
-    @Before
-    public void cleanReceivedExchange() {
-        this.receivedExchange = null;
     }
 
     @Override
@@ -161,21 +207,35 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
     @Test
     public void testSimilar() throws Exception {
-        final String content = "<aaa />";
-
-        final Object out = template().sendBody("direct:start", mep(), content);
+        final org.apache.camel.Exchange exchange = template().send("direct:start", mep(), new Processor() {
+            @Override
+            public void process(final @Nullable org.apache.camel.Exchange exchange) throws Exception {
+                assert exchange != null;
+                exchange.getIn().setBody(IN);
+            }
+        });
 
         assertCoherentWithSEO(receivedExchange(), seo());
 
-        final Diff diff = new Diff(content, context().getTypeConverter().convertTo(String.class,
-                receivedExchange().getInMessageContentAsSource()));
-        assertTrue(diff.toString(), diff.similar());
+        assertSimilar(new Diff(IN, getContent(receivedExchange().getInMessage())));
 
-        if ((MEPPatternConstants.IN_OPTIONAL_OUT.equals(seo().getMEP()) && transformer() != NOTHING)
-                || MEPPatternConstants.IN_OUT.equals(seo().getMEP())) {
-            final Diff diff2 = new Diff("<bb/>", context().getTypeConverter().convertTo(String.class, out));
-            assertTrue(diff2.toString(), diff2.similar());
+        final Object c = content();
+        if (c instanceof String) {
+            assertTrue(exchange.hasOut());
+            final String expect;
+            if (isFault()) {
+                expect = FAULT;
+                assertTrue(exchange.getOut().isFault());
+            } else {
+                expect = OUT;
+                assertFalse(exchange.getOut().isFault());
+            }
+            assertSimilar(new Diff(expect, getContent(exchange.getOut())));
+        } else if (c instanceof Exception) {
+            assertEquals(ERROR, exchange.getException());
+            assertFalse(exchange.hasOut());
         }
+        // TODO c == null?
     }
 
     private static void assertCoherentWithSEO(final Exchange exchange, final ServiceEndpointOperation seo)
