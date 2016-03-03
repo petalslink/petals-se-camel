@@ -46,6 +46,11 @@ import org.ow2.petals.component.framework.api.message.Exchange;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
+/**
+ * TODO we are missing tests for InOptOut with out + fault
+ * 
+ * TODO we are missing tests for parameters of the endpoint
+ */
 @RunWith(Parameterized.class)
 public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
 
@@ -133,7 +138,6 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
         return Arrays.asList(new Object[][] {
                 { ExchangePattern.InOut, OUT, false },
                 { ExchangePattern.InOut, ERROR, false },
-                { ExchangePattern.InOut, FAULT, true },
                 { ExchangePattern.InOut, FAULT, true },
                 { ExchangePattern.InOptionalOut, OUT, false },
                 { ExchangePattern.InOptionalOut, ERROR, false },
