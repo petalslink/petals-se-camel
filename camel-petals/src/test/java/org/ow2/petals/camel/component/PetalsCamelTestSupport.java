@@ -44,7 +44,7 @@ import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandl
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 import org.xml.sax.SAXException;
 
-public class PetalsCamelTestSupport extends ExchangeTestSupport {
+public abstract class PetalsCamelTestSupport extends ExchangeTestSupport {
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
 

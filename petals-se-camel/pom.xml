@@ -155,23 +155,7 @@
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <excludes>
-                  <!-- we will run this one in integration-test -->
-                  <exclude>org/ow2/petals/camel/se/it/**</exclude>
-               </excludes>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-               <includes>
-                  <!-- Only execute the integration tests -->
-                  <include>org/ow2/petals/camel/se/it/**</include>
-               </includes>
-            </configuration>
          </plugin>
       </plugins>
       <pluginManagement>

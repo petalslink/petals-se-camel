@@ -36,7 +36,6 @@ import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
-import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
@@ -240,9 +239,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
             return false;
         }
 
-        public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
-                throws MessagingException {
-            callback.done(exchange, false);
+        public void sendAsync(final Exchange exchange, final long timeout) throws MessagingException {
         }
 
         public void send(final Exchange exchange) throws MessagingException {
@@ -279,7 +276,9 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         public void sendAsync(final Exchange exchange, final long timeout, final SendAsyncCallback callback)
                 throws MessagingException {
             setRole(exchange);
-            handler.sendAsync(exchange, timeout, callback);
+            handler.sendAsync(exchange, timeout);
+            revertRole(exchange);
+            callback.done(exchange, false);
         }
 
         @Override

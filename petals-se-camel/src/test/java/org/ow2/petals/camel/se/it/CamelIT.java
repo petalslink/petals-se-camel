@@ -45,7 +45,7 @@ import org.ow2.petals.jbi.messaging.PetalsDeliveryChannel;
  * @author vnoel
  *
  */
-public class CamelIntegrationTest extends AbstractComponentTest {
+public class CamelIT extends AbstractComponentTest {
 
     @Test
     public void testMessageGoThrough() throws Exception {
