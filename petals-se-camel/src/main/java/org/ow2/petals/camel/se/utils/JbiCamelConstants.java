@@ -15,36 +15,23 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.camel;
-
-import java.net.URI;
+package org.ow2.petals.camel.se.utils;
 
 import javax.xml.namespace.QName;
 
-import org.eclipse.jdt.annotation.Nullable;
+public interface JbiCamelConstants {
 
-/**
- * Represent a Service Endpoint's operation.
- * 
- * @author vnoel
- *
- */
-public interface ServiceEndpointOperation {
+    public static final String CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
 
-    public static enum ServiceType {
-        PROVIDES, CONSUMES
-    }
+    public static final String CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
 
-    public @Nullable QName getService();
+    public static final String EL_CONSUMES_SERVICE_ID = "service-id";
 
-    public QName getInterface();
+    public static final QName EL_SERVICES_ROUTE_CLASS = new QName(CAMEL_JBI_NS_URI, "java-routes");
 
-    public @Nullable String getEndpoint();
+    public static final QName EL_SERVICES_ROUTE_XML = new QName(CAMEL_JBI_NS_URI, "xml-routes");
 
-    public @Nullable QName getOperation();
+    public static final QName EL_WSDL_OPERATION = new QName(CAMEL_WSDL_NS_URI, "operation");
 
-    public ServiceType getType();
-
-    public @Nullable URI getMEP();
-
+    public static final String ATTR_WSDL_OPERATION_SERVICEID = "service-id";
 }

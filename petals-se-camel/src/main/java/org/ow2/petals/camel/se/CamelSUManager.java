@@ -20,8 +20,11 @@ package org.ow2.petals.camel.se;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+
+import javax.jbi.JBIException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.ow2.petals.camel.PetalsCamelRoute;
@@ -32,7 +35,8 @@ import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
+import org.ow2.petals.component.framework.su.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.ClassLoaderUtil;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
@@ -51,7 +55,7 @@ import com.google.common.collect.Maps;
  * @author vnoel
  *
  */
-public class CamelSUManager extends AbstractServiceUnitManager {
+public class CamelSUManager extends ServiceEngineServiceUnitManager {
 
     /**
      * Store the CamelSU for each SU's name
@@ -74,14 +78,11 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         super(component);
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
+    protected void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
             throws PetalsCamelSEException {
-
+        assert serviceUnitName != null;
         final CamelSU camelSU = createCamelSU(serviceUnitName);
 
         // No need to check if it isn't here: the CDK did that for us.
@@ -91,49 +92,67 @@ public class CamelSUManager extends AbstractServiceUnitManager {
     }
 
     private CamelSU createCamelSU(final String serviceUnitName) throws PetalsCamelSEException {
-
         final ServiceUnitDataHandler suDH = getServiceUnitDataHandlers().get(serviceUnitName);
+        assert suDH != null;
+
+        final Logger suLogger;
+        try {
+            suLogger = getComponent().getContext().getLogger(serviceUnitName, null);
+            assert suLogger != null;
+        } catch (final MissingResourceException e) {
+            throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
+        } catch (final JBIException e) {
+            throw new PetalsCamelSEException("Error when getting logger for SU " + serviceUnitName, e);
+        }
 
         final Map<String, ServiceEndpointOperation> sid2seo = PetalsCamelJBIHelper
-                .extractServicesIdAndEndpointOperations(suDH, getCamelSE());
+                .extractServicesIdAndEndpointOperations(suDH, new PetalsCamelSender(getComponent(), suLogger));
 
         final List<String> classNames = Lists.newArrayList();
         final List<String> xmlNames = Lists.newArrayList();
 
-        PetalsCamelJBIHelper.populateRouteLists(suDH.getDescriptor().getServices(), classNames, xmlNames);
+        final Services services = suDH.getDescriptor().getServices();
+        assert services != null;
+        PetalsCamelJBIHelper.populateRouteLists(services, classNames, xmlNames);
 
         // TODO why use this classloader and not the thread context classloader?
         // is it the same? normally yes according to JBI specs
         // TODO why use createClassLoader which runs with privilege?...
         final URLClassLoader classLoader = ClassLoaderUtil.createClassLoader(suDH.getInstallRoot(), getClass()
                 .getClassLoader());
+        assert classLoader != null;
 
         return new CamelSU(ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
-                ImmutableList.copyOf(xmlNames), classLoader, this);
+                ImmutableList.copyOf(xmlNames), classLoader, suLogger, this);
     }
 
+    @NonNullByDefault(false)
     @Override
     protected void doUndeploy(final String serviceUnitName) throws PetalsCamelSEException {
         final CamelSU camelSU = this.su2camel.remove(serviceUnitName);
         camelSU.undeploy();
     }
 
+    @NonNullByDefault(false)
     @Override
     protected void doInit(final String serviceUnitName, final String suRootPath) throws PEtALSCDKException {
         this.su2camel.get(serviceUnitName).init();
     }
 
+    @NonNullByDefault(false)
     @Override
     protected void doShutdown(final String serviceUnitName) throws PEtALSCDKException {
         this.su2camel.get(serviceUnitName).shutdown();
     }
 
+    @NonNullByDefault(false)
     @Override
     protected void doStart(final String serviceUnitName) throws PEtALSCDKException {
-        // TODO handle resume/suspend
         this.su2camel.get(serviceUnitName).start();
+        // TODO handle resume/suspend
     }
 
+    @NonNullByDefault(false)
     @Override
     protected void doStop(final String serviceUnitName) throws PEtALSCDKException {
         // TODO handle resume/suspend
@@ -170,17 +189,12 @@ public class CamelSUManager extends AbstractServiceUnitManager {
         return ppo;
     }
 
-    @SuppressWarnings("null")
-    public Logger getLogger() {
-        return this.logger;
-    }
-
     private EndpointOperationKey buildEOK(final ServiceEndpointOperation seo) {
         return new EndpointOperationKey(seo.getEndpoint(), seo.getInterface(), seo.getOperation());
     }
 
     @SuppressWarnings("null")
-    private CamelSE getCamelSE() {
+    protected CamelSE getComponent() {
         return (CamelSE) super.component;
     }
 }

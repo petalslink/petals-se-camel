@@ -70,7 +70,7 @@ public interface PetalsChannel {
 
     public interface PetalsConsumesChannel extends PetalsChannel {
 
-        public ServiceEndpoint resolveEndpoint(QName serviceName, String endpointName);
+        public @Nullable ServiceEndpoint resolveEndpoint(QName serviceName, String endpointName);
 
         public Exchange newExchange(MEPPatternConstants mep) throws JBIException;
 

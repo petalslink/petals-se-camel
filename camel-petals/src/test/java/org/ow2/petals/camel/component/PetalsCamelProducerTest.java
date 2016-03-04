@@ -190,8 +190,7 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
     @Override
     protected void initializeServices() {
         super.initializeServices();
-        this.seo = createMockSEO(ServiceType.CONSUMES,
-                MEPPatternConstants.valueOf(URI.create(mep().getWsdlUri())).value());
+        this.seo = createMockSEO(ServiceType.CONSUMES, MEPPatternConstants.valueOf(URI.create(mep().getWsdlUri())).value());
         pcc().addMockService("serviceId1", seo(), handler);
     }
 

@@ -214,19 +214,19 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         return timeout;
     }
 
-    public QName getOperation() {
+    public @Nullable QName getOperation() {
         return operation;
     }
 
-    public QName getServiceName() {
+    public @Nullable QName getServiceName() {
         return serviceName;
     }
 
-    public String getEndpointName() {
+    public @Nullable String getEndpointName() {
         return endpointName;
     }
 
-    public MEPPatternConstants getMep() {
+    public @Nullable MEPPatternConstants getMep() {
         return mep;
     }
 

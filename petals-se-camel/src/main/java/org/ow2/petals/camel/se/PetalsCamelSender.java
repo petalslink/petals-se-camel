@@ -17,32 +17,32 @@
  */
 package org.ow2.petals.camel.se;
 
-import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
+import java.util.logging.Logger;
+
 import org.ow2.petals.component.framework.listener.AbstractListener;
 
 /**
  * This is needed to send messages.
  * 
- * It is bound to one and only consumes or provides.
+ * It is bound to one and only one SU.
  * 
  * @author vnoel
  *
  */
 public class PetalsCamelSender extends AbstractListener {
 
-    public PetalsCamelSender(final CamelSE component, final Consumes consumes) {
+    private final Logger suLogger;
+
+    public PetalsCamelSender(final CamelSE component, final Logger suLogger) {
+        this.suLogger = suLogger;
         init(component);
-        setConsumes(consumes);
-        setExtensions(new ConfigurationExtensions(consumes.getAny()));
-        init();
     }
 
-    public PetalsCamelSender(final CamelSE component, final Provides provides) {
-        init(component);
-        setProvides(provides);
-        setExtensions(new ConfigurationExtensions(provides.getAny()));
-        init();
+    /**
+     * We can't override it...
+     */
+    public Logger getLogger2() {
+        return suLogger;
     }
+
 }

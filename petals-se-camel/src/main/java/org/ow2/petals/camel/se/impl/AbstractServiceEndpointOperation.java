@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -30,23 +31,36 @@ import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
+/**
+ * 
+ * Note: {@link PetalsCamelSender} overrides {@link PetalsCamelSender#getLogger()} in order to have a SU-specific
+ * logger. Also it has no consumes nor provides, so they shouldn't be relied on.
+ * 
+ * @author vnoel
+ *
+ */
 public abstract class AbstractServiceEndpointOperation implements ServiceEndpointOperation, PetalsChannel {
 
     private final QName interfaceName;
 
+    @Nullable
     private final QName service;
 
+    @Nullable
     private final String endpoint;
 
+    @Nullable
     private final QName operation;
 
+    @Nullable
     private final URI mep;
 
-    private final PetalsCamelSender sender;
+    protected final PetalsCamelSender sender;
 
-    public AbstractServiceEndpointOperation(final QName interfaceName, final QName service, final String endpoint,
-            final QName operation, final URI mep, final PetalsCamelSender sender)
-            throws InvalidJBIConfigurationException {
+    public AbstractServiceEndpointOperation(final QName interfaceName, final @Nullable QName service,
+            final @Nullable String endpoint, final @Nullable QName operation, 
+            @Nullable final URI mep, final PetalsCamelSender sender)
+                    throws InvalidJBIConfigurationException {
         this.service = service;
         this.interfaceName = interfaceName;
         this.endpoint = endpoint;
@@ -84,7 +98,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     }
 
     @Override
-    public QName getService() {
+    public @Nullable QName getService() {
         return service;
     }
 
@@ -94,23 +108,22 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
     }
 
     @Override
-    public String getEndpoint() {
+    public @Nullable String getEndpoint() {
         return endpoint;
     }
 
     @Override
-    public QName getOperation() {
+    public @Nullable QName getOperation() {
         return operation;
     }
 
     @Override
-    public URI getMEP() {
+    public @Nullable URI getMEP() {
         return mep;
     }
 
-    @SuppressWarnings("null")
     @Override
     public Logger getLogger() {
-        return sender.getLogger();
+        return this.sender.getLogger2();
     }
 }

@@ -21,26 +21,26 @@ import java.net.URI;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
 public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
-    private final QName service;
+    private final @Nullable QName service;
 
     private final QName interfaceName;
 
-    private final String endpoint;
+    private final @Nullable String endpoint;
 
-    private final QName operation;
+    private final @Nullable QName operation;
 
     private final ServiceType type;
 
-    private final URI mep;
+    private final @Nullable URI mep;
 
-    public ServiceEndpointOperationMock(final String service, final String interfaceName,
-            final String endpoint, final String operation, final ServiceType type,
-            final URI mep) {
+    public ServiceEndpointOperationMock(final @Nullable String service, final String interfaceName,
+            final @Nullable String endpoint, final @Nullable String operation, final ServiceType type,
+            final @Nullable URI mep) {
         this.service = service == null ? null : new QName("tests", service);
         this.interfaceName = new QName("tests", interfaceName);
         this.endpoint = endpoint;
@@ -50,7 +50,7 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public QName getService() {
+    public @Nullable QName getService() {
         return service;
     }
 
@@ -60,12 +60,12 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public String getEndpoint() {
+    public @Nullable String getEndpoint() {
         return endpoint;
     }
 
     @Override
-    public QName getOperation() {
+    public @Nullable QName getOperation() {
         return operation;
     }
 
@@ -75,7 +75,7 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     }
 
     @Override
-    public URI getMEP() {
+    public @Nullable URI getMEP() {
         return mep;
     }
 }

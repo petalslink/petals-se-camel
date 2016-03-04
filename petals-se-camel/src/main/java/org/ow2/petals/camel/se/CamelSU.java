@@ -80,12 +80,15 @@ public class CamelSU implements PetalsCamelContext {
 
     private final CamelSUManager manager;
 
-    public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo,
-            final ImmutableList<String> classNames, final ImmutableList<String> xmlNames,
-            final URLClassLoader classLoader, final CamelSUManager manager) throws PetalsCamelSEException {
+    private final Logger suLogger;
+
+    public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo, final ImmutableList<String> classNames,
+            final ImmutableList<String> xmlNames, final URLClassLoader classLoader, final Logger suLogger,
+            final CamelSUManager manager) throws PetalsCamelSEException {
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
         this.manager = manager;
+        this.suLogger = suLogger;
 
         this.context = new DefaultCamelContext();
 
@@ -95,6 +98,7 @@ public class CamelSU implements PetalsCamelContext {
         final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 
         try {
+
             // this is needed because this version of Camel does not properly use
             // the application class loader during initialisation and start.
             Thread.currentThread().setContextClassLoader(classLoader);
@@ -103,8 +107,7 @@ public class CamelSU implements PetalsCamelContext {
             // (for example JAXB uses it to load classes)
             this.context.setApplicationContextClassLoader(classLoader);
 
-            // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent
-            // to
+            // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent to
             // initialise itself
             ((JndiRegistry) ((PropertyPlaceholderDelegateRegistry) this.context.getRegistry()).getRegistry())
                     .bind(PetalsCamelContext.class.getName(), this);
@@ -115,8 +118,8 @@ public class CamelSU implements PetalsCamelContext {
                 try {
                     context.addRoutes(routes);
                 } catch (final Exception e) {
-                    throw new InvalidCamelRouteDefinitionException(
-                            "Can't add routes from class " + className + " to Camel context", e);
+                    throw new InvalidCamelRouteDefinitionException("Can't add routes from class " + className
+                        + " to Camel context", e);
                 }
 
                 this.classRoutes.add(routes);
@@ -129,8 +132,8 @@ public class CamelSU implements PetalsCamelContext {
                 try {
                     context.addRouteDefinitions(routes.getRoutes());
                 } catch (final Exception e) {
-                    throw new InvalidCamelRouteDefinitionException(
-                            "Can't add routes from xml file " + xmlName + " to Camel context", e);
+                    throw new InvalidCamelRouteDefinitionException("Can't add routes from xml file " + xmlName
+                            + " to Camel context", e);
                 }
             }
 
@@ -252,6 +255,6 @@ public class CamelSU implements PetalsCamelContext {
 
     @Override
     public Logger getLogger() {
-        return this.manager.getLogger();
+        return this.suLogger;
     }
 }

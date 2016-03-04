@@ -229,6 +229,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             mep = getEndpoint().getMep();
         }
 
+        // if mep is null, the consumes one will be used, and if not, we verified in deploy it was null in consumes
         final org.ow2.petals.component.framework.api.message.Exchange exchange;
         if (mep != null) {
             exchange = this.consumes.newExchange(mep);

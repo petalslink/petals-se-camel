@@ -136,7 +136,7 @@ public abstract class PetalsCamelTestSupport extends ExchangeTestSupport {
                     assertSimilar(new Diff(content, getContent(exchange.getIn())));
                 } catch (final SAXException e) {
                     throw new RuntimeCamelException(e);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new RuntimeCamelException(e);
                 }
             }

@@ -27,6 +27,7 @@ import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.se.impl.PetalsCamelAsyncContext;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
@@ -108,24 +109,30 @@ public class CamelJBIListener extends AbstractJBIListener {
     @NonNullByDefault(false)
     @Override
     public boolean onAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext) {
+        assert exchange != null;
+        assert asyncContext != null;
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(exchange, asyncContext, false);
+        handleAsyncJBIMessage(exchange, asyncContext, false);
+        // always return false, we will take care of answering
+        return false;
     }
 
     @NonNullByDefault(false)
     @Override
     public boolean onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
+        assert originalExchange != null;
+        assert asyncContext != null;
         // this is when I sent something asynchronously but it timeouted!
         // let's call the callback, the one that sent this message will take care of doing what it has to do
-        return handleAsyncJBIMessage(originalExchange, asyncContext, true);
+        handleAsyncJBIMessage(originalExchange, asyncContext, true);
+        // always return false, we will take care of answering
+        return false;
     }
 
     private boolean handleAsyncJBIMessage(final Exchange exchange, final AsyncContext asyncContext,
             final boolean timedOut) {
         if (!(asyncContext instanceof PetalsCamelAsyncContext)) {
-            this.getLogger().warning(
-                    "Got an async context not from me for the exchange "
-                            + asyncContext.getOriginalExchange().getExchangeId());
+            this.getLogger().warning("Got an async context not from me for the exchange " + exchange.getExchangeId());
         } else {
             final PetalsCamelAsyncContext context = (PetalsCamelAsyncContext) asyncContext;
 
@@ -143,9 +150,10 @@ public class CamelJBIListener extends AbstractJBIListener {
         return false;
     }
 
-    @SuppressWarnings("null")
     public CamelSE getCamelSE() {
-        return (CamelSE) super.component;
+        final AbstractComponent component = super.getComponent();
+        assert component != null;
+        return (CamelSE) component;
     }
 
 }

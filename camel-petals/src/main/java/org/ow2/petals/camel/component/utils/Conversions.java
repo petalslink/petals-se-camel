@@ -206,11 +206,8 @@ public class Conversions {
                     // the exchange is finished
                     to.setDoneStatus();
                     // NOTE: we make the assumption that in the case of an optional out, the out message of
-                    // the camel
-                    // exchange is populated (sometimes the in message is used instead of the out in Camel
-                    // processors...
-                    // this is an ambiguity we can only handle by choosing this rule)
-                    // TODO add documentation
+                    // the camel exchange is populated (sometimes the in message is used instead of the out in Camel
+                    // processors... this is an ambiguity we can only handle by choosing this rule)
                 }
             } else {
                 to.setDoneStatus();
@@ -233,15 +230,13 @@ public class Conversions {
 
         final Object body = from.getBody();
         final Source content;
+        // TODO maybe replace all of that with type converters registered to Camel?
         if (body instanceof Source) {
             // let's continue with a Source then
             content = (Source) body;
         } else {
-            // for now we settle to either a DOMSource that are in-memory and not stream since we are mostly
-            // manipulating small-sized messages.
-            // TODO provide an endpoint option to force the use of a desired Source implementation.
-            // let's use available converters (see http://camel.apache.org/type-converter.html) to get the
-            // body as a DOMSource.
+            // TODO provide an endpoint option to force the use of a desired Source implementation?
+            // This uses available converters (see http://camel.apache.org/type-converter.html)
             content = from.getBody(DOMSource.class);
         }
         to.setContent(content);

@@ -29,6 +29,7 @@ import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConsta
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper.OperationData;
 import org.ow2.petals.component.framework.jbidescriptor.JBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 import org.w3c.dom.Document;
 
@@ -63,8 +64,11 @@ public class PetalsCamelJBIHelperTest extends Assert {
 
         final Document doc = getWSDL(WSDL11, WSDLVersionConstants.WSDL11);
 
-        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
-                new QName("http://petals.ow2.org", "HelloInterface"));
+        final Provides provides = new Provides();
+        provides.setEndpointName("autogenerate");
+        provides.setServiceName(new QName("http://petals.ow2.org", "HelloService"));
+        provides.setInterfaceName(new QName("http://petals.ow2.org", "HelloInterface"));
+        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc, provides);
 
         assertEquals(res.size(), 1);
         assertEquals(res.get(0).serviceId, "theProvidesId");
@@ -76,8 +80,11 @@ public class PetalsCamelJBIHelperTest extends Assert {
 
         final Document doc = getWSDL(WSDL20, WSDLVersionConstants.WSDL20);
 
-        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc,
-                new QName("http://petals.ow2.org", "HelloInterface"));
+        final Provides provides = new Provides();
+        provides.setEndpointName("autogenerate");
+        provides.setServiceName(new QName("http://petals.ow2.org", "HelloService"));
+        provides.setInterfaceName(new QName("http://petals.ow2.org", "HelloInterface"));
+        final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc, provides);
 
         assertEquals(res.size(), 1);
         assertEquals(res.get(0).serviceId, "theProvidesId");

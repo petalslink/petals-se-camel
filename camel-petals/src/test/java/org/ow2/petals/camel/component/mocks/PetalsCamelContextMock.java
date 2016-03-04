@@ -312,7 +312,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
 
         @Override
-        public ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
+        public @Nullable ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
             return PetalsCamelContextMock.this.resolveEndpoint(serviceId, serviceName, endpointName);
         }
 

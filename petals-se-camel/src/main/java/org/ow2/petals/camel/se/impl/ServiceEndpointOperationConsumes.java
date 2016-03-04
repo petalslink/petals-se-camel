@@ -23,6 +23,7 @@ import javax.jbi.JBIException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
@@ -35,13 +36,13 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 
 public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOperation implements PetalsConsumesChannel {
 
-    private final PetalsCamelSender sender;
+    private final Consumes consumes;
 
-    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender) throws InvalidJBIConfigurationException {
-        super(sender.getConsumes().getInterfaceName(), sender.getConsumes().getServiceName(),
-                sender.getConsumes().getEndpointName(), sender.getConsumes().getOperation(),
-                toMEP(sender.getConsumes()), sender);
-        this.sender = sender;
+    public ServiceEndpointOperationConsumes(final PetalsCamelSender sender, final Consumes consumes)
+            throws InvalidJBIConfigurationException {
+        super(consumes.getInterfaceName(), consumes.getServiceName(), consumes.getEndpointName(),
+                consumes.getOperation(), toMEP(consumes), sender);
+        this.consumes = consumes;
     }
 
     @Override
@@ -51,16 +52,20 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
 
     @Override
     public Exchange newExchange() throws JBIException {
-        return sender.createConsumeExchange(this.sender.getConsumes());
+        final Exchange exchange = sender.createConsumeExchange(consumes);
+        assert exchange != null;
+        return exchange;
     }
 
     @Override
     public Exchange newExchange(final MEPPatternConstants mep) throws JBIException {
-        return sender.createConsumeExchange(this.sender.getConsumes(), toMEP(mep));
+        final Exchange exchange = sender.createConsumeExchange(consumes, toMEP(mep));
+        assert exchange != null;
+        return exchange;
     }
 
     @Override
-    public ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
+    public @Nullable ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
         return sender.getComponent().getContext().getEndpoint(serviceName, endpointName);
     }
 
@@ -80,7 +85,7 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
         }
     }
 
-    private static URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
+    private static @Nullable URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {
 
         final MEPType mep = c.getMep();
 

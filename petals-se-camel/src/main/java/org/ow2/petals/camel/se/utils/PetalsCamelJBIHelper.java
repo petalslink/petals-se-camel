@@ -25,15 +25,17 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.StringUtils;
+import org.ow2.easywsdl.extensions.wsdl4complexwsdl.WSDL4ComplexWsdlFactory;
+import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.WSDL4ComplexWsdlReader;
 import org.ow2.easywsdl.schema.api.XmlException;
-import org.ow2.easywsdl.wsdl.WSDLFactory;
 import org.ow2.easywsdl.wsdl.api.Binding;
 import org.ow2.easywsdl.wsdl.api.BindingOperation;
 import org.ow2.easywsdl.wsdl.api.Description;
-import org.ow2.easywsdl.wsdl.api.WSDLReader;
+import org.ow2.easywsdl.wsdl.api.Endpoint;
+import org.ow2.easywsdl.wsdl.api.InterfaceType;
+import org.ow2.easywsdl.wsdl.api.Service;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
-import org.ow2.petals.camel.se.CamelSE;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
@@ -61,21 +63,7 @@ import com.google.common.collect.Lists;
  * @author vnoel
  *
  */
-public class PetalsCamelJBIHelper {
-
-    private static final String SERVICE_ID_PROPERTY = "service-id";
-
-    private static final String PETALS_CAMEL_JBI_NS_URI = "http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0";
-
-    private static final QName PETALS_CAMEL_JBI_ROUTE_CLASS = new QName(PETALS_CAMEL_JBI_NS_URI, "java-routes");
-
-    private static final QName PETALS_CAMEL_JBI_ROUTE_XML = new QName(PETALS_CAMEL_JBI_NS_URI, "xml-routes");
-
-    private static final String PETALS_CAMEL_WSDL_NS_URI = "http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0";
-
-    private static final QName PETALS_CAMEL_WSDL_OPERATION = new QName(PETALS_CAMEL_WSDL_NS_URI, "operation");
-
-    private static final String PETALS_CAMEL_WSDL_OPERATION_SERVICEID = "service-id";
+public class PetalsCamelJBIHelper implements JbiCamelConstants {
 
     private PetalsCamelJBIHelper() {
     }
@@ -89,7 +77,7 @@ public class PetalsCamelJBIHelper {
      * @throws InvalidJBIConfigurationException
      */
     public static Map<String, ServiceEndpointOperation> extractServicesIdAndEndpointOperations(
-            final ServiceUnitDataHandler suDH, final CamelSE component)
+            final ServiceUnitDataHandler suDH, final PetalsCamelSender sender)
             throws InvalidJBIConfigurationException {
 
         final Jbi jbiDescriptor = suDH.getDescriptor();
@@ -102,12 +90,11 @@ public class PetalsCamelJBIHelper {
         for (final Provides p : jbiDescriptor.getServices().getProvides()) {
 
             final ServiceEndpointKey key = new ServiceEndpointKey(p.getServiceName(), p.getEndpointName());
-
             final Document wsdlDoc = suDH.getEpServiceDesc().get(key);
 
             final List<OperationData> seos;
             try {
-                seos = getOperationsAndServiceId(wsdlDoc, p.getInterfaceName());
+                seos = getOperationsAndServiceId(wsdlDoc, p);
             } catch (final URISyntaxException e) {
                 throw new InvalidJBIConfigurationException("Exception while parsing WSDL", e);
             } catch (final XmlException e) {
@@ -116,11 +103,12 @@ public class PetalsCamelJBIHelper {
 
             for (final OperationData od : seos) {
                 if (sid2seo.containsKey(od.serviceId)) {
-                    throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + od.serviceId
+                    throw new InvalidJBIConfigurationException("Duplicate " + ATTR_WSDL_OPERATION_SERVICEID + " ("
+                            + od.serviceId
                             + ") in the operation " + od.operation);
                 }
-                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep,
-                        new PetalsCamelSender(component, p));
+                final ServiceEndpointOperation seo = new ServiceEndpointOperationProvides(od.operation, od.mep, sender,
+                        p);
                 if (sid2seo.containsValue(seo)) {
                     throw new InvalidJBIConfigurationException("Duplicate service " + seo);
                 }
@@ -131,13 +119,12 @@ public class PetalsCamelJBIHelper {
         // for consumes, there is one serviceId per consumes (because it includes the operation)
         for (final Consumes c : jbiDescriptor.getServices().getConsumes()) {
 
-            final ServiceEndpointOperation seo = new ServiceEndpointOperationConsumes(new PetalsCamelSender(component,
-                    c));
+            final ServiceEndpointOperation seo = new ServiceEndpointOperationConsumes(sender, c);
 
             final String serviceId = getServiceId(c, suDH);
 
             if (sid2seo.containsKey(serviceId)) {
-                throw new InvalidJBIConfigurationException("Duplicate " + SERVICE_ID_PROPERTY + " (" + serviceId
+                throw new InvalidJBIConfigurationException("Duplicate " + EL_CONSUMES_SERVICE_ID + " (" + serviceId
                         + ") in the consumes " + c.getServiceName());
             }
 
@@ -150,56 +137,79 @@ public class PetalsCamelJBIHelper {
     public static void populateRouteLists(final Services servicesNode, final List<String> classNames,
             final List<String> xmlNames) {
         for (final Element e : servicesNode.getAnyOrAny()) {
-            if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_CLASS)) {
+            if (hasQName(e, EL_SERVICES_ROUTE_CLASS)) {
                 classNames.add(e.getTextContent());
-            } else if (hasQName(e, PETALS_CAMEL_JBI_ROUTE_XML)) {
+            } else if (hasQName(e, EL_SERVICES_ROUTE_XML)) {
                 xmlNames.add(e.getTextContent());
             }
         }
     }
 
-    public static List<OperationData> getOperationsAndServiceId(final Document doc,
-            final QName interfaceName) throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
+    public static List<OperationData> getOperationsAndServiceId(final Document doc, final Provides provides)
+            throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
 
         final List<OperationData> results = Lists.newArrayList();
 
-        final WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+        final WSDL4ComplexWsdlReader reader = WSDL4ComplexWsdlFactory.newInstance().newWSDLReader();
 
         final Description desc = reader.read(doc);
 
-        for (final Binding binding : desc.getBindings()) {
-            if (!interfaceName.equals(binding.getInterface().getQName())) {
-                // let's skip it, it's not the one we are looking for
-                continue;
-            }
+        final Service service = desc.getService(provides.getServiceName());
+        if (service == null) {
+            throw new InvalidJBIConfigurationException(
+                    "Can't find the service '" + provides.getServiceName() + "' in the description");
+        }
 
-            for (final BindingOperation operation : binding.getBindingOperations()) {
-                final QName qName = operation.getQName();
-                final MEPPatternConstants mep = binding.getInterface().getOperation(qName).getPattern();
+        final Endpoint endpoint = service.getEndpoint(provides.getEndpointName());
+        if (endpoint == null) {
+            throw new InvalidJBIConfigurationException(
+                    "Can't find the endpoint '" + provides.getEndpointName() + "' in the description");
+        }
 
-                Element camelOperation = null;
-                for (final Element e : operation.getOtherElements()) {
-                    if (hasQName(e, PETALS_CAMEL_WSDL_OPERATION)) {
-                        if (camelOperation != null) {
-                            throw new InvalidJBIConfigurationException("Duplicate " + PETALS_CAMEL_WSDL_OPERATION
-                                    + " available for the operation " + qName);
-                        }
-                        camelOperation = e;
+        final Binding binding = endpoint.getBinding();
+
+        if (binding == null) {
+            throw new InvalidJBIConfigurationException(
+                    "No binding defined for the endpoint '" + provides.getEndpointName() + "' in the description");
+        }
+
+        final InterfaceType interfaceType = binding.getInterface();
+        if (interfaceType == null) {
+            throw new InvalidJBIConfigurationException("No interface defined for the binding of ednpoint '"
+                    + provides.getEndpointName() + "' in the description");
+        }
+
+        if (!provides.getInterfaceName().equals(interfaceType.getQName())) {
+            throw new InvalidJBIConfigurationException("The interface of the endpoint '" + provides.getEndpointName()
+                    + "' is invalid: '" + interfaceType.getQName() + "' instead of '" + interfaceType + "'");
+        }
+
+        for (final BindingOperation operation : binding.getBindingOperations()) {
+            final QName qName = operation.getQName();
+            final MEPPatternConstants mep = interfaceType.getOperation(qName).getPattern();
+
+            Element camelOperation = null;
+            for (final Element e : operation.getOtherElements()) {
+                if (hasQName(e, EL_WSDL_OPERATION)) {
+                    if (camelOperation != null) {
+                        throw new InvalidJBIConfigurationException(
+                                "Duplicate " + EL_WSDL_OPERATION + " available for the operation " + qName);
                     }
+                    camelOperation = e;
                 }
-                if (camelOperation == null) {
-                    throw new InvalidJBIConfigurationException("No " + PETALS_CAMEL_WSDL_OPERATION
-                            + " available for the operation " + qName);
-                }
-
-                final String serviceId = camelOperation.getAttribute(PETALS_CAMEL_WSDL_OPERATION_SERVICEID);
-
-                if (serviceId == null || StringUtils.isEmpty(serviceId)) {
-                    throw new InvalidJBIConfigurationException("No " + PETALS_CAMEL_WSDL_OPERATION_SERVICEID
-                            + " attribute for the operation " + qName);
-                }
-                results.add(new OperationData(qName, mep.value(), serviceId));
             }
+            if (camelOperation == null) {
+                throw new InvalidJBIConfigurationException(
+                        "No " + EL_WSDL_OPERATION + " available for the operation " + qName);
+            }
+
+            final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
+
+            if (StringUtils.isEmpty(serviceId)) {
+                throw new InvalidJBIConfigurationException(
+                        "No " + ATTR_WSDL_OPERATION_SERVICEID + " attribute for the operation " + qName);
+            }
+            results.add(new OperationData(qName, mep.value(), serviceId));
         }
         return results;
     }
@@ -212,10 +222,10 @@ public class PetalsCamelJBIHelper {
             throws InvalidJBIConfigurationException {
 
         final ConfigurationExtensions extensions = suDH.getConfigurationExtensions(s);
-        final String serviceId = extensions.get(SERVICE_ID_PROPERTY);
+        final String serviceId = extensions.get(EL_CONSUMES_SERVICE_ID);
 
         if (serviceId == null || serviceId.isEmpty()) {
-            throw new InvalidJBIConfigurationException("No " + SERVICE_ID_PROPERTY + " defined for the consumes "
+            throw new InvalidJBIConfigurationException("No " + EL_CONSUMES_SERVICE_ID + " defined for the consumes "
                     + s.getServiceName());
         }
 
