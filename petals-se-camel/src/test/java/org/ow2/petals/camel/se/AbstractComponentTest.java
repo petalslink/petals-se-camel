@@ -23,6 +23,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
@@ -41,7 +42,6 @@ import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.JbiConstants;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
-import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
@@ -206,14 +206,11 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
             respChecks = respChecks.andThen(MessageChecks.hasXmlContent(expectedResponse));
         }
 
-        // TODO for now we have to disable acknoledgement check because we don't forward DONE in Camel (see
-        // PetalsCamelConsumer)
-        final ResponseMessage responseM = COMPONENT.sendAndGetResponse(helloRequest(suName, request),
-                ServiceProviderImplementation.outMessage(response, null).with(reqChecks));
-
-        respChecks.checks(responseM);
-
-        COMPONENT.sendDoneStatus(responseM);
+        // TODO for now we have to disable acknowledgement check (null parameter below) because we don't forward DONE in
+        // Camel (see PetalsCamelConsumer)
+        COMPONENT.sendAndCheckResponseAndSendStatus(helloRequest(suName, request),
+                ServiceProviderImplementation.outMessage(response, null).with(reqChecks), respChecks,
+                ExchangeStatus.DONE);
     }
 
     protected static MessageChecks isHelloRequest() {

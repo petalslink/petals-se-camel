@@ -64,7 +64,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
         final Exchange camelExchange = getEndpoint().createExchange();
         assert camelExchange != null;
 
-        Conversions.populateNewCamelExchange(camelExchange, exchange);
+        Conversions.populateNewCamelExchange(exchange, camelExchange);
 
         if (getEndpoint().isSynchronous()) {
             // in that case, this method won't return until the route is fully executed
@@ -134,11 +134,8 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
-        // TODO should I update the properties of the exchange with those of the camel exchange?
-        // Careful with the flow attributes... !
-
         try {
-            Conversions.populateAnswerPetalsExchange(exchange, camelExchange);
+            Conversions.populateAnswerPetalsExchange(camelExchange, exchange);
         } catch (final MessagingException e) {
             // this must be caught before sending to be sure that if an error happens here it is sent back!
             this.provides.getLogger().log(Level.SEVERE,
