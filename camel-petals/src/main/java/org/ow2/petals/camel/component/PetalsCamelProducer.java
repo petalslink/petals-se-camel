@@ -275,7 +275,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         // while an InOut exchange for an InOnly service is not possible!
         // TODO and also I should take into account the MEP of the endpoint??!!
 
-        Conversions.populateNewPetalsExchange(exchange, camelExchange);
+        Conversions.populateNewPetalsExchange(camelExchange, exchange);
+
         return exchange;
     }
 
@@ -299,8 +300,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().fine("Got an answer for the request I sent to the NMR for exchange "
                     + exchange.getExchangeId() + ", sending status DONE to provider and passing it back into Camel");
 
-            // TODO should properties of the camel exchange be updated with those of the received response?!
-            Conversions.populateAnswerCamelExchange(camelExchange, exchange);
+            Conversions.populateAnswerCamelExchange(exchange, camelExchange);
 
             if (faAsBC != null) {
                 Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
