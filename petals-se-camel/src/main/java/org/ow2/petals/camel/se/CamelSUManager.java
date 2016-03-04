@@ -77,12 +77,9 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         super(component);
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doDeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
+    protected void doDeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         assert suDH != null;
         final CamelSU camelSU = createCamelSU(suDH);
 
@@ -93,7 +90,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     }
 
     private CamelSU createCamelSU(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
-
+        assert suDH != null;
         final String serviceUnitName = suDH.getName();
 
         final Logger suLogger;
@@ -125,12 +122,9 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
                 ImmutableList.copyOf(xmlNames), classLoader, suLogger, this);
     }
 
-    /**
-     * This is synchronised as we modify the shared collection that must stay consistent during the whole method
-     */
     @NonNullByDefault(false)
     @Override
-    protected synchronized void doUndeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
+    protected void doUndeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         final CamelSU camelSU = this.su2camel.remove(suDH.getName());
         camelSU.undeploy();
     }
