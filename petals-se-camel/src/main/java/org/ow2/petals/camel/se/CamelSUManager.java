@@ -111,9 +111,6 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         assert services != null;
         PetalsCamelJBIHelper.populateRouteLists(services, classNames, xmlNames);
 
-        // TODO why use this classloader and not the thread context classloader?
-        // is it the same? normally yes according to JBI specs
-        // TODO why use createClassLoader which runs with privilege?...
         final URLClassLoader classLoader = ClassLoaderUtil.createClassLoader(suDH.getInstallRoot(), getClass()
                 .getClassLoader());
         assert classLoader != null;
@@ -126,18 +123,21 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @Override
     protected void doUndeploy(final ServiceUnitDataHandler suDH) throws PetalsCamelSEException {
         final CamelSU camelSU = this.su2camel.remove(suDH.getName());
-        camelSU.undeploy();
+        // could happen if deployed failed before
+        if (camelSU != null) {
+            camelSU.undeploy();
+        }
     }
 
     @NonNullByDefault(false)
     @Override
-    protected void doInit(ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+    protected void doInit(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.su2camel.get(suDH.getName()).init();
     }
 
     @NonNullByDefault(false)
     @Override
-    protected void doShutdown(ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+    protected void doShutdown(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.su2camel.get(suDH.getName()).shutdown();
     }
 
