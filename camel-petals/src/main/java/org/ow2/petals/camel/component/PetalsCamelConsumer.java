@@ -32,7 +32,6 @@ import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
-import org.ow2.petals.component.framework.message.ExchangeImpl;
 
 // TODO should I be suspendable?
 public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelRoute {
@@ -112,7 +111,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                     // as possible
                     if (PetalsExecutionContext.getFlowAttributes() == null) {
                         final FlowAttributes flowAttributes = FlowAttributesExchangeHelper
-                                .getFlowAttributes(((ExchangeImpl) exchange).getMessageExchange());
+                                .getFlowAttributes(exchange.getMessageExchange());
 
                         if (PetalsCamelConsumer.this.provides.getLogger().isLoggable(Level.FINE)) {
                             PetalsCamelConsumer.this.provides.getLogger()
