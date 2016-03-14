@@ -18,7 +18,6 @@
 package org.ow2.petals.camel.component;
 
 
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
@@ -197,7 +196,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                Utils.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e.getMessage(), Role.CONSUMER);
+                Utils.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e);
             }
             camelExchange.setException(e);
             callback.done(doneSync);
