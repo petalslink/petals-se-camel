@@ -36,7 +36,7 @@ import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepFailureLogData;
-import org.ow2.petals.component.framework.logger.Utils;
+import org.ow2.petals.component.framework.logger.StepLogHelper;
 
 import com.ebmwebsourcing.easycommons.lang.StringHelper;
 
@@ -196,7 +196,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                Utils.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e);
+                StepLogHelper.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e, true);
             }
             camelExchange.setException(e);
             callback.done(doneSync);
@@ -292,7 +292,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateAnswerCamelExchange(exchange, camelExchange);
 
             if (faAsBC != null) {
-                Utils.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange, faAsBC);
+                StepLogHelper.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange.getMessageExchange(),
+                        faAsBC, true);
             }
 
             if (exchange.isActiveStatus()) {
