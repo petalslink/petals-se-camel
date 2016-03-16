@@ -196,7 +196,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                StepLogHelper.addMonitFailureTrace(this.consumes.getLogger(), faAsBC, e, true);
+                StepLogHelper.addMonitExtFailureTrace(this.consumes.getLogger(), faAsBC, e, true);
             }
             camelExchange.setException(e);
             callback.done(doneSync);
@@ -292,7 +292,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateAnswerCamelExchange(exchange, camelExchange);
 
             if (faAsBC != null) {
-                StepLogHelper.addMonitEndOrFailureTrace(this.consumes.getLogger(), exchange.getMessageExchange(),
+                StepLogHelper.addMonitExtEndOrFailureTrace(this.consumes.getLogger(), exchange.getMessageExchange(),
                         faAsBC, true);
             }
 
