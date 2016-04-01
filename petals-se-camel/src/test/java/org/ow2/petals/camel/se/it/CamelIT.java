@@ -32,7 +32,6 @@ import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
@@ -151,9 +150,7 @@ public class CamelIT extends AbstractComponentTest {
         final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
                 HELLO_OPERATION, monitLogs.get(0));
 
-        final FlowLogData secondLog = assertMonitProviderBeginLog(
-                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE,
                 HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
 
         // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
@@ -171,9 +168,7 @@ public class CamelIT extends AbstractComponentTest {
                 HELLO_OPERATION, monitLogs.get(0));
         assertMonitProviderEndLog(firstLog, monitLogs.get(3));
 
-        final FlowLogData secondLog = assertMonitProviderBeginLog(
-                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE,
                 HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
         assertMonitProviderEndLog(secondLog, monitLogs.get(2));
     }
@@ -182,14 +177,10 @@ public class CamelIT extends AbstractComponentTest {
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
 
-        final FlowLogData firstLog = assertMonitConsumerExtBeginLog(HELLO_INTERFACE, HELLO_SERVICE,
-                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(0));
-        assertMonitConsumerExtEndLog(firstLog, monitLogs.get(3));
-
-        final FlowLogData secondLog = assertMonitProviderBeginLog(
-                (String) firstLog.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) firstLog.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), HELLO_INTERFACE,
-                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
-        assertMonitProviderEndLog(secondLog, monitLogs.get(2));
+        final FlowLogData consumeExtLog = assertMonitConsumerExtBeginLog(monitLogs.get(0));
+        final FlowLogData provideLog = assertMonitProviderBeginLog(consumeExtLog, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+        assertMonitProviderEndLog(provideLog, monitLogs.get(2));
+        assertMonitConsumerExtEndLog(consumeExtLog, monitLogs.get(3));
     }
 }

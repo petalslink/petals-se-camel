@@ -38,8 +38,6 @@ import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.StepLogHelper;
 
-import com.ebmwebsourcing.easycommons.lang.StringHelper;
-
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
  * 
@@ -115,32 +113,23 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             // if there is no flow attributes set, it can means 3 things:
             // 1) we received an exchange from petals without flow attributes in the beginning of this route
             // 2) we lost the context flow attributes because we switched threads (because of async execution)
-            // 3) we never received a petals and we are acting as a BC
+            // 3) we never received a petals exchange and we are acting as a BC
+            faAsBC = PetalsExecutionContext.initFlowAttributes();
             this.consumes.getLogger().log(Level.WARNING,
                     "There is no flow attributes in the Execution Context: "
                             + "either we lost them somewhere in the route, "
                             + "either we received a petals exchange without flow attributes "
                             + "or we are acting as a BC and we are starting a new flow. "
-                            + "We assume the later and initialise a new flow.");
-            faAsBC = PetalsExecutionContext.initFlowAttributes();
+                            + "We assume the later and initialise a new flow: " + faAsBC);
+            this.consumes.getLogger().log(Level.MONIT, "",
+                    new ConsumeExtFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId()));
         } else {
             faAsBC = null;
         }
 
         try {
-
             final org.ow2.petals.component.framework.api.message.Exchange exchange = createPetalsExchange(
                     camelExchange);
-
-            if (faAsBC != null) {
-                this.consumes.getLogger().log(Level.MONIT, "",
-                        new ConsumeExtFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(),
-                                StringHelper.nonNullValue(exchange.getInterfaceName()),
-                                StringHelper.nonNullValue(exchange.getService()),
-                                exchange.getEndpoint() == null ? null
-                                        : StringHelper.nonNullValue(exchange.getEndpoint().getEndpointName()),
-                                StringHelper.nonNullValue(exchange.getOperation())));
-            }
 
             if (doSync) {
 
