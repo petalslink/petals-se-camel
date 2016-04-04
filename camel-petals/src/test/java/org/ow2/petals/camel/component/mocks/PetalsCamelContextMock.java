@@ -41,6 +41,7 @@ import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.junit.TestMessageExchangeFactory;
+import org.ow2.petals.component.framework.junit.impl.mock.MockEndpointDirectory;
 import org.ow2.petals.component.framework.junit.impl.mock.TestMessageExchangeFactoryImpl;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
@@ -62,7 +63,8 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     private final Logger logger = Logger.getLogger(PetalsCamelContextMock.class.getName());
 
-    private final TestMessageExchangeFactory factory = new TestMessageExchangeFactoryImpl(logger);
+    private final TestMessageExchangeFactory factory = new TestMessageExchangeFactoryImpl(new MockEndpointDirectory(),
+            logger);
 
     public PetalsCamelContextMock(final CamelContext context) {
         this.context = context;

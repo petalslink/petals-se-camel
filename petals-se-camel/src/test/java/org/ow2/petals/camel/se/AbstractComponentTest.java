@@ -228,7 +228,7 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
     }
 
     protected static RequestMessage helloRequest(final String suName, final @Nullable String requestContent) {
-        return new RequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName), HELLO_OPERATION,
+        return new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName, HELLO_OPERATION,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), requestContent);
     }
 }
