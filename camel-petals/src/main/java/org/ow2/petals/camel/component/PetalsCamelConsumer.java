@@ -95,6 +95,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
 
             // let's store it for later in case we come back in a different thread
             final FlowAttributes current = PetalsExecutionContext.getFlowAttributes();
+            assert current != null;
 
             return getAsyncProcessor().process(camelExchange, new AsyncCallback() {
                 @Override
