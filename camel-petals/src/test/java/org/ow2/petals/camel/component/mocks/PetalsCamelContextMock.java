@@ -39,6 +39,7 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.junit.TestMessageExchangeFactory;
 import org.ow2.petals.component.framework.junit.impl.mock.MockEndpointDirectory;
@@ -144,6 +145,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
      * Inject an exchange into Camel to a Petals's Provider (aka Camel's Consumer).
      */
     public void process(final String serviceId, final Exchange exchange) {
+        PetalsExecutionContext.initFlowAttributes();
         final ServiceEndpointOperation seo = this.seos.get(serviceId);
         assert seo != null;
         final ServiceEndpointOperationKey key = getEOK(seo);
