@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.StringUtils;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.WSDL4ComplexWsdlFactory;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.WSDL4ComplexWsdlReader;
 import org.ow2.easywsdl.schema.api.XmlException;
@@ -50,6 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.ebmwebsourcing.easycommons.lang.StringHelper;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
@@ -201,7 +201,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
 
             final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
 
-            if (StringUtils.isEmpty(serviceId)) {
+            if (StringHelper.isNullOrEmpty(serviceId)) {
                 throw new InvalidJBIConfigurationException(
                         "No " + ATTR_WSDL_OPERATION_SERVICEID + " attribute for the operation " + qName);
             }
