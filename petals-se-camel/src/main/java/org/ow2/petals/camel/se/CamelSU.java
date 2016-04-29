@@ -182,7 +182,7 @@ public class CamelSU implements PetalsCamelContext {
         try {
             for (final RouteBuilder routeBuilder : this.classRoutes) {
                 assert routeBuilder != null;
-                callMethod(method, routeBuilder);
+                callMethod(method, routeBuilder, this.suLogger);
             }
         } finally {
             Thread.currentThread().setContextClassLoader(ccl);
@@ -190,16 +190,26 @@ public class CamelSU implements PetalsCamelContext {
     }
 
     @SuppressWarnings("squid:S1166")
-    private static void callMethod(final String methodName, final Object object) throws PetalsCamelSEException {
+    private static void callMethod(final String methodName, final Object object, final Logger log) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Attempting to execute lifecycle method " + methodName + "()");
+        }
         try {
             final Method method = object.getClass().getMethod(methodName);
             method.invoke(object);
-        } catch (final SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new PetalsCamelSEException(
-                    "Incorrect " + methodName + "() method definition: it must be public and have no parameters.");
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            log.log(Level.WARNING, "Incorrect " + methodName
+                    + "() method definition: it must be public, non-static and have no parameters.", e);
         } catch (final NoSuchMethodException e) {
-            // do nothing
+            if (log.isLoggable(Level.FINEST)) {
+                log.log(Level.FINEST, "Method " + methodName + "() does not exists", e);
+            } else if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Method " + methodName + "() does not exists");
+            }
+        } catch (final SecurityException | ExceptionInInitializerError e) {
+            log.log(Level.WARNING, "Can't call " + methodName + "()", e);
+        } catch (final InvocationTargetException e) {
+            log.log(Level.WARNING, "Caught an exception while calling " + methodName + "()", e);
         }
     }
 
