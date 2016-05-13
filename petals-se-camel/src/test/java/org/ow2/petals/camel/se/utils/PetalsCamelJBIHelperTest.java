@@ -23,7 +23,7 @@ import javax.xml.namespace.QName;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.Description;
+import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
 import org.ow2.petals.camel.se.utils.PetalsCamelJBIHelper.OperationData;
