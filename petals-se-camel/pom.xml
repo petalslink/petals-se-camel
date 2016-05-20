@@ -30,7 +30,7 @@
    <name>Petals ESB - Components - SE Camel</name>
    <artifactId>petals-se-camel</artifactId>
    <packaging>jbi-component</packaging>
-   <version>1.0.1-SNAPSHOT</version>
+   <version>1.0.1</version>
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
@@ -178,6 +178,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-     <tag>HEAD</tag>
+     <tag>petals-se-camel-1.0.1</tag>
   </scm>
 </project>
