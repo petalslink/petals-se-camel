@@ -13,7 +13,7 @@
  for more details.
 
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
 <jbi:jbi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"

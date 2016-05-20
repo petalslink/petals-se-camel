@@ -12,7 +12,7 @@
  * for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
 @org.eclipse.jdt.annotation.NonNullByDefault
