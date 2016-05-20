@@ -21,7 +21,7 @@
    <parent>
       <artifactId>petals-camel-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>1.0.1</version>
+      <version>1.0.1-SNAPSHOT</version>
    </parent>
 
    <artifactId>camel-petals</artifactId>
