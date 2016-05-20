@@ -146,6 +146,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
 
         final List<OperationData> results = Lists.newArrayList();
 
+        // TODO reuse ?
         final WSDL4ComplexWsdlReader reader = WSDL4ComplexWsdlFactory.newInstance().newWSDLReader();
 
         final Description desc = reader.read(doc);
