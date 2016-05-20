@@ -29,7 +29,7 @@
    <groupId>org.ow2.petals</groupId>
    <artifactId>petals-camel-parent</artifactId>
    <name>Petals ESB - Components - Camel</name>
-   <version>1.0.1</version>
+   <version>1.0.2-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <modules>
@@ -134,6 +134,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-     <tag>petals-se-camel-1.0.1</tag>
+     <tag>HEAD</tag>
   </scm>
 </project>
