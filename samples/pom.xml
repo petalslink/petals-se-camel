@@ -31,7 +31,7 @@
    <groupId>org.ow2.petals.samples</groupId>
    <artifactId>petals-camel-samples-parent</artifactId>
    <name>Petals ESB - Samples - SE Camel</name>
-   <version>5.0.0-SNAPSHOT</version>
+   <version>1.0.1-1.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <properties>
