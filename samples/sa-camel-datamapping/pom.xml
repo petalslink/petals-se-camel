@@ -27,6 +27,7 @@
 
    <artifactId>sa-camel-datamapping</artifactId>
    <name>Petals ESB - Samples - SE Camel - SA Data Mapping</name>
+   <!-- No version set -->
    <packaging>jbi-service-assembly</packaging>
 
    <properties>
@@ -81,6 +82,6 @@
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>${project.scm.connection}</developerConnection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
    </scm>
 </project>

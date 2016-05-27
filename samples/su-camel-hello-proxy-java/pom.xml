@@ -27,6 +27,7 @@
 
    <artifactId>su-camel-hello-proxy-java</artifactId>
    <name>Petals ESB - Samples - SE Camel - SU Simple Route Java</name>
+   <!-- No version set -->
    <packaging>jbi-service-unit</packaging>
 
    <properties>
@@ -57,6 +58,6 @@
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>${project.scm.connection}</developerConnection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
    </scm>
 </project>

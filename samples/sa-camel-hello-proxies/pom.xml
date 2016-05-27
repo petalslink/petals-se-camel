@@ -27,6 +27,7 @@
 
    <artifactId>sa-camel-hello-proxies</artifactId>
    <name>Petals ESB - Samples - SE Camel - SA Hello Proxies</name>
+   <!-- No version set -->
    <packaging>jbi-service-assembly</packaging>
 
    <properties>
@@ -87,6 +88,6 @@
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>${project.scm.connection}</developerConnection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
    </scm>
 </project>
