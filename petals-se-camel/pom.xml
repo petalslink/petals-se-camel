@@ -23,7 +23,7 @@
    <parent>
       <artifactId>petals-cdkbased-components-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>1.0.1</version>
+      <version>1.0.2-SNAPSHOT</version>
       <relativePath />
    </parent>
 
@@ -109,11 +109,6 @@
       <dependency>
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-core</artifactId>
-      </dependency>
-      <!-- Logging dependencies: camel uses slf4j and we use jdk logging -->
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-jdk14</artifactId>
       </dependency>
       <!-- Code quality dependencies -->
       <dependency>

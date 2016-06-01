@@ -48,7 +48,7 @@
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-cdkbased-components-parent</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -62,7 +62,7 @@
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-message-exchange</artifactId>
-            <version>1.2.4</version>
+            <version>1.2.5-SNAPSHOT</version>
          </dependency>
          <dependency>
             <groupId>org.eclipse.jdt</groupId>
@@ -104,18 +104,6 @@
             <groupId>xmlunit</groupId>
             <artifactId>xmlunit</artifactId>
             <version>1.6</version>
-         </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.13</version>
-            <scope>runtime</scope>
-         </dependency>
-         <dependency>
-            <!-- Overrides camel-parent version to use the latest one -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.13</version>
          </dependency>
          <dependency>
             <!-- Overrides petals-root-parent version to use the one from camel -->
