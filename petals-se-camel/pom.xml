@@ -151,24 +151,33 @@
             <artifactId>maven-failsafe-plugin</artifactId>
          </plugin>
       </plugins>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <groupId>org.jacoco</groupId>
-               <artifactId>jacoco-maven-plugin</artifactId>
-               <executions>
-                  <execution>
-                     <id>prepare-agent-integration</id>
-                     <configuration>
-                        <!-- We output the results in the path shared by all submodules -->
-                        <destFile>${sonar.jacoco.itReportPath}</destFile>
-                     </configuration>
-                  </execution>
-               </executions>
-            </plugin>
-         </plugins>
-      </pluginManagement>
    </build>
+
+   <profiles>
+      <profile>
+         <!-- Complete the jacoco profile from root-parent -->
+         <id>jacoco-profile</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>org.jacoco</groupId>
+                     <artifactId>jacoco-maven-plugin</artifactId>
+                     <executions>
+                        <execution>
+                           <id>prepare-agent-integration</id>
+                           <configuration>
+                              <!-- We output the results in the path shared by all submodules -->
+                              <destFile>${sonar.jacoco.itReportPath}</destFile>
+                           </configuration>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+   </profiles>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
