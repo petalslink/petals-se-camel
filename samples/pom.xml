@@ -24,7 +24,7 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.2.4</version>
+      <version>20.2.5</version>
       <relativePath />
    </parent>
 
@@ -35,7 +35,7 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-camel.version>1.0.2-SNAPSHOT</petals-se-camel.version>
+      <petals-se-camel.version>1.0.2</petals-se-camel.version>
       <camel.version>2.17.1</camel.version>
    </properties>
 
