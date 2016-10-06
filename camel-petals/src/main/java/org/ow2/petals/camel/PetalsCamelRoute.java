@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015 Linagora
+ * Copyright (c) 2015-2016 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -12,7 +12,7 @@
  * for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
 package org.ow2.petals.camel;
