@@ -139,23 +139,23 @@ public class CamelSU implements PetalsCamelContext {
         callMethods("deploy");
     }
 
-    public void init() throws PetalsCamelSEException {
+    public void init() {
         callMethods("init");
     }
 
-    public void shutdown() throws PetalsCamelSEException {
+    public void shutdown() {
         callMethods("shutdown");
     }
 
-    public void stop() throws PetalsCamelSEException {
+    public void stop() {
         callMethods("stop");
     }
 
-    public void start() throws PetalsCamelSEException {
+    public void start() {
         callMethods("start");
     }
 
-    public void undeploy() throws PetalsCamelSEException {
+    public void undeploy() {
         try {
             callMethods("undeploy");
         } catch (final Exception e) {
@@ -176,7 +176,7 @@ public class CamelSU implements PetalsCamelContext {
         }
     }
 
-    private void callMethods(final String method) throws PetalsCamelSEException {
+    private void callMethods(final String method) {
         final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(classLoader);
         try {

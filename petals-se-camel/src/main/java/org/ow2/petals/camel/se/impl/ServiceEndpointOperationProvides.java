@@ -24,13 +24,12 @@ import javax.xml.namespace.QName;
 import org.eclipse.jdt.annotation.NonNull;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
-import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 
 public class ServiceEndpointOperationProvides extends AbstractServiceEndpointOperation implements PetalsProvidesChannel {
 
     public ServiceEndpointOperationProvides(final QName operation, final URI mep, final PetalsCamelSender sender,
-            final Provides provides) throws InvalidJBIConfigurationException {
+            final Provides provides) {
         super(provides.getInterfaceName(), provides.getServiceName(), provides.getEndpointName(), operation, mep,
                 sender);
     }

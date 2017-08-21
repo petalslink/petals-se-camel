@@ -27,7 +27,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
-import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 /**
@@ -58,8 +57,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
 
     public AbstractServiceEndpointOperation(final QName interfaceName, final @Nullable QName service,
             final @Nullable String endpoint, final @Nullable QName operation, 
-            @Nullable final URI mep, final PetalsCamelSender sender)
-                    throws InvalidJBIConfigurationException {
+            @Nullable final URI mep, final PetalsCamelSender sender) {
         this.service = service;
         this.interfaceName = interfaceName;
         this.endpoint = endpoint;
