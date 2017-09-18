@@ -28,6 +28,16 @@ import org.junit.Before;
 
 public abstract class PetalsCamelTestSupport extends CamelTestSupport {
 
+    private final boolean tracing;
+
+    public PetalsCamelTestSupport() {
+        this(false);
+    }
+
+    public PetalsCamelTestSupport(boolean tracing) {
+        this.tracing = tracing;
+    }
+
     @Override
     public boolean isUseAdviceWith() {
         return true;
@@ -38,9 +48,11 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
     @Before
     public void mockEndpoints() throws Exception {
 
-        context.setTracing(true);
-        context.setStreamCaching(true);
-        context.getProperties().put(Exchange.LOG_DEBUG_BODY_STREAMS, Boolean.TRUE.toString());
+        if (tracing) {
+            context.setTracing(true);
+            context.setStreamCaching(true);
+            context.getProperties().put(Exchange.LOG_DEBUG_BODY_STREAMS, Boolean.TRUE.toString());
+        }
 
         context.removeComponent("petals");
         context.addComponent("petals", new MockComponent());
@@ -52,6 +64,7 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
                 }
             });
         }
+
         context.start();
     }
 
