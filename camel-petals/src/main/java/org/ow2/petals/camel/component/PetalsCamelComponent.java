@@ -25,6 +25,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -70,6 +71,14 @@ public class PetalsCamelComponent extends UriEndpointComponent {
      * Type is {@link URI}
      */
     public static final String EXCHANGE_ORIGINAL_MEP = "PetalsOriginalPattern";
+
+    /**
+     * Set to <code>true</code> if the message is a fault ({@link Message#isFault()} is legacy and limited in Camel and
+     * so should not be used!)
+     * 
+     * Type is {@link Boolean}
+     */
+    public static final String MESSAGE_FAULT_HEADER = "PetalsMessageIsFault";
 
     @Nullable
     private PetalsCamelContext pcc;

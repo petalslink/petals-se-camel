@@ -20,8 +20,10 @@ package org.ow2.petals.camel.helpers;
 import javax.xml.bind.JAXBException;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
+import org.ow2.petals.camel.component.PetalsCamelComponent;
 
 public abstract class PetalsRouteBuilder extends RouteBuilder {
 
@@ -32,9 +34,25 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
     /**
      * Sets the fault on the exchange and mark it for immediate return
      */
-    public static void setFault(MarshallingHelper marshalling, Exchange exchange, Object fault) throws JAXBException {
-        exchange.setProperty(Exchange.ROUTE_STOP, true);
-        exchange.getOut().setFault(true);
+    public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault)
+            throws JAXBException {
+        setJbiFault(marshalling, exchange, fault, true);
+    }
+
+    public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault, boolean stop)
+            throws JAXBException {
+        if (stop) {
+            exchange.setProperty(Exchange.ROUTE_STOP, true);
+        }
+        exchange.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
         marshalling.marshal(exchange.getOut(), fault);
+    }
+
+    public static boolean isJbiFault(Message msg) {
+        return Boolean.TRUE.equals(msg.getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
+    }
+
+    public static boolean isJbiFailed(Exchange exchange) {
+        return exchange.isFailed() || exchange.hasOut() ? isJbiFault(exchange.getOut()) : isJbiFault(exchange.getIn());
     }
 }

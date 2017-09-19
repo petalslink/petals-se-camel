@@ -124,6 +124,14 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange) {
 
+        // it costs nothing to also support isFault for outbound messages
+        if (camelExchange.hasOut() && camelExchange.getOut().isFault()) {
+            this.provides.getLogger().log(Level.WARNING,
+                    "Camel's isFault() abstraction is deprecated and should not be used: "
+                            + "prefer using the PetalsCamelComponent.MESSAGE_FAULT_HEADER header");
+            camelExchange.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
+        }
+
         try {
             Conversions.populateAnswerPetalsExchange(camelExchange, exchange);
         } catch (final MessagingException e) {

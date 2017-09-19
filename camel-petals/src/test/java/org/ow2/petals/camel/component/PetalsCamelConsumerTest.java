@@ -22,6 +22,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
@@ -43,10 +44,10 @@ public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        return new RouteBuilder() {
+        return new PetalsRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("petals:serviceId1").to("mock:result");
+                fromPetals("serviceId1").to("mock:result");
             }
         };
     }

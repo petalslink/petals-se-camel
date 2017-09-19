@@ -222,10 +222,11 @@ public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
             final String expect;
             if (isFault()) {
                 expect = FAULT;
-                assertTrue(exchange.getOut().isFault());
+                assertEquals(true, exchange.getOut().getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
             } else {
                 expect = OUT;
-                assertFalse(exchange.getOut().isFault());
+                assertNotEquals(true, exchange.getOut().getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
+                assertNull(exchange.getOut().getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
             }
             assertSimilar(new Diff(expect, getContent(exchange.getOut())));
         } else if (c instanceof Exception) {

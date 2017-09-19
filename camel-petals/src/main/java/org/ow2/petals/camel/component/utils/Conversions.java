@@ -117,7 +117,7 @@ public class Conversions {
         } else if (from.getFault() != null) {
             // there has been a fault
             populateCamelMessage(from.getFault(), to.getOut());
-            to.getOut().setFault(true);
+            to.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
             // TODO add test of conversions in both direction to be sure everything is correct!
         } else if (from.isOutMessage()) {
             // this is a response
@@ -190,7 +190,7 @@ public class Conversions {
 
         // Note: the Petals exchange checks that all is correct w.r.t. to MEP and status
 
-        if (from.hasOut() && from.getOut().isFault()) {
+        if (from.hasOut() && Boolean.TRUE.equals(from.getOut().getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER))) {
             final Fault fault = to.createFault();
             Conversions.populateNormalizedMessage(from.getOut(), fault);
             to.setFault(fault);
