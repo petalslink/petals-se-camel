@@ -32,7 +32,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
     }
 
     /**
-     * Sets the fault on the exchange and mark it for immediate return
+     * Sets the fault on the exchange's out and mark it for immediate return
      */
     public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault)
             throws JAXBException {
@@ -41,11 +41,35 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
 
     public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault, boolean stop)
             throws JAXBException {
+        marshalling.marshal(exchange.getOut(), fault);
+        // set this only after we are sure we properly marshaled the body!
+        setIsJbiFault(exchange, stop);
+    }
+
+    /**
+     * Sets the fault on the exchange's out and mark it for immediate return
+     */
+    public static void setJbiFault(Exchange exchange, Object fault) {
+        setJbiFault(exchange, fault, true);
+    }
+
+    public static void setJbiFault(Exchange exchange, Object fault, boolean stop) {
+        exchange.getOut().setBody(fault);
+        setIsJbiFault(exchange, stop);
+    }
+
+    /**
+     * Mark the out message as fault and mark it for immediate return
+     */
+    public static void setIsJbiFault(Exchange exchange) {
+        setIsJbiFault(exchange, true);
+    }
+
+    public static void setIsJbiFault(Exchange exchange, boolean stop) {
         if (stop) {
             exchange.setProperty(Exchange.ROUTE_STOP, true);
         }
         exchange.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
-        marshalling.marshal(exchange.getOut(), fault);
     }
 
     public static boolean isJbiFault(Message msg) {
