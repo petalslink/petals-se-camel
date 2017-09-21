@@ -23,6 +23,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockComponent;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
 
@@ -57,7 +58,10 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
         context.removeComponent("petals");
         context.addComponent("petals", new MockComponent());
         for (final String from : routesToMock()) {
-            context.getRouteDefinition(from).adviceWith(context, new AdviceWithRouteBuilder() {
+            RouteDefinition routeDef = context.getRouteDefinition(from);
+            assertNotNull("You should set the routeId of one of the routes to '" + from + "' from mocking to work",
+                    routeDef);
+            routeDef.adviceWith(context, new AdviceWithRouteBuilder() {
                 @Override
                 public void configure() throws Exception {
                     replaceFromWith("direct:" + from);
