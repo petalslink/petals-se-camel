@@ -27,6 +27,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Message;
@@ -52,8 +53,17 @@ public class MarshallingHelper {
                 return msg.getAttachment(cid);
             }
         });
-        // do not use Source as StAxSource are not supported by jaxb and sometimes are returned by getBody!
-        Source body = msg.getBody(DOMSource.class);
+
+        // we can't simply use getBody(Source.class) because StAxSource are not supported by jaxb
+        // and sometimes they are returned by getBody!
+        Object oBody = msg.getBody();
+        Source body;
+        if (oBody instanceof Source && !(oBody instanceof StAXSource)) {
+            body = (Source) oBody;
+        } else {
+            body = msg.getBody(DOMSource.class);
+        }
+
         if (Object.class.equals(t)) {
             return (T) unm.unmarshal(body);
         } else {
