@@ -39,6 +39,7 @@ public class SimpleRoute extends PetalsRouteBuilder {
     public void configure() throws Exception {
 
         // we need to use the current classloader
+        // it is also possible to use org.ow2.petals.camel.helpers.MarshallingHelper
         final DataFormat jaxb1 = new JaxbDataFormat("org.ow2.petals.anothernamespace");
         final DataFormat jaxb2 = new JaxbDataFormat("org.ow2.petals");
 
