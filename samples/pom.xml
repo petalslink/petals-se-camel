@@ -34,7 +34,7 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-camel.version>1.0.2</petals-se-camel.version>
+      <petals-se-camel.version>1.1.0-SNAPSHOT</petals-se-camel.version>
       <camel.version>2.17.1</camel.version>
    </properties>
 
@@ -56,22 +56,30 @@
             <version>${petals-se-camel.version}</version>
          </dependency>
          <dependency>
+            <artifactId>petals-se-camel-junit</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <scope>test</scope>
+            <version>${petals-se-camel.version}</version>
+         </dependency>
+         <dependency>
+            <artifactId>camel-petals</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <!-- provided by petals-se-camel -->
+            <scope>provided</scope>
+            <version>${petals-se-camel.version}</version>
+         </dependency>
+         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
             <version>${camel.version}</version>
             <!-- provided by petals-se-camel -->
             <scope>provided</scope>
-            <exclusions>
-               <!-- Provided by petals-se-camel -->
-               <exclusion>
-                  <artifactId>jaxb-core</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-               <exclusion>
-                  <artifactId>jaxb-impl</artifactId>
-                  <groupId>com.sun.xml.bind</groupId>
-               </exclusion>
-            </exclusions>
+         </dependency>
+         <dependency>
+            <!-- Overrides petals-root-parent version to use the one from camel -->
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

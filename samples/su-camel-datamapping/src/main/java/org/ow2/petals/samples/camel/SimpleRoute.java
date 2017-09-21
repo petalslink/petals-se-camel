@@ -19,16 +19,19 @@ package org.ow2.petals.samples.camel;
 
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.ow2.petals.SayHello;
 import org.ow2.petals.SayHelloResponse;
-import org.ow2.petals.anothernamespace.ObjectFactory;
 import org.ow2.petals.anothernamespace.SayHello2;
 import org.ow2.petals.anothernamespace.SayHelloResponse2;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 
-public class SimpleRoute extends RouteBuilder {
+public class SimpleRoute extends PetalsRouteBuilder {
+
+    public static final String THE_CONSUMES_ID = "theConsumesId";
+
+    public static final String THE_PROVIDES_ID = "theProvidesId";
 
     private static final String CAMEL_LOG = "log:org.ow2.petals.samples.camel?level=ERROR&showStreams=true&showAll=true";
 
@@ -39,7 +42,7 @@ public class SimpleRoute extends RouteBuilder {
         final DataFormat jaxb1 = new JaxbDataFormat("org.ow2.petals.anothernamespace");
         final DataFormat jaxb2 = new JaxbDataFormat("org.ow2.petals");
 
-        from("petals:theProvidesId").streamCaching()
+        fromPetals(THE_PROVIDES_ID).streamCaching()
                 .to(CAMEL_LOG)
                 .unmarshal(jaxb1)
                 .to(CAMEL_LOG)
@@ -47,9 +50,10 @@ public class SimpleRoute extends RouteBuilder {
                 .to(CAMEL_LOG)
                 .marshal(jaxb2)
                 .to(CAMEL_LOG)
-                .to("petals:theConsumesId")
+                .to("petals:" + THE_CONSUMES_ID)
                 .to(CAMEL_LOG)
-                .unmarshal(jaxb2).bean(Normalizer.class, "transformOut")
+                .unmarshal(jaxb2)
+                .bean(Normalizer.class, "transformOut")
                 .to(CAMEL_LOG)
                 .marshal(jaxb1)
                 .to(CAMEL_LOG);
@@ -60,13 +64,13 @@ public class SimpleRoute extends RouteBuilder {
         public void transformIn(Exchange exchange, @Body SayHello2 body) {
             final SayHello sayHello = new SayHello();
             sayHello.setArg0(body.getArg0());
-            exchange.getOut().setBody(new org.ow2.petals.ObjectFactory().createSayHello(sayHello));
+            exchange.getOut().setBody(sayHello);
         }
 
         public void transformOut(Exchange exchange, @Body SayHelloResponse body) {
             final SayHelloResponse2 response = new SayHelloResponse2();
             response.setReturn(body.getReturn());
-            exchange.getOut().setBody(new ObjectFactory().createSayHelloResponse(response));
+            exchange.getOut().setBody(response);
         }
     }
 

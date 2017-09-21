@@ -17,42 +17,45 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions targetNamespace="http://petals.ow2.org/AnotherNameSpace" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-   xmlns:tns="http://petals.ow2.org/AnotherNameSpace" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0">
-   <wsdl:types>
-      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://petals.ow2.org/AnotherNameSpace"
-         elementFormDefault="qualified" targetNamespace="http://petals.ow2.org/AnotherNameSpace" version="1.0">
-         <xs:element name="sayHello" type="tns:sayHello2" />
-         <xs:element name="sayHelloResponse" type="tns:sayHelloResponse2" />
-         <xs:complexType name="sayHello2">
-            <xs:sequence>
-               <xs:element minOccurs="0" name="arg0" type="xs:string" />
-            </xs:sequence>
-         </xs:complexType>
-         <xs:complexType name="sayHelloResponse2">
-            <xs:sequence>
-               <xs:element minOccurs="0" name="return" type="xs:string" />
-            </xs:sequence>
-         </xs:complexType>
-      </xs:schema>
-   </wsdl:types>
-   <wsdl:message name="sayHelloResponse">
-      <wsdl:part name="parameters" element="tns:sayHelloResponse" />
-   </wsdl:message>
-   <wsdl:message name="sayHello">
-      <wsdl:part name="parameters" element="tns:sayHello" />
-   </wsdl:message>
-   <wsdl:portType name="HelloWorldInterface">
-      <wsdl:operation name="sayHello">
-         <wsdl:input name="sayHello" message="tns:sayHello" />
-         <wsdl:output name="sayHelloResponse" message="tns:sayHelloResponse" />
-      </wsdl:operation>
-   </wsdl:portType>
-   <wsdl:binding name="HelloWorldServiceBinding" type="tns:HelloWorldInterface">
-      <wsdl:operation name="sayHello">
-         <petals-camel-wsdl:operation service-id="theProvidesId" />
-      </wsdl:operation>
-   </wsdl:binding>
-   <wsdl:service name="HelloWorldService">
-      <wsdl:port name="autogenerate" binding="tns:HelloWorldServiceBinding" />
-   </wsdl:service>
+    xmlns:tns="http://petals.ow2.org/AnotherNameSpace" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0">
+    <wsdl:types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://petals.ow2.org/AnotherNameSpace"
+            elementFormDefault="qualified" targetNamespace="http://petals.ow2.org/AnotherNameSpace" version="1.0">
+            <xs:element name="sayHello2">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="arg0" type="xs:string" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="sayHelloResponse2">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="return" type="xs:string" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="sayHelloResponse">
+        <wsdl:part name="parameters" element="tns:sayHelloResponse" />
+    </wsdl:message>
+    <wsdl:message name="sayHello">
+        <wsdl:part name="parameters" element="tns:sayHello" />
+    </wsdl:message>
+    <wsdl:portType name="HelloWorldInterface">
+        <wsdl:operation name="sayHello">
+            <wsdl:input name="sayHello" message="tns:sayHello" />
+            <wsdl:output name="sayHelloResponse" message="tns:sayHelloResponse" />
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="HelloWorldServiceBinding" type="tns:HelloWorldInterface">
+        <wsdl:operation name="sayHello">
+            <petals-camel-wsdl:operation service-id="theProvidesId" />
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="HelloWorldService">
+        <wsdl:port name="autogenerate" binding="tns:HelloWorldServiceBinding" />
+    </wsdl:service>
 </wsdl:definitions>

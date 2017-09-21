@@ -17,13 +17,17 @@
  */
 package org.ow2.petals.samples.camel;
 
-import org.apache.camel.builder.RouteBuilder;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 
-public class SimpleRoute extends RouteBuilder {
+public class SimpleRoute extends PetalsRouteBuilder {
+
+    public static final String THE_CONSUMES_ID = "theConsumesId";
+
+    public static final String THE_PROVIDES_ID = "theProvidesId";
 
     @Override
     public void configure() throws Exception {
-        from("petals:theProvidesId").to("petals:theConsumesId");
+        fromPetals(THE_PROVIDES_ID).to("petals:" + THE_CONSUMES_ID);
     }
 
 }

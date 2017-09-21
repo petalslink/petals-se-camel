@@ -17,7 +17,7 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <routes xmlns="http://camel.apache.org/schema/spring">
-   <route>
+   <route id="theProvidesId">
       <from uri="petals:theProvidesId" />
       <to uri="petals:theConsumesId" />
    </route>
