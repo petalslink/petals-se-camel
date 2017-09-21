@@ -63,16 +63,20 @@ public abstract class PetalsCamelTestSupport extends ExchangeTestSupport {
     }
 
     @Override
-    protected void postProcessTest() throws Exception {
-        // this method is executed after the context has been created and before the PCC is needed from the registry (to
-        // instantiate mock endpoint and stuffs)
+    protected void doPreSetup() throws Exception {
+        System.setProperty("skipStartingCamelContext", "true");
+    }
 
+    @Override
+    protected void doPostSetup() throws Exception {
+        // this method is executed after the context has been created and before the PCC is needed from the registry (to
+        // instantiate mock endpoint and stuffs) at context start
         this.pcc = new PetalsCamelContextMock(context());
 
         context().getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this.pcc);
         this.initializeServices();
 
-        super.postProcessTest();
+        context().start();
     }
 
     protected ServiceEndpointOperation addMockConsumes(final String serviceId, final MockSendHandler handler) {
