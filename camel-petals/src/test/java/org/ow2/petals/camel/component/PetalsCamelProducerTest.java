@@ -52,7 +52,7 @@ import com.ebmwebsourcing.easycommons.lang.UncheckedException;
  * TODO we are missing tests for parameters of the endpoint
  */
 @RunWith(Parameterized.class)
-public class PetalsCamelProducerTest extends PetalsCamelTestSupport {
+public class PetalsCamelProducerTest extends CamelPetalsTestSupport {
 
     protected static final String FAULT = "<c/>";
 

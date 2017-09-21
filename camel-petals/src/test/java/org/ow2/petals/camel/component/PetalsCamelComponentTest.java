@@ -32,7 +32,7 @@ import org.ow2.petals.camel.component.exceptions.InvalidURIException;
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
-public class PetalsCamelComponentTest extends PetalsCamelTestSupport {
+public class PetalsCamelComponentTest extends CamelPetalsTestSupport {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();

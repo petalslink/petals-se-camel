@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
-public class PetalsCamelConsumerTest extends PetalsCamelTestSupport {
+public class PetalsCamelConsumerTest extends CamelPetalsTestSupport {
 
     @Override
     protected void initializeServices() {
