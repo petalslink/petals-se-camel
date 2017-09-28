@@ -181,7 +181,7 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
                     + exchange.getExchangeId());
         } else {
             provides.getLogger()
-                    .fine("Got an answer from my answer I sent to the NMR for exchange " + exchange.getExchangeId());
+                    .fine("Got an answer from my request I sent to the NMR for exchange " + exchange.getExchangeId());
 
             if (expectingAnswer && exchange.isDoneStatus()) {
                 if (provides.getLogger().isLoggable(Level.FINE)) {
