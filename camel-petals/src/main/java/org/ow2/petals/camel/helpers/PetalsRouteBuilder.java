@@ -72,11 +72,21 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
         exchange.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
     }
 
+    /**
+     * Is the service provider failed because of a fault
+     * 
+     * @return {@code true} if this exchange failed due to a JBI fault.
+     */
     public static boolean isJbiFault(Message msg) {
         return Boolean.TRUE.equals(msg.getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
     }
 
-    public static boolean isJbiFailed(Exchange exchange) {
+    /**
+     * Is a fault or an exception set in the Camel exchange
+     * 
+     * @return {@code true} if this exchange failed due to either an exception or a JBI fault.
+     */
+    public static boolean isJbiFailed(final Exchange exchange) {
         return exchange.isFailed() || exchange.hasOut() ? isJbiFault(exchange.getOut()) : isJbiFault(exchange.getIn());
     }
 }

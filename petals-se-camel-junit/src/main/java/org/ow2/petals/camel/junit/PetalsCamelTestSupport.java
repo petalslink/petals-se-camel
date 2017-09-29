@@ -19,6 +19,8 @@ package org.ow2.petals.camel.junit;
 
 import java.util.Collection;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockComponent;
@@ -26,6 +28,8 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Before;
+import org.ow2.petals.camel.helpers.MarshallingHelper;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 
 public abstract class PetalsCamelTestSupport extends CamelTestSupport {
 
@@ -78,5 +82,20 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
 
     protected MockEndpoint getTo(String service) {
         return getMockEndpoint("petals:" + service);
+    }
+
+    /**
+     * Sets the fault on the exchange's out
+     */
+    protected void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault)
+            throws JAXBException {
+        marshalling.marshal(exchange.getOut(), fault);
+        // set this only after we are sure we properly marshaled the body!
+        PetalsRouteBuilder.setIsJbiFault(exchange, false);
+    }
+
+    protected void setJbiFault(final Exchange exchange, final Object fault) {
+        exchange.getOut().setBody(fault);
+        PetalsRouteBuilder.setIsJbiFault(exchange, false);
     }
 }
