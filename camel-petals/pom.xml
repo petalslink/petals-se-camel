@@ -37,6 +37,10 @@
          <artifactId>petals-jbi</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-jbi-ext</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.ow2.easywsdl</groupId>
          <artifactId>easywsdl-wsdl</artifactId>
       </dependency>
@@ -48,10 +52,6 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-commons</artifactId>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>

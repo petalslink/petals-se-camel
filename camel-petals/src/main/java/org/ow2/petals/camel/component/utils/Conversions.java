@@ -33,7 +33,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.ow2.petals.camel.component.PetalsCamelComponent;
-import org.ow2.petals.commons.xml.BytesSource;
+import org.ow2.petals.jbi.xml.BytesSource;
 
 /**
  * Utils to convert between petals exchange and camel exchange.
