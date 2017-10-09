@@ -177,7 +177,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                 });
                 return doneSync;
             }
-        } catch (final MessagingException e) {
+        } catch (final Exception e) {
             // these exceptions can only happens before the message is sent (or if the send fails), so before
             // handleAnswer could be called, thus this is done synchronously in either case of doSync and the callback
             // must be called
