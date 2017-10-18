@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.camel.helpers;
 
+import java.util.Properties;
+
 import javax.xml.bind.JAXBException;
 
 import org.apache.camel.Exchange;
@@ -26,6 +28,66 @@ import org.apache.camel.model.RouteDefinition;
 import org.ow2.petals.camel.component.PetalsCamelComponent;
 
 public abstract class PetalsRouteBuilder extends RouteBuilder {
+
+    private final Properties placeholders = new Properties();
+
+    /**
+     * Camel route definition call-back called just after the service-unit deployment and before its initialization.
+     */
+    public void deploy() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on the service-unit initialization.
+     */
+    public void init() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on the service-unit startup.
+     */
+    public void start() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on the service-unit stop.
+     */
+    public void stop() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on the service-unit shutdown.
+     */
+    public void shutdown() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on the service-unit undeployment.
+     */
+    public void undeploy() throws Exception {
+        // NOP
+    }
+
+    /**
+     * Camel route definition call-back called on placeholder reloading. Placeholders have their new values.
+     */
+    public void onPlaceHolderValuesReloaded(final Properties newPlaceholders) {
+        synchronized (this.placeholders) {
+            this.placeholders.clear();
+            this.placeholders.putAll(newPlaceholders);
+        }
+    }
+
+    protected String getPlaceHolder(final String placeHolder) {
+        synchronized (this.placeholders) {
+            return this.placeholders.getProperty(placeHolder);
+        }
+    }
 
     protected RouteDefinition fromPetals(String service) {
         return from("petals:" + service).routeId(service);
@@ -87,6 +149,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * @return {@code true} if this exchange failed due to either an exception or a JBI fault.
      */
     public static boolean isJbiFailed(final Exchange exchange) {
-        return exchange.isFailed() || exchange.hasOut() ? isJbiFault(exchange.getOut()) : isJbiFault(exchange.getIn());
+        return exchange.isFailed()
+                || (exchange.hasOut() ? isJbiFault(exchange.getOut()) : isJbiFault(exchange.getIn()));
     }
 }
