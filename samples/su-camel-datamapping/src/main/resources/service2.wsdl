@@ -20,7 +20,7 @@
     xmlns:tns="http://petals.ow2.org" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0">
     <wsdl:types>
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://petals.ow2.org"
-            elementFormDefault="unqualified" targetNamespace="http://petals.ow2.org" version="1.0">
+            elementFormDefault="qualified" targetNamespace="http://petals.ow2.org" version="1.0">
             <xs:element name="sayHello">
                 <xs:complexType>
                     <xs:sequence>
