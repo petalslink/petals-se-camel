@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.samples.camel;
 
+import javax.xml.bind.JAXBContext;
+
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -37,26 +39,24 @@ public class SimpleRoute extends PetalsRouteBuilder {
 
     @Override
     public void configure() throws Exception {
-
-        // we need to use the current classloader
         // it is also possible to use org.ow2.petals.camel.helpers.MarshallingHelper
-        final DataFormat jaxb1 = new JaxbDataFormat("org.ow2.petals.anothernamespace");
-        final DataFormat jaxb2 = new JaxbDataFormat("org.ow2.petals");
+        final DataFormat jaxb = new JaxbDataFormat(JAXBContext.newInstance(org.ow2.petals.ObjectFactory.class,
+                org.ow2.petals.anothernamespace.ObjectFactory.class));
 
         fromPetals(THE_PROVIDES_ID).streamCaching()
                 .to(CAMEL_LOG)
-                .unmarshal(jaxb1)
+                .unmarshal(jaxb)
                 .to(CAMEL_LOG)
                 .bean(Normalizer.class, "transformIn")
                 .to(CAMEL_LOG)
-                .marshal(jaxb2)
+                .marshal(jaxb)
                 .to(CAMEL_LOG)
                 .to("petals:" + THE_CONSUMES_ID)
                 .to(CAMEL_LOG)
-                .unmarshal(jaxb2)
+                .unmarshal(jaxb)
                 .bean(Normalizer.class, "transformOut")
                 .to(CAMEL_LOG)
-                .marshal(jaxb1)
+                .marshal(jaxb)
                 .to(CAMEL_LOG);
     }
 
