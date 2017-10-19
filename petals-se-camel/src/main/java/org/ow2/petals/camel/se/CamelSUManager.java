@@ -132,7 +132,11 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @NonNullByDefault(false)
     @Override
     protected void doInit(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
-        this.su2camel.get(suDH.getName()).init();
+        final CamelSU camelSu = this.su2camel.get(suDH.getName());
+        assert camelSu != null;
+
+        camelSu.onPlaceHolderValuesReloaded(this.getComponent().getPlaceHolders());
+        camelSu.init();
     }
 
     @NonNullByDefault(false)
@@ -193,5 +197,13 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
     @Override
     protected CamelSE getComponent() {
         return (CamelSE) super.getComponent();
+    }
+
+    @Override
+    protected void onPlaceHolderValuesReloaded() {
+        super.onPlaceHolderValuesReloaded();
+        for (final CamelSU camelSu : this.su2camel.values()) {
+            camelSu.onPlaceHolderValuesReloaded(this.getComponent().getPlaceHolders());
+        }
     }
 }

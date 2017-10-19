@@ -17,9 +17,11 @@
  */
 package org.ow2.petals.camel.se;
 
-import org.apache.camel.builder.RouteBuilder;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 
 public class CamelSUTest extends AbstractComponentTest {
 
@@ -30,6 +32,8 @@ public class CamelSUTest extends AbstractComponentTest {
     private static boolean shutdownCalled;
     private static boolean undeployCalled;
 
+    private static boolean onPlaceHolderValuesReloadedCalled;
+
     @Before
     public void before() {
         deployCalled = false;
@@ -38,40 +42,52 @@ public class CamelSUTest extends AbstractComponentTest {
         stopCalled = false;
         shutdownCalled = false;
         undeployCalled = false;
+        onPlaceHolderValuesReloadedCalled = false;
     }
 
-    public static class RouteWithAllHooks extends RouteBuilder {
+    public static class RouteWithAllHooks extends PetalsRouteBuilder {
         @Override
         public void configure() throws Exception {
             from("petals:theProvidesId").to("petals:theConsumesId");
         }
 
+        @Override
         public void deploy() {
             deployCalled = true;
         }
 
+        @Override
         public void init() {
             initCalled = true;
         }
 
+        @Override
         public void start() {
             startCalled = true;
         }
 
+        @Override
         public void stop() {
             stopCalled = true;
         }
 
+        @Override
         public void shutdown() {
             shutdownCalled = true;
         }
 
+        @Override
         public void undeploy() {
             undeployCalled = true;
         }
+
+        @Override
+        public void onPlaceHolderValuesReloaded(final Properties newPlaceholders) {
+            onPlaceHolderValuesReloadedCalled = true;
+        }
     }
 
-    public static class RouteWithSomeHooks extends RouteBuilder {
+    public static class RouteWithSomeHooks extends PetalsRouteBuilder {
         @Override
         public void configure() throws Exception {
             from("petals:theProvidesId").to("petals:theConsumesId");
@@ -97,6 +113,7 @@ public class CamelSUTest extends AbstractComponentTest {
         assertTrue(deployCalled);
         assertTrue(initCalled);
         assertTrue(startCalled);
+        assertTrue(onPlaceHolderValuesReloadedCalled);
 
         COMPONENT_UNDER_TEST.undeployService(SU_NAME);
 

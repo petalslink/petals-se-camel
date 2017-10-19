@@ -18,10 +18,9 @@
 package org.ow2.petals.camel.se;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -39,6 +38,7 @@ import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.camel.se.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
@@ -119,11 +119,11 @@ public class CamelSU implements PetalsCamelContext {
 
         for (final String xmlName : xmlNames) {
             assert xmlName != null;
-            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, context, classLoader,
+            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, this.context, classLoader,
                     getLogger());
 
             try {
-                context.addRouteDefinitions(routes.getRoutes());
+                this.context.addRouteDefinitions(routes.getRoutes());
             } catch (final Exception e) {
                 throw new InvalidCamelRouteDefinitionException("Can't add routes from xml file " + xmlName
                         + " to Camel context", e);
@@ -131,35 +131,107 @@ public class CamelSU implements PetalsCamelContext {
         }
 
         try {
-            context.start();
+            this.context.start();
         } catch (final Exception e) {
             throw new PetalsCamelSEException("Problem starting the Camel context", e);
         }
 
-        callMethods("deploy");
+        /*
+         * Execute actions to do on deployment of the route definitions. Only for Camel routes based on
+         * PetalsRouteBuilder
+         */
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).deploy();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't deploy the Route definitions of the SU", e);
+                }
+            }
+        }
     }
 
-    public void init() {
-        callMethods("init");
+    /**
+     * Execute actions to do on init of the route definitions. Only for Camel routes based on {@link PetalsRouteBuilder}
+     */
+    public void init() throws PetalsCamelSEException {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).init();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't init the Route definitions of the SU", e);
+                }
+            }
+        }
     }
 
-    public void shutdown() {
-        callMethods("shutdown");
+    /**
+     * Execute actions to do on shutdown of the route definitions. Only for Camel routes based on
+     * {@link PetalsRouteBuilder}
+     */
+    public void shutdown() throws PetalsCamelSEException {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).shutdown();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't shutdown the Route definitions of the SU", e);
+                }
+            }
+        }
     }
 
-    public void stop() {
-        callMethods("stop");
+    /**
+     * Execute actions to do on stop of the route definitions. Only for Camel routes based on {@link PetalsRouteBuilder}
+     */
+    public void stop() throws PetalsCamelSEException {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).stop();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't stop the Route definitions of the SU", e);
+                }
+            }
+        }
     }
 
-    public void start() {
-        callMethods("start");
+    /**
+     * Execute actions to do on startup of the route definitions. Only for Camel routes based on
+     * {@link PetalsRouteBuilder}
+     */
+    public void start() throws PetalsCamelSEException {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).start();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't start the Route definitions of the SU", e);
+                }
+            }
+        }
     }
 
+    /**
+     * Execute actions to do on undeployment of the route definitions. Only for Camel routes based on
+     * {@link PetalsRouteBuilder}
+     */
     public void undeploy() {
-        try {
-            callMethods("undeploy");
-        } catch (final Exception e) {
-            getLogger().log(Level.SEVERE, "Can't undeploy the Route definitions of the SU", e);
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                try {
+                    ((PetalsRouteBuilder) routeBuilder).undeploy();
+                } catch (final Exception e) {
+                    getLogger().log(Level.SEVERE, "Can't undeploy the Route definitions of the SU", e);
+                }
+            }
         }
 
         try {
@@ -176,40 +248,18 @@ public class CamelSU implements PetalsCamelContext {
         }
     }
 
-    private void callMethods(final String method) {
-        final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(classLoader);
-        try {
-            for (final RouteBuilder routeBuilder : this.classRoutes) {
-                assert routeBuilder != null;
-                callMethod(method, routeBuilder, this.suLogger);
+    /**
+     * Notifies placeholders reloading, only to Camel routes based on {@link PetalsRouteBuilder}
+     * 
+     * @param placeholders
+     *            New values of placeholders
+     */
+    public void onPlaceHolderValuesReloaded(final Properties placeholders) {
+        for (final RouteBuilder routeBuilder : this.classRoutes) {
+            assert routeBuilder != null;
+            if (routeBuilder instanceof PetalsRouteBuilder) {
+                ((PetalsRouteBuilder) routeBuilder).onPlaceHolderValuesReloaded(placeholders);
             }
-        } finally {
-            Thread.currentThread().setContextClassLoader(ccl);
-        }
-    }
-
-    @SuppressWarnings("squid:S1166")
-    private static void callMethod(final String methodName, final Object object, final Logger log) {
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Attempting to execute lifecycle method " + methodName + "()");
-        }
-        try {
-            final Method method = object.getClass().getMethod(methodName);
-            method.invoke(object);
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            log.log(Level.WARNING, "Incorrect " + methodName
-                    + "() method definition: it must be public, non-static and have no parameters.", e);
-        } catch (final NoSuchMethodException e) {
-            if (log.isLoggable(Level.FINEST)) {
-                log.log(Level.FINEST, "Method " + methodName + "() does not exists", e);
-            } else if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Method " + methodName + "() does not exists");
-            }
-        } catch (final SecurityException | ExceptionInInitializerError e) {
-            log.log(Level.WARNING, "Can't call " + methodName + "()", e);
-        } catch (final InvocationTargetException e) {
-            log.log(Level.WARNING, "Caught an exception while calling " + methodName + "()", e);
         }
     }
 
