@@ -25,6 +25,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.attachment.AttachmentMarshaller;
+import javax.xml.bind.attachment.AttachmentUnmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stax.StAXSource;
@@ -38,21 +40,31 @@ import com.ebmwebsourcing.easycommons.xml.jaxb.AbstractAttachmentUnmarshaller;
 
 public class MarshallingHelper {
 
-    private final JAXBContext context;
+    private final Unmarshaller unm;
 
-    public MarshallingHelper(final JAXBContext context) {
-        this.context = context;
+    private final Marshaller m;
+
+    public MarshallingHelper(final JAXBContext context) throws JAXBException {
+        this.unm = context.createUnmarshaller();
+        this.m = context.createMarshaller();
     }
 
+    /**
+     * <p>
+     * Unmarshal XML data extracting from the given Camel message body as the declared type.
+     * </p>
+     * <p>
+     * This method is thread-safe.
+     * </p>
+     * 
+     * @param msg
+     *            Camel message containing the body to unmarshall
+     * @param declaredType
+     *            The expected type of the Camel message body afer unmarshalling
+     * @return The Camel message body unmarshalled
+     */
     @SuppressWarnings("unchecked")
-    public <T> T unmarshal(final Message msg, final Class<T> t) throws JAXBException {
-        final Unmarshaller unm = this.context.createUnmarshaller();
-        unm.setAttachmentUnmarshaller(new AbstractAttachmentUnmarshaller() {
-            @Override
-            protected DataHandler getAttachment(final String cid) {
-                return msg.getAttachment(cid);
-            }
-        });
+    public <T> T unmarshal(final Message msg, final Class<T> declaredType) throws JAXBException {
 
         // we can't simply use getBody(Source.class) because StAxSource are not supported by jaxb
         // and sometimes they are returned by getBody!
@@ -64,38 +76,105 @@ public class MarshallingHelper {
             body = msg.getBody(DOMSource.class);
         }
 
-        if (Object.class.equals(t)) {
-            return (T) unm.unmarshal(body);
-        } else {
-            return unm.unmarshal(body, t).getValue();
+        synchronized (this.unm) {
+            final AttachmentUnmarshaller oldAttachmentUnmarshaller = this.unm.getAttachmentUnmarshaller();
+            this.unm.setAttachmentUnmarshaller(new AbstractAttachmentUnmarshaller() {
+                @Override
+                protected DataHandler getAttachment(final String cid) {
+                    return msg.getAttachment(cid);
+                }
+            });
+
+            try {
+                if (Object.class.equals(declaredType)) {
+                    return (T) this.unm.unmarshal(body);
+                } else {
+                    return this.unm.unmarshal(body, declaredType).getValue();
+                }
+            } finally {
+                this.unm.setAttachmentUnmarshaller(oldAttachmentUnmarshaller);
+            }
         }
     }
 
+    /**
+     * <p>
+     * Marshal the given XML data {@code t} into the given Camel message body. XOP optimization is used for attachments.
+     * </p>
+     * <p>
+     * This method is thread-safe.
+     * </p>
+     * 
+     * @param msg
+     *            Camel message
+     * @param t
+     *            given XML data to marshal
+     */
     public <T> void marshal(final Message msg, final T t) throws JAXBException {
         this.marshal(msg, t, true);
     }
 
+    /**
+     * <p>
+     * Marshal the given XML data {@code t} into the given Camel message body.
+     * </p>
+     * <p>
+     * This method is thread-safe.
+     * </p>
+     * 
+     * @param msg
+     *            Camel message
+     * @param t
+     *            given XML data to marshal
+     * @param xop
+     *            If {@code true}, XOP optimization is used for attachments
+     */
     public <T> void marshal(final Message msg, final T t, final boolean xop) throws JAXBException {
-        final Marshaller m = this.context.createMarshaller();
-        if (xop) {
-            m.setAttachmentMarshaller(new AbstractAttachmentMarshaller() {
-                @Override
-                protected void addAttachment(final String cid, final DataHandler data) {
-                    msg.addAttachment(cid, data);
-                }
-            });
-        }
-        try (final EasyByteArrayOutputStream out = new EasyByteArrayOutputStream()) {
-            m.marshal(t, out);
-            msg.setBody(new StreamSource(out.toByteArrayInputStream()));
+
+        synchronized (this.m) {
+            final AttachmentMarshaller oldAttachmentMarshaller = m.getAttachmentMarshaller();
+            if (xop) {
+                this.m.setAttachmentMarshaller(new AbstractAttachmentMarshaller() {
+                    @Override
+                    protected void addAttachment(final String cid, final DataHandler data) {
+                        msg.addAttachment(cid, data);
+                    }
+                });
+            }
+
+            try (final EasyByteArrayOutputStream out = new EasyByteArrayOutputStream()) {
+                this.m.marshal(t, out);
+                msg.setBody(new StreamSource(out.toByteArrayInputStream()));
+            } finally {
+                this.m.setAttachmentMarshaller(oldAttachmentMarshaller);
+            }
         }
     }
 
+    /**
+     * <p>
+     * Basic marshalling. It is thread-safe.
+     * </p>
+     * 
+     * @param out
+     * @param object
+     */
     public void basicMarshal(final OutputStream out, final Object object) throws JAXBException {
-        this.context.createMarshaller().marshal(object, out);
+        synchronized (this.m) {
+            this.m.marshal(object, out);
+        }
     }
 
+    /**
+     * <p>
+     * Basic unmarshalling. It is thread-safe.
+     * </p>
+     * 
+     * @param in
+     */
     public Object basicUnmarshal(final InputStream in) throws JAXBException {
-        return this.context.createUnmarshaller().unmarshal(in);
+        synchronized (this.unm) {
+            return this.unm.unmarshal(in);
+        }
     }
 }
