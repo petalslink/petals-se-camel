@@ -35,6 +35,7 @@
 
    <properties>
       <petals-se-camel.version>1.1.0-SNAPSHOT</petals-se-camel.version>
+      <petals-bc-soap.version> 4.4.3-SNAPSHOT</petals-bc-soap.version>
       <camel.version>2.17.1</camel.version>
    </properties>
 
@@ -44,6 +45,10 @@
       <module>sa-camel-hello-proxies</module>
       <module>su-camel-datamapping</module>
       <module>sa-camel-datamapping</module>
+      <module>su-soap-hello-proxies-consume</module>
+      <module>sa-soap-hello-proxies</module>
+      <module>su-soap-datamapping-consume</module>
+      <module>sa-soap-datamapping</module>
    </modules>
 
    <dependencyManagement>
@@ -80,6 +85,14 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
+         </dependency>
+         
+         <dependency>
+            <artifactId>petals-bc-soap</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <scope>provided</scope>
+            <type>jbi-component</type>
+            <version>${petals-bc-soap.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

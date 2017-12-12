@@ -36,6 +36,13 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.ow2.petals.samples</groupId>
+         <artifactId>su-camel-hello-proxy-java</artifactId>
+         <type>jbi-service-unit</type>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-camel</artifactId>
          <type>jbi-component</type>
@@ -86,6 +93,31 @@
    <build>
       <plugins>
          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+               <execution>
+                  <phase>generate-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.ow2.petals.samples</groupId>
+                           <artifactId>su-camel-hello-proxy-java</artifactId>
+                           <type>jbi-service-unit</type>
+                           <version>${project.version}</version>
+                           <includes>service.wsdl</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
             <groupId>org.jvnet.jaxb2.maven2</groupId>
             <artifactId>maven-jaxb2-plugin</artifactId>
             <executions>
@@ -95,13 +127,26 @@
                   <goals>
                      <goal>generate</goal>
                   </goals>
-                  <phase>generate-sources</phase>
+                  <phase>process-resources</phase>
                   <configuration>
-                     <schemaDirectory>src/main/</schemaDirectory>
-                     <schemaIncludes>
-                        <include>jbi/service.wsdl</include>
-                        <include>resources/service2.wsdl</include>
-                     </schemaIncludes>
+                     <schemas>
+                        <schema>
+                           <fileset>
+                              <directory>${basedir}/src/main/jbi</directory>
+                              <includes>
+                                 <include>service.wsdl</include>
+                              </includes>
+                           </fileset>
+                        </schema>
+                        <schema>
+                           <fileset>
+                              <directory>${basedir}/target/dependency</directory>
+                              <includes>
+                                 <include>service.wsdl</include>
+                              </includes>
+                           </fileset>
+                        </schema>
+                     </schemas>
                   </configuration>
                </execution>
             </executions>

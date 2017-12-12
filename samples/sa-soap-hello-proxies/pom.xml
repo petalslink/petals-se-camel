@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2017 Linagora
+ Copyright (c) 2017 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -24,8 +24,8 @@
       <version>1.1.0-1.0.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>sa-camel-hello-proxies</artifactId>
-   <name>Petals ESB - Samples - SE Camel - SA Camel Hello Proxies</name>
+   <artifactId>sa-soap-hello-proxies</artifactId>
+   <name>Petals ESB - Samples - SE Camel - SA SOAP Hello Proxies</name>
    <!-- No version set -->
    <packaging>jbi-service-assembly</packaging>
 
@@ -38,13 +38,7 @@
 
    <dependencies>
       <dependency>
-         <artifactId>su-camel-hello-proxy-java</artifactId>
-         <groupId>org.ow2.petals.samples</groupId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
-      </dependency>
-      <dependency>
-         <artifactId>su-camel-hello-proxy-xml</artifactId>
+         <artifactId>su-soap-hello-proxies-consume</artifactId>
          <groupId>org.ow2.petals.samples</groupId>
          <version>${project.version}</version>
          <type>jbi-service-unit</type>

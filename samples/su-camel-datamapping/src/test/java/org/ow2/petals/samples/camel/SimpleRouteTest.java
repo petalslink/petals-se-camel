@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 import org.apache.camel.Exchange;
@@ -28,6 +29,7 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
+import org.ow2.petals.ObjectFactory;
 import org.ow2.petals.SayHello;
 import org.ow2.petals.SayHelloResponse;
 import org.ow2.petals.anothernamespace.SayHello2;
@@ -69,8 +71,10 @@ public class SimpleRouteTest extends PetalsCamelTestSupport {
             public void process(Exchange exchange) throws Exception {
                 SayHello body = marshalling.unmarshal(exchange.getIn(), SayHello.class);
                 assertEquals("test", body.getArg0());
-                SayHelloResponse response = new SayHelloResponse();
-                response.setReturn("ok!");
+
+                final SayHelloResponse sayHelloResponse = new SayHelloResponse();
+                sayHelloResponse.setReturn("ok!");
+                JAXBElement<SayHelloResponse> response = new ObjectFactory().createSayHelloResponse(sayHelloResponse);
                 marshalling.marshal(exchange.getOut(), response);
             }
         });

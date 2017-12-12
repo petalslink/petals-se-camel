@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 CG35, 2017 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<jbi:jbi version="1.0"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:soap="http://petals.ow2.org/components/soap/version-4"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   
+   xmlns:hello="http://petals.ow2.org">
+
+   <jbi:services binding-component="true">
+
+      <jbi:consumes interface-name="hello:HelloWorldInterface" service-name="hello:HelloWorldService" endpoint-name="hello-world-camel-java">
+
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <soap:service-name>HelloProxyJavaService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+
+      <jbi:consumes interface-name="hello:HelloWorldInterface" service-name="hello:HelloWorldService" endpoint-name="hello-world-camel-xml">
+
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <soap:service-name>HelloProxyXMLService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+   </jbi:services>
+</jbi:jbi>

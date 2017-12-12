@@ -22,7 +22,7 @@
 
    <jbi:services binding-component="false">
 
-      <jbi:provides interface-name="hello2:HelloWorldInterface" service-name="hello2:HelloWorldService" endpoint-name="autogenerate">
+      <jbi:provides interface-name="hello2:HelloWorldInterface" service-name="hello2:DatamappingService" endpoint-name="autogenerate">
          <petalsCDK:wsdl>service.wsdl</petalsCDK:wsdl>
       </jbi:provides>
 

@@ -16,8 +16,15 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<wsdl:definitions targetNamespace="http://petals.ow2.org" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-   xmlns:tns="http://petals.ow2.org" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0">
+<wsdl:definitions
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+   
+   xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0"
+   
+   xmlns:tns="http://petals.ow2.org"
+   targetNamespace="http://petals.ow2.org">
    <wsdl:types>
       <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://petals.ow2.org"
          elementFormDefault="unqualified" targetNamespace="http://petals.ow2.org" version="1.0">
@@ -48,11 +55,16 @@
       </wsdl:operation>
    </wsdl:portType>
    <wsdl:binding name="HelloWorldServiceBinding" type="tns:HelloWorldInterface">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="sayHello">
          <petals-camel-wsdl:operation service-id="theProvidesId" />
+         <wsdl:input />
+         <wsdl:output />
       </wsdl:operation>
    </wsdl:binding>
    <wsdl:service name="HelloWorldService">
-      <wsdl:port name="hello-world-camel-xml" binding="tns:HelloWorldServiceBinding" />
+      <wsdl:port name="hello-world-camel-xml" binding="tns:HelloWorldServiceBinding" >
+         <soap:address location="http://localhost:9003/hello-world-camel-xml" />
+      </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>
