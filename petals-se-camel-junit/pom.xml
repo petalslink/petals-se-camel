@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.ow2.petals</groupId>
       <artifactId>petals-camel-parent</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.1</version>
    </parent>
 
    <name>Petals ESB - Components - SE Camel - JUnit framework</name>
@@ -33,7 +33,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>camel-petals</artifactId>
-         <version>1.1.1-SNAPSHOT</version>
+         <version>1.1.1</version>
       </dependency>
       <dependency>
          <groupId>org.apache.camel</groupId>
@@ -53,6 +53,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>petals-se-camel-1.1.1</tag>
    </scm>
 </project>
