@@ -23,7 +23,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.2.7-SNAPSHOT</version>
+      <version>20.2.7</version>
    </parent>
 
    <artifactId>petals-camel-parent</artifactId>
@@ -48,7 +48,7 @@
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-cdkbased-components-parent</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
