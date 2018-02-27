@@ -23,19 +23,19 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.2.7-SNAPSHOT</version>
+      <version>20.2.8-SNAPSHOT</version>
       <relativePath />
    </parent>
 
-   <groupId>org.ow2.petals.samples</groupId>
+   <groupId>org.ow2.petals.samples.camel</groupId>
    <artifactId>petals-camel-samples-parent</artifactId>
    <name>Petals ESB - Samples - SE Camel</name>
-   <version>1.1.1-1.0.0-SNAPSHOT</version>
+   <version>1.2.0-1.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-camel.version>1.1.0</petals-se-camel.version>
-      <petals-bc-soap.version> 4.4.3</petals-bc-soap.version>
+      <petals-se-camel.version>1.2.0-SNAPSHOT</petals-se-camel.version>
+      <petals-bc-soap.version> 4.5.0-SNAPSHOT</petals-bc-soap.version>
       <camel.version>2.17.1</camel.version>
    </properties>
 
@@ -103,7 +103,7 @@
             <plugin>
                <artifactId>petals-maven-plugin</artifactId>
                <groupId>org.ow2.petals</groupId>
-               <version>3.0.0</version>
+               <version>3.1.0-SNAPSHOT</version>
                <extensions>true</extensions>
             </plugin>
          </plugins>
