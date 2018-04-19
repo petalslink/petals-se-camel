@@ -66,10 +66,6 @@
          <artifactId>petals-cdk-steplog</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.activation</groupId>
-         <artifactId>activation</artifactId>
-      </dependency>
-      <dependency>
          <groupId>com.google.guava</groupId>
          <artifactId>guava</artifactId>
       </dependency>
