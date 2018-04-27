@@ -68,10 +68,10 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
     }
 
     /**
-     * returns a Map of service-id <-> service/endpoint/operation
+     * returns a Map of service-id &lt;-&gt; service/endpoint/operation
      * 
      * @param suDH
-     * @param jbiListener
+     * @param sender
      * @return
      * @throws InvalidJBIConfigurationException
      */

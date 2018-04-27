@@ -51,7 +51,7 @@ public interface PetalsCamelContext {
     /**
      * To get a channel to be able to create exchange as well as send them
      * 
-     * @param seo
+     * @param service
      *            the service that this channel will exchange with
      * @return
      */
@@ -60,19 +60,19 @@ public interface PetalsCamelContext {
     /**
      * To get a channel to be able to send (back as a provider) exchange
      * 
-     * @param seo
+     * @param service
      *            the service that this channel will exchange with
      * @return
      */
     public PetalsProvidesChannel getProvidesChannel(ServiceEndpointOperation service);
 
     /**
-     * Register a Camel route to which exchange for the given seo should be dispatched
+     * Register a Camel route to which exchange for the given service endpoint operation should be dispatched
      * 
-     * @param seo
+     * @param service
      *            The service concerned by the route
-     * @param ppo
-     *            The callback to pass exchange to the route
+     * @param route
+     *            The route associated to the service endpoint operation
      */
     public void registerRoute(ServiceEndpointOperation service, PetalsCamelRoute route);
 
