@@ -23,6 +23,7 @@ import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
+import org.ow2.petals.ObjectFactory;
 import org.ow2.petals.SayHello;
 import org.ow2.petals.SayHelloResponse;
 import org.ow2.petals.anothernamespace.SayHello2;
@@ -65,7 +66,7 @@ public class SimpleRoute extends PetalsRouteBuilder {
         public void transformIn(Exchange exchange, @Body SayHello2 body) {
             final SayHello sayHello = new SayHello();
             sayHello.setArg0(body.getArg0());
-            exchange.getOut().setBody(sayHello);
+            exchange.getOut().setBody(new ObjectFactory().createSayHello(sayHello));
         }
 
         public void transformOut(Exchange exchange, @Body SayHelloResponse body) {
