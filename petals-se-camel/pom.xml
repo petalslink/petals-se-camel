@@ -126,6 +126,11 @@
          <artifactId>petals-junit-external-resources</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-test-utils</artifactId>
+         <scope>test</scope>
+      </dependency>
       <!-- Other test dependencies -->
       <dependency>
          <groupId>org.hamcrest</groupId>

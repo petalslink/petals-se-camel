@@ -44,6 +44,7 @@ import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
 import org.ow2.petals.camel.se.utils.CamelRoutesHelper;
+import org.ow2.petals.component.framework.monitoring.MonitTraceLogger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -82,13 +83,16 @@ public class CamelSU implements PetalsCamelContext {
 
     private final Logger suLogger;
 
+    private final MonitTraceLogger monitTraceLogger;
+
     public CamelSU(final ImmutableMap<String, ServiceEndpointOperation> sid2seo, final ImmutableList<String> classNames,
             final ImmutableList<String> xmlNames, final URLClassLoader classLoader, final Logger suLogger,
-            final CamelSUManager manager) throws PetalsCamelSEException {
+            final CamelSUManager manager, final MonitTraceLogger monitTraceLogger) throws PetalsCamelSEException {
         this.classLoader = classLoader;
         this.sid2seo = sid2seo;
         this.manager = manager;
         this.suLogger = suLogger;
+        this.monitTraceLogger = monitTraceLogger;
 
         this.context = new DefaultCamelContext();
 
@@ -304,5 +308,10 @@ public class CamelSU implements PetalsCamelContext {
     @Override
     public Logger getLogger() {
         return this.suLogger;
+    }
+
+    @Override
+    public MonitTraceLogger getMonitTraceLogger() {
+        return this.monitTraceLogger;
     }
 }

@@ -37,6 +37,7 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.StepLogHelper;
+import org.ow2.petals.component.framework.monitoring.MonitTraceLogger;
 
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
@@ -57,9 +58,15 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
     private final PetalsConsumesChannel consumes;
 
+    private final PetalsCamelComponent component;
+
+    private final MonitTraceLogger monitTraceLogger;
+
     public PetalsCamelProducer(final PetalsCamelEndpoint endpoint) {
         super(endpoint);
-        this.consumes = endpoint.getComponent().getContext().getConsumesChannel(endpoint.getService());
+        this.component = endpoint.getComponent();
+        this.consumes = this.component.getContext().getConsumesChannel(endpoint.getService());
+        this.monitTraceLogger = this.component.getContext().getMonitTraceLogger();
     }
 
     @NonNullByDefault(false)
@@ -121,7 +128,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                             + "either we received a petals exchange without flow attributes "
                             + "or we are acting as a BC and we are starting a new flow. "
                             + "We assume the later and initialise a new flow: " + faAsBC);
-            this.consumes.getLogger().log(Level.MONIT, "",
+            this.monitTraceLogger.logMonitTrace(
                     new ConsumeExtFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId()));
         } else {
             faAsBC = null;
@@ -185,7 +192,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                StepLogHelper.addMonitExtFailureTrace(this.consumes.getLogger(), faAsBC, e, true);
+                this.monitTraceLogger.logMonitTrace(
+                        StepLogHelper.getMonitExtFailureTrace(faAsBC, e, true));
             }
             camelExchange.setException(e);
             callback.done(doneSync);
@@ -270,7 +278,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             if (faAsBC != null) {
                 // we should log the trace ourselves without touching the message here because we don't have the
                 // ownership!
-                this.consumes.getLogger().log(Level.MONIT, "", new ConsumeExtFlowStepFailureLogData(
+                this.monitTraceLogger.logMonitTrace(new ConsumeExtFlowStepFailureLogData(
                         faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
             }
 
@@ -281,8 +289,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateAnswerCamelExchange(exchange, camelExchange);
 
             if (faAsBC != null) {
-                StepLogHelper.addMonitExtEndOrFailureTrace(this.consumes.getLogger(), exchange.getMessageExchange(),
-                        faAsBC, true);
+                this.monitTraceLogger.logMonitTrace(
+                        StepLogHelper.getMonitExtEndOrFailureTrace(exchange.getMessageExchange(), faAsBC, true));
             }
 
             if (exchange.isActiveStatus()) {

@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -39,12 +40,17 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.junit.TestMessageExchangeFactory;
 import org.ow2.petals.component.framework.junit.impl.mock.MockEndpointDirectory;
 import org.ow2.petals.component.framework.junit.impl.mock.TestMessageExchangeFactoryImpl;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
+import org.ow2.petals.component.framework.monitoring.MonitTraceLogger;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.jbi.messaging.exchange.PetalsMessageExchange;
 import org.w3c.dom.DocumentFragment;
@@ -342,5 +348,32 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         public void revertRole(Exchange exchange) {
             PetalsCamelContextMock.setRole(exchange, Role.PROVIDER);
         }
+    }
+
+    @Override
+    public MonitTraceLogger getMonitTraceLogger() {
+        return new MonitTraceLogger() {
+
+            @Override
+            public void logMonitTrace(final MessageExchange exchange, final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final MessageExchange exchange, final Provides provides,
+                    final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final Consumes consumes, final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+        };
     }
 }

@@ -116,7 +116,7 @@ public class CamelSUManager extends ServiceEngineServiceUnitManager {
         assert classLoader != null;
 
         return new CamelSU(ImmutableMap.copyOf(sid2seo), ImmutableList.copyOf(classNames),
-                ImmutableList.copyOf(xmlNames), classLoader, suLogger, this);
+                ImmutableList.copyOf(xmlNames), classLoader, suLogger, this, this.getComponent());
     }
 
     @NonNullByDefault(false)
