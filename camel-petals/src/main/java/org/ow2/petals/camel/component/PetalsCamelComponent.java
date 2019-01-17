@@ -73,6 +73,12 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     public static final String EXCHANGE_ORIGINAL_MEP = "PetalsOriginalPattern";
 
     /**
+     * Current flow tracing activation state on JBI exchange processing at service provider level. Type is
+     * {@link Boolean}
+     */
+    public static final String EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION = "PetalsCurrentFlowTracingActivationStateOnJBIExchangeProcessingAtServiceProviderLevel";
+
+    /**
      * Set to <code>true</code> if the message is a fault ({@link Message#isFault()} is legacy and limited in Camel and
      * so should not be used!)
      * 

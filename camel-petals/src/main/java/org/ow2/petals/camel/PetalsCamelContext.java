@@ -23,7 +23,7 @@ import org.apache.camel.CamelContext;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
-import org.ow2.petals.component.framework.monitoring.MonitTraceLogger;
+import org.ow2.petals.component.framework.api.monitoring.MonitTraceLogger;
 
 /**
  * 

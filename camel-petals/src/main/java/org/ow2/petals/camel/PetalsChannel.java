@@ -17,12 +17,14 @@
  */
 package org.ow2.petals.camel;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.api.message.Exchange;
@@ -71,12 +73,38 @@ public interface PetalsChannel {
 
         public @Nullable ServiceEndpoint resolveEndpoint(QName serviceName, String endpointName);
 
-        public Exchange newExchange(@Nullable MEPPatternConstants mep) throws MessagingException;
+        /**
+         * Create an new JBI exchange according to the current consumer service definition, the provided MEP and the
+         * provided flow tracing activation.
+         * 
+         * @param mep
+         *            The MEP to use to create the exchange.
+         * @param currentFlowTracingActivationState
+         *            The current flow tracing activation state (ie. retrieved from the service provider side requiring
+         *            this new exchange).
+         * @return An new JBI exchange.
+         * @throws MessagingException
+         *             An error occurs creating the JBI exchange.
+         */
+        public Exchange newExchange(final @Nullable MEPPatternConstants mep,
+                final @NonNull Optional<Boolean> currentFlowTracingActivationState) throws MessagingException;
 
     }
 
     public interface PetalsProvidesChannel extends PetalsChannel {
 
+        /**
+         * <p>
+         * Retrieve the value of the flow tracing activation according to the parameter 'activate-flow-tracing' defined
+         * at message exchange level, service provider definition level and component level.
+         * </p>
+         * 
+         * @param exchange
+         *            The exchange received that can contain the property driving flow tracing activation. Not
+         *            {@code null}.
+         * @return The flow tracing activation state.
+         */
+        public boolean isFlowTracingActivated(final @NonNull Exchange exchange);
     }
 
     public interface SendAsyncCallback {

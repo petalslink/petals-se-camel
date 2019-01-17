@@ -44,7 +44,7 @@ import org.ow2.petals.camel.se.exceptions.PetalsCamelSEException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
 import org.ow2.petals.camel.se.utils.CamelRoutesHelper;
-import org.ow2.petals.component.framework.monitoring.MonitTraceLogger;
+import org.ow2.petals.component.framework.api.monitoring.MonitTraceLogger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

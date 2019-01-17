@@ -24,14 +24,18 @@ import javax.xml.namespace.QName;
 import org.eclipse.jdt.annotation.NonNull;
 import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.se.PetalsCamelSender;
+import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 
 public class ServiceEndpointOperationProvides extends AbstractServiceEndpointOperation implements PetalsProvidesChannel {
+
+    private final Provides provides;
 
     public ServiceEndpointOperationProvides(final QName operation, final URI mep, final PetalsCamelSender sender,
             final Provides provides) {
         super(provides.getInterfaceName(), provides.getServiceName(), provides.getEndpointName(), operation, mep,
                 sender);
+        this.provides = provides;
     }
 
     @Override
@@ -65,6 +69,11 @@ public class ServiceEndpointOperationProvides extends AbstractServiceEndpointOpe
         final QName service = super.getService();
         assert service != null;
         return service;
+    }
+
+    @Override
+    public boolean isFlowTracingActivated(final @NonNull Exchange exchange) {
+        return this.sender.getComponent().isFlowTracingActivated(exchange.getMessageExchange(), this.provides);
     }
 
 }

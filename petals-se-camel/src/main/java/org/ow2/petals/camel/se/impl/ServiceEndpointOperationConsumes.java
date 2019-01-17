@@ -18,11 +18,13 @@
 package org.ow2.petals.camel.se.impl;
 
 import java.net.URI;
+import java.util.Optional;
 
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
@@ -49,8 +51,9 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     }
 
     @Override
-    public Exchange newExchange(final @Nullable MEPPatternConstants mep) throws MessagingException {
-        final Exchange exchange = sender.createConsumeExchange(consumes, mep);
+    public Exchange newExchange(final @Nullable MEPPatternConstants mep,
+            final @NonNull Optional<Boolean> currentFlowTracingActivationState) throws MessagingException {
+        final Exchange exchange = sender.createExchange(consumes, mep, currentFlowTracingActivationState);
         assert exchange != null;
         return exchange;
     }
