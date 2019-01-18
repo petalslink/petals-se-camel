@@ -24,11 +24,11 @@
          <jbi:name>petals-se-camel</jbi:name>
          <jbi:description>Apache Camel Service Engine</jbi:description>
       </jbi:identification>
-      <jbi:component-class-name>org.ow2.petals.camel.se.CamelSE</jbi:component-class-name>
+      <jbi:component-class-name>org.ow2.petals.se.camel.CamelSE</jbi:component-class-name>
       <jbi:component-class-path>
          <jbi:path-element />
       </jbi:component-class-path>
-      <jbi:bootstrap-class-name>org.ow2.petals.camel.se.CamelSEBootstrap</jbi:bootstrap-class-name>
+      <jbi:bootstrap-class-name>org.ow2.petals.se.camel.CamelSEBootstrap</jbi:bootstrap-class-name>
       <jbi:bootstrap-class-path>
          <jbi:path-element />
       </jbi:bootstrap-class-path>
@@ -48,7 +48,7 @@
       <petalsCDK:activate-flow-tracing />
       <petalsCDK:propagate-flow-tracing-activation />
 
-      <petalsCDK:jbi-listener-class-name>org.ow2.petals.camel.se.CamelJBIListener</petalsCDK:jbi-listener-class-name>  
+      <petalsCDK:jbi-listener-class-name>org.ow2.petals.se.camel.CamelJBIListener</petalsCDK:jbi-listener-class-name>  
 
       <!-- Component specific configuration -->
 
