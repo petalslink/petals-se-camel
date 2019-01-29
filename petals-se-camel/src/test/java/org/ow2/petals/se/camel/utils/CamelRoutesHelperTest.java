@@ -29,11 +29,10 @@ import org.ow2.petals.se.camel.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.se.camel.mocks.TestRoutesKO1;
 import org.ow2.petals.se.camel.mocks.TestRoutesOK;
-import org.ow2.petals.se.camel.utils.CamelRoutesHelper;
 
 public class CamelRoutesHelperTest extends Assert {
 
-    public static final String XML_ROUTES_OK = "tests/routes-valid.xml";
+    public static final String XML_ROUTES_OK = "tests/routes-valid-1.1.xml";
 
     public static final String XML_ROUTES_KO = "tests/routes-invalid.xml";
 

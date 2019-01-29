@@ -26,7 +26,7 @@ public class TestRoutesKO1 extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("petals:theProvidesId").to("petals:theConsumesId");
+        from("petals:sayHello-provider").to("petals:theConsumesId");
     }
 
 }

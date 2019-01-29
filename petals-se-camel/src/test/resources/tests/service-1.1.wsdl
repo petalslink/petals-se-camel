@@ -41,15 +41,38 @@
    <wsdl:message name="sayHello">
       <wsdl:part name="parameters" element="tns:sayHello" />
    </wsdl:message>
+   <wsdl:message name="voiceless">
+      <wsdl:part name="parameters" element="tns:sayHello" />
+   </wsdl:message>
    <wsdl:portType name="HelloInterface">
       <wsdl:operation name="sayHello">
          <wsdl:input name="sayHello" message="tns:sayHello" />
          <wsdl:output name="sayHelloResponse" message="tns:sayHelloResponse" />
+         <wsdl:fault name="voiceless" message="tns:voiceless" />
+      </wsdl:operation>
+      <wsdl:operation name="sayHelloWithoutEcho">
+         <wsdl:input name="sayHelloWithoutEcho" message="tns:sayHello" />
+      </wsdl:operation>
+      <wsdl:operation name="sayHelloWithoutEchoRobust">
+         <wsdl:input name="sayHelloWithoutEchoRobust" message="tns:sayHello" />
+         <wsdl:fault name="voiceless" message="tns:voiceless" />
       </wsdl:operation>
    </wsdl:portType>
    <wsdl:binding name="HelloServiceBinding" type="tns:HelloInterface">
       <wsdl:operation name="sayHello">
-         <petals-camel-wsdl:operation service-id="theProvidesId" />
+         <petals-camel-wsdl:operation service-id="sayHello-provider" />
+         <wsdl:input />
+         <wsdl:output />
+         <wsdl:fault name="voiceless" />
+      </wsdl:operation>
+      <wsdl:operation name="sayHelloWithoutEcho">
+         <petals-camel-wsdl:operation service-id="sayHelloWithoutEcho-provider" />
+         <wsdl:input />
+      </wsdl:operation>
+      <wsdl:operation name="sayHelloWithoutEchoRobust">
+         <petals-camel-wsdl:operation service-id="sayHelloWithoutEchoRobust-provider" />
+         <wsdl:input />
+         <wsdl:fault name="voiceless" />
       </wsdl:operation>
    </wsdl:binding>
    <wsdl:service name="HelloService">

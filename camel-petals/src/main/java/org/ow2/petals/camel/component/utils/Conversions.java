@@ -123,7 +123,9 @@ public class Conversions {
 
         if (from.isErrorStatus()) {
             // there has been a technical error
-            to.setException(from.getError());
+            final Exception error = from.getError();
+            to.setException(
+                    error == null ? new Exception("Status ERROR returned without no more explanations !!") : error);
         } else if (from.getFault() != null) {
             // there has been a fault
             populateCamelMessage(from.getFault(), to.getOut());

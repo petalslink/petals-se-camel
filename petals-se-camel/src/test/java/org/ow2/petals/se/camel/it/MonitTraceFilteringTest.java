@@ -24,9 +24,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.ObjectFactory;
 import org.ow2.petals.SayHello;
 import org.ow2.petals.SayHelloResponse;
+import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.monitoring.business.filtering.AbstractMonitTraceFilteringTestForSimpleOrchestration;
@@ -72,13 +74,20 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected QName getConsumedServiceOperation() {
+    protected QName getConsumedServiceOperation(final MEPPatternConstants mep) {
         return AbstractComponentTest.HELLO_OPERATION;
     }
 
     @Override
-    protected QName getInvokedServiceProviderOperation() {
-        return AbstractComponentTest.HELLO_OPERATION;
+    protected QName getInvokedServiceProviderOperation(final MEPPatternConstants mep) {
+
+        if (mep == MEPPatternConstants.IN_OUT) {
+            return AbstractComponentTest.HELLO_OPERATION;
+        } else if (mep == MEPPatternConstants.ROBUST_IN_ONLY) {
+            return AbstractComponentTest.HELLO_WITHOUT_ECHO_ROBUST_OPERATION;
+        } else {
+            return AbstractComponentTest.HELLO_WITHOUT_ECHO_OPERATION;
+        }
     }
 
     @Override
@@ -87,12 +96,18 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected Object createRequestPayloadToProvider() {
+    protected MEPPatternConstants[] getMepsSupportedByServiceProvider() {
+        return new MEPPatternConstants[] { MEPPatternConstants.IN_ONLY, MEPPatternConstants.IN_OUT,
+                MEPPatternConstants.ROBUST_IN_ONLY };
+    }
+
+    @Override
+    protected Object createRequestPayloadToProvider(final MEPPatternConstants mep) {
         return new ObjectFactory().createSayHello(new SayHello());
     }
 
     @Override
-    protected Object createResponsePayloadToProvider() {
+    protected Object createResponsePayloadToProvider(final MEPPatternConstants mep, final boolean useAsFault) {
         return new ObjectFactory().createSayHelloResponse(new SayHelloResponse());
     }
 
@@ -109,8 +124,10 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected ConsumesServiceConfiguration createServiceConsumer(final int ruleIdx) {
-        return AbstractComponentTest.createHelloConsumes();
+    protected ConsumesServiceConfiguration createServiceConsumer(final int ruleIdx, final MEPType mep) {
+        final ConsumesServiceConfiguration consumesCfg = AbstractComponentTest.createHelloConsumes();
+        consumesCfg.setMEP(mep);
+        return consumesCfg;
     }
 
 }

@@ -48,7 +48,7 @@ public class CamelSUTest extends AbstractComponentTest {
     public static class RouteWithAllHooks extends PetalsRouteBuilder {
         @Override
         public void configure() throws Exception {
-            from("petals:theProvidesId").to("petals:theConsumesId");
+            from("petals:sayHello-provider").to("petals:theConsumesId");
         }
 
         @Override
@@ -90,7 +90,7 @@ public class CamelSUTest extends AbstractComponentTest {
     public static class RouteWithSomeHooks extends PetalsRouteBuilder {
         @Override
         public void configure() throws Exception {
-            from("petals:theProvidesId").to("petals:theConsumesId");
+            from("petals:sayHello-provider").to("petals:theConsumesId");
         }
 
         public void init() {

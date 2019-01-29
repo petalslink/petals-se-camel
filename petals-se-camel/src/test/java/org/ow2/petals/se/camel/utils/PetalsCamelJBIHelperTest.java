@@ -30,7 +30,6 @@ import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
-import org.ow2.petals.se.camel.utils.PetalsCamelJBIHelper;
 import org.ow2.petals.se.camel.utils.PetalsCamelJBIHelper.OperationData;
 import org.w3c.dom.Document;
 
@@ -71,8 +70,10 @@ public class PetalsCamelJBIHelperTest extends Assert {
         provides.setInterfaceName(new QName("http://petals.ow2.org", "HelloInterface"));
         final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc, provides);
 
-        assertEquals(res.size(), 1);
-        assertEquals(res.get(0).serviceId, "theProvidesId");
+        assertEquals(res.size(), 3);
+        assertEquals(res.get(0).serviceId, "sayHello-provider");
+        assertEquals(res.get(1).serviceId, "sayHelloWithoutEcho-provider");
+        assertEquals(res.get(2).serviceId, "sayHelloWithoutEchoRobust-provider");
 
     }
 

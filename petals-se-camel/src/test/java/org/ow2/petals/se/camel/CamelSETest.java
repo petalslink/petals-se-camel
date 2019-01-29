@@ -27,10 +27,6 @@ import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.se.camel.CamelJBIListener;
-import org.ow2.petals.se.camel.CamelSE;
-import org.ow2.petals.se.camel.CamelSU;
-import org.ow2.petals.se.camel.CamelSUManager;
 import org.ow2.petals.se.camel.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.se.camel.exceptions.NotImplementedRouteException;
@@ -63,17 +59,17 @@ public class CamelSETest extends AbstractComponentTest {
 
     @Test
     public void testDeploy_WSDL11_OK() throws Exception {
-        deployHello(SU_NAME, WSDL11, VALID_ROUTES);
+        deployHello(SU_NAME, WSDL11, VALID_ROUTES_11);
     }
 
     @Test
     public void testDeploy_WSDL20_OK() throws Exception {
-        deployHello(SU_NAME, WSDL20, VALID_ROUTES);
+        deployHello(SU_NAME, WSDL20, VALID_ROUTES_20);
     }
 
     @Test
     public void testDeploy_XML_OK() throws Exception {
-        deployHello(SU_NAME, WSDL11, VALID_ROUTES);
+        deployHello(SU_NAME, WSDL11, VALID_ROUTES_11);
     }
 
     @Test

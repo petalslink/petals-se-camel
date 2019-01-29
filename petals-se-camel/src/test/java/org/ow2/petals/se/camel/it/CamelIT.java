@@ -56,7 +56,7 @@ public class CamelIT extends AbstractComponentTest {
     public static class RouteSyncFrom extends RouteBuilder {
         @Override
         public void configure() throws Exception {
-            from("petals:theProvidesId?synchronous=true").to("petals:theConsumesId");
+            from("petals:sayHello-provider?synchronous=true").to("petals:theConsumesId");
         }
     }
 
@@ -73,7 +73,7 @@ public class CamelIT extends AbstractComponentTest {
     public static class RouteSyncTo extends RouteBuilder {
         @Override
         public void configure() throws Exception {
-            from("petals:theProvidesId").to("petals:theConsumesId?synchronous=true");
+            from("petals:sayHello-provider").to("petals:theConsumesId?synchronous=true");
         }
     }
 

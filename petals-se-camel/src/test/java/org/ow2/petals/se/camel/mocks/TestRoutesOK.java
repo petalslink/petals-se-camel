@@ -23,7 +23,11 @@ public class TestRoutesOK extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("petals:theProvidesId").to("petals:theConsumesId");
+        from("petals:sayHello-provider").to("petals:theConsumesId");
+
+        from("petals:sayHelloWithoutEcho-provider").to("petals:theConsumesId");
+
+        from("petals:sayHelloWithoutEchoRobust-provider").to("petals:theConsumesId");
     }
 
 }
