@@ -124,10 +124,10 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected ConsumesServiceConfiguration createServiceConsumer(final int ruleIdx, final MEPType mep) {
+    protected ConsumesServiceConfiguration[] createServiceConsumers(final int ruleIdx, final MEPType mep) {
         final ConsumesServiceConfiguration consumesCfg = AbstractComponentTest.createHelloConsumes();
         consumesCfg.setMEP(mep);
-        return consumesCfg;
+        return new ConsumesServiceConfiguration[] { consumesCfg };
     }
 
 }
