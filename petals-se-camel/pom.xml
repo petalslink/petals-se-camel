@@ -30,7 +30,7 @@
    <name>Petals ESB - Components - SE Camel</name>
    <artifactId>petals-se-camel</artifactId>
    <packaging>jbi-component</packaging>
-   <version>1.2.0</version>
+   <version>1.2.1-SNAPSHOT</version>
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
@@ -53,6 +53,12 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
+         </dependency>
+         
+         <dependency>
+            <groupId>org.ow2.easycommons</groupId>
+            <artifactId>easycommons-util</artifactId>
+            <version>2.5.0.1-SNAPSHOT</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
