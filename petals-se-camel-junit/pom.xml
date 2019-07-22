@@ -33,7 +33,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>camel-petals</artifactId>
-         <version>1.3.0-SNAPSHOT</version>
+	 <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.apache.camel</groupId>
