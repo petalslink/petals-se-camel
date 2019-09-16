@@ -18,6 +18,8 @@
 package org.ow2.petals.camel.component;
 
 
+import java.util.Optional;
+
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
@@ -34,9 +36,11 @@ import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
+import org.ow2.petals.component.framework.api.monitoring.MonitTraceLogger;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepBeginLogData;
 import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.StepLogHelper;
+import org.ow2.petals.component.framework.util.exception.InvalidFlowTracingActivationExchangePropertyValueException;
 
 /**
  * A PetalsProducer get messages from Camel and send them to a Petals service
@@ -57,9 +61,15 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
     private final PetalsConsumesChannel consumes;
 
+    private final PetalsCamelComponent component;
+
+    private final MonitTraceLogger monitTraceLogger;
+
     public PetalsCamelProducer(final PetalsCamelEndpoint endpoint) {
         super(endpoint);
-        this.consumes = endpoint.getComponent().getContext().getConsumesChannel(endpoint.getService());
+        this.component = endpoint.getComponent();
+        this.consumes = this.component.getContext().getConsumesChannel(endpoint.getService());
+        this.monitTraceLogger = this.component.getContext().getMonitTraceLogger();
     }
 
     @NonNullByDefault(false)
@@ -121,7 +131,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
                             + "either we received a petals exchange without flow attributes "
                             + "or we are acting as a BC and we are starting a new flow. "
                             + "We assume the later and initialise a new flow: " + faAsBC);
-            this.consumes.getLogger().log(Level.MONIT, "",
+            this.monitTraceLogger.logMonitTrace(
                     new ConsumeExtFlowStepBeginLogData(faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId()));
         } else {
             faAsBC = null;
@@ -185,7 +195,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                StepLogHelper.addMonitExtFailureTrace(this.consumes.getLogger(), faAsBC, e, true);
+                this.monitTraceLogger.logMonitTrace(
+                        StepLogHelper.getMonitExtFailureTrace(faAsBC, e, true));
             }
             camelExchange.setException(e);
             callback.done(doneSync);
@@ -211,8 +222,9 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             mep = getEndpoint().getMep();
         }
 
-        // if mep is null, the consumes one will be used, and if not, we verified in deploy it was null in consumes
-        final org.ow2.petals.component.framework.api.message.Exchange exchange = consumes.newExchange(mep);
+        // If mep is null, the consumes one will be used, and if not, we verified in deploy it was null in consumes
+        final org.ow2.petals.component.framework.api.message.Exchange exchange = consumes.newExchange(mep,
+                isFlowTracingActivated(camelExchange));
 
         // the idea is that if there was the service name in the consumes but not the endpoint name,
         // we can still resolve the endpoint now
@@ -258,6 +270,35 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         return exchange;
     }
 
+    /**
+     * <p>
+     * Retrieve the value of the flow tracing activation in the given Camel exchange according to the property
+     * '{@value PetalsCamelComponent#EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION}' defined in the given Camel exchange.
+     * </p>
+     * 
+     * @param camelExchange
+     *            A camel exchange that can contain the property driving flow tracing activation. Not {@code null}.
+     * @return The flow tracing activation state set in the given exchange. If it is not set in the exchange,
+     *         {@code Optional#empty()} is returned.
+     * @throws InvalidFlowTracingActivationExchangePropertyValueException
+     *             The value of the property is invalid.
+     */
+    private static final Optional<Boolean> isFlowTracingActivated(final Exchange camelExchange)
+            throws InvalidFlowTracingActivationExchangePropertyValueException {
+        assert camelExchange != null;
+
+        final Object msgFlowTracingActivationObj = camelExchange
+                .getProperty(PetalsCamelComponent.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION);
+        if (msgFlowTracingActivationObj == null) {
+            return Optional.empty();
+        } else if (msgFlowTracingActivationObj instanceof Boolean) {
+            return Optional.of((Boolean) msgFlowTracingActivationObj);
+        } else {
+            // Here because msgFlowTracingActivationObj == null or is not an instance of Boolean
+            throw new InvalidFlowTracingActivationExchangePropertyValueException(msgFlowTracingActivationObj);
+        }
+    }
+
     private void handleAnswer(final Exchange camelExchange,
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
             final boolean doneSync, final AsyncCallback callback, @Nullable final FlowAttributes faAsBC) {
@@ -270,7 +311,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             if (faAsBC != null) {
                 // we should log the trace ourselves without touching the message here because we don't have the
                 // ownership!
-                this.consumes.getLogger().log(Level.MONIT, "", new ConsumeExtFlowStepFailureLogData(
+                this.monitTraceLogger.logMonitTrace(new ConsumeExtFlowStepFailureLogData(
                         faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
             }
 
@@ -281,8 +322,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             Conversions.populateAnswerCamelExchange(exchange, camelExchange);
 
             if (faAsBC != null) {
-                StepLogHelper.addMonitExtEndOrFailureTrace(this.consumes.getLogger(), exchange.getMessageExchange(),
-                        faAsBC, true);
+                this.monitTraceLogger.logMonitTrace(
+                        StepLogHelper.getMonitExtEndOrFailureTrace(exchange.getMessageExchange(), faAsBC, true));
             }
 
             if (exchange.isActiveStatus()) {

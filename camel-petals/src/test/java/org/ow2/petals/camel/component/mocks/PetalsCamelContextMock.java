@@ -19,8 +19,10 @@ package org.ow2.petals.camel.component.mocks;
 
 import java.io.StringReader;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -28,6 +30,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.CamelContext;
 import org.apache.commons.io.input.ReaderInputStream;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -39,11 +42,16 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.api.monitoring.MonitTraceLogger;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.junit.TestMessageExchangeFactory;
 import org.ow2.petals.component.framework.junit.impl.mock.MockEndpointDirectory;
 import org.ow2.petals.component.framework.junit.impl.mock.TestMessageExchangeFactoryImpl;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.component.framework.message.ExchangeImpl;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.jbi.messaging.exchange.PetalsMessageExchange;
@@ -307,7 +315,8 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         }
 
         @Override
-        public Exchange newExchange(final @Nullable MEPPatternConstants mep) throws MessagingException {
+        public Exchange newExchange(final @Nullable MEPPatternConstants mep,
+                final @NonNull Optional<Boolean> currentFlowTracingActivationState) throws MessagingException {
             return PetalsCamelContextMock.this.createExchange(serviceId, mep);
         }
 
@@ -342,5 +351,39 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         public void revertRole(Exchange exchange) {
             PetalsCamelContextMock.setRole(exchange, Role.PROVIDER);
         }
+
+        @Override
+        public boolean isFlowTracingActivated(final @NonNull Exchange exchange) {
+            return true;
+        }
+    }
+
+    @Override
+    public MonitTraceLogger getMonitTraceLogger() {
+        return new MonitTraceLogger() {
+
+            @Override
+            public void logMonitTrace(final Optional<Boolean> externalFlowTracingActivation, final Consumes consumes,
+                    final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final Optional<Boolean> externalFlowTracingActivation,
+                    final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final MessageExchange exchange, final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+
+            @Override
+            public void logMonitTrace(final MessageExchange exchange, final Provides provides,
+                    final AbstractFlowLogData monitTrace) {
+                logger.log(Level.MONIT, "", monitTrace);
+            }
+        };
     }
 }

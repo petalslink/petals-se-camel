@@ -37,7 +37,7 @@ import org.ow2.petals.anothernamespace.SayHelloResponse2;
 import org.ow2.petals.camel.helpers.MarshallingHelper;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.camel.helpers.Step;
-import org.ow2.petals.camel.junit.PetalsCamelTestSupport;
+import org.ow2.petals.se.camel.junit.PetalsCamelTestSupport;
 
 public class SimpleRouteTest extends PetalsCamelTestSupport {
 

@@ -62,7 +62,8 @@ public class PetalsCamelConsumer extends DefaultConsumer implements PetalsCamelR
         final Exchange camelExchange = getEndpoint().createExchange();
         assert camelExchange != null;
 
-        Conversions.populateNewCamelExchange(exchange, camelExchange);
+        final boolean currentFlowTracingActivation = this.provides.isFlowTracingActivated(exchange);
+        Conversions.populateNewCamelExchange(exchange, currentFlowTracingActivation, camelExchange);
 
         if (getEndpoint().isSynchronous()) {
             // in that case, this method won't return until the route is fully executed

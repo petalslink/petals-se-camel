@@ -27,7 +27,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.camel.helpers.Step;
-import org.ow2.petals.camel.junit.PetalsCamelTestSupport;
+import org.ow2.petals.se.camel.junit.PetalsCamelTestSupport;
 
 public class SimpleRouteTest extends PetalsCamelTestSupport {
 

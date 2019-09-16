@@ -30,7 +30,7 @@
    <name>Petals ESB - Components - SE Camel</name>
    <artifactId>petals-se-camel</artifactId>
    <packaging>jbi-component</packaging>
-   <version>1.2.1-SNAPSHOT</version>
+   <version>1.3.0-SNAPSHOT</version>
    <description>Service Engine based on Apache Camel</description>
 
    <properties>
@@ -126,6 +126,11 @@
          <artifactId>petals-junit-external-resources</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-test-utils</artifactId>
+         <scope>test</scope>
+      </dependency>
       <!-- Other test dependencies -->
       <dependency>
          <groupId>org.hamcrest</groupId>
@@ -142,10 +147,41 @@
          <groupId>com.jayway.awaitility</groupId>
          <artifactId>awaitility</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.jvnet.jaxb2_commons</groupId>
+         <artifactId>jaxb2-basics-runtime</artifactId>
+         <!--
+            This dependency is used directly in this project by unit test but it is needed
+            at runtime by CDK core, so its scope must be 'compile' instead of 'test'
+          -->
+         <scope>compile</scope>
+      </dependency>
    </dependencies>
 
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.jvnet.jaxb2.maven2</groupId>
+            <artifactId>maven-jaxb2-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>generate</id>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
+                  <phase>generate-test-sources</phase>
+                  <configuration>
+                     <addCompileSourceRoot>false</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+                     <schemaDirectory>${basedir}/src/test/resources/tests/</schemaDirectory>
+                     <schemaIncludes>
+                        <include>service-1.1.wsdl</include>
+                     </schemaIncludes>
+                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>

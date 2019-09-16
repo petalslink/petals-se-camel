@@ -75,9 +75,16 @@ public class Conversions {
 
     /**
      * To populate a new camel exchange with an exchange coming from petals
+     * 
+     * @param from
+     *            JBI exchange received by the service provider implemented with Camel route.
+     * @param currentFlowTracingActivation
+     *            Current flow tracing activation state on JBI exchange processing at service provider level.
+     * @param to
+     *            Camel exchange to populate.
      */
     public static void populateNewCamelExchange(final org.ow2.petals.component.framework.api.message.Exchange from,
-            final Exchange to) {
+            final boolean currentFlowTracingActivation, final Exchange to) {
 
         to.setExchangeId(from.getExchangeId());
 
@@ -91,6 +98,9 @@ public class Conversions {
         to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_ENDPOINT, from.getEndpoint());
         to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_OPERATION, from.getOperation());
         to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_MEP, from.getPattern());
+        
+        to.setProperty(PetalsCamelComponent.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION,
+                Boolean.valueOf(currentFlowTracingActivation));
 
         populateCamelMessage(from.getInMessage(), to.getIn());
     }
@@ -113,7 +123,9 @@ public class Conversions {
 
         if (from.isErrorStatus()) {
             // there has been a technical error
-            to.setException(from.getError());
+            final Exception error = from.getError();
+            to.setException(
+                    error == null ? new Exception("Status ERROR returned without no more explanations !!") : error);
         } else if (from.getFault() != null) {
             // there has been a fault
             populateCamelMessage(from.getFault(), to.getOut());
