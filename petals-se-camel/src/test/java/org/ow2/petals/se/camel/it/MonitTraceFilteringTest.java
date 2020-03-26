@@ -96,7 +96,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected MEPPatternConstants[] getMepsSupportedByServiceProvider() {
+    protected MEPPatternConstants[] getMepsSupported() {
         return new MEPPatternConstants[] { MEPPatternConstants.IN_ONLY, MEPPatternConstants.IN_OUT,
                 MEPPatternConstants.ROBUST_IN_ONLY };
     }
