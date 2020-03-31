@@ -375,7 +375,8 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
             }
 
             @Override
-            public void logMonitTrace(final MessageExchange exchange, final AbstractFlowLogData monitTrace) {
+            public void logMonitTrace(final Optional<Boolean> externalFlowTracingActivation,
+                    final MessageExchange exchange, final AbstractFlowLogData monitTrace) {
                 logger.log(Level.MONIT, "", monitTrace);
             }
 
