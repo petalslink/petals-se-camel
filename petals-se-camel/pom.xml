@@ -123,8 +123,7 @@
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-junit-external-resources</artifactId>
-         <scope>test</scope>
+         <artifactId>petals-junit-inmemoryloghandler</artifactId>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
