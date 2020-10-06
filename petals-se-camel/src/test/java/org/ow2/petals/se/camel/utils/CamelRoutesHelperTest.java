@@ -93,4 +93,17 @@ public class CamelRoutesHelperTest extends Assert {
                 Logger.getLogger("TEST"));
     }
 
+    @Test
+    public void testLoadRoutesClass_ko_empty_className() throws InvalidJBIConfigurationException {
+        thrown.expect(InvalidJBIConfigurationException.class);
+        thrown.expectMessage("is not a subclass of Camel RouteBuilder");
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), "");
+    }
+
+    @Test
+    public void testLoadRoutesClass_ko_null_className() throws InvalidJBIConfigurationException {
+        thrown.expect(InvalidJBIConfigurationException.class);
+        thrown.expectMessage("is not a subclass of Camel RouteBuilder");
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), null);
+    }
 }
