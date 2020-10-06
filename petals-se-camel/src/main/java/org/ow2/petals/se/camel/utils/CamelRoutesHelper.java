@@ -36,8 +36,11 @@ public class CamelRoutesHelper {
 
     public static RouteBuilder loadRoutesFromClass(final ClassLoader classLoader, final String className)
             throws InvalidJBIConfigurationException {
+        if (Strings.isNullOrEmpty(className)) {
+            throw new InvalidJBIConfigurationException("className must not be null or empty");
+        }
         try {
-            final Class<?> clazz = classLoader.loadClass(className);
+            final Class<?> clazz = classLoader.loadClass(className.trim());
             final Object o = clazz.newInstance();
             if (!(o instanceof RouteBuilder)) {
                 throw new InvalidJBIConfigurationException(className + " is not a subclass of Camel RouteBuilder");
