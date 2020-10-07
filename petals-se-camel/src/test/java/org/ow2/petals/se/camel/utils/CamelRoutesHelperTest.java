@@ -51,6 +51,11 @@ public class CamelRoutesHelperTest extends Assert {
     }
 
     @Test
+    public void testLoadRoutesClass_ok_with_spaces() throws Exception {
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), "\n\t" + CLASS_ROUTES_OK + "  \n");
+    }
+
+    @Test
     public void testLoadRoutesClass_ko_subclass() throws InvalidJBIConfigurationException {
         thrown.expect(InvalidJBIConfigurationException.class);
         thrown.expectMessage("is not a subclass of Camel RouteBuilder");
@@ -96,14 +101,7 @@ public class CamelRoutesHelperTest extends Assert {
     @Test
     public void testLoadRoutesClass_ko_empty_className() throws InvalidJBIConfigurationException {
         thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("className must not be null or empty");
+        thrown.expectMessage("className must be not empty");
         CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), "");
-    }
-
-    @Test
-    public void testLoadRoutesClass_ko_null_className() throws InvalidJBIConfigurationException {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("className must not be null or empty");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), null);
     }
 }

@@ -34,10 +34,19 @@ public class CamelRoutesHelper {
     private CamelRoutesHelper() {
     }
 
+    /**
+     * @param classLoader
+     * @param className
+     *            Class name containing the Camel route definitions. Not {@code null}.
+     * @return
+     * @throws InvalidJBIConfigurationException
+     */
     public static RouteBuilder loadRoutesFromClass(final ClassLoader classLoader, final String className)
             throws InvalidJBIConfigurationException {
-        if (Strings.isNullOrEmpty(className)) {
-            throw new InvalidJBIConfigurationException("className must not be null or empty");
+        assert className != null;
+
+        if (className.isEmpty()) {
+            throw new InvalidJBIConfigurationException("className must be not empty");
         }
         try {
             final Class<?> clazz = classLoader.loadClass(className.trim());
