@@ -63,11 +63,11 @@
                      <goal>run</goal>
                   </goals>
                   <configuration>
-                     <tasks>
+                     <target>
                         <!-- All legal information are put in the directory META-INF of the JBI component archive -->
                         <copy file="${basedir}/LICENSE" todir="${jbi-sa.build.legal-dir}/META-INF/legal" />
                         <copy file="${basedir}/COPYRIGHT" todir="${jbi-sa.build.legal-dir}/META-INF/legal" />
-                     </tasks>
+                     </target>
                   </configuration>
                </execution>
             </executions>
