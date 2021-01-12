@@ -123,6 +123,11 @@
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-message-exchange</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
          <artifactId>petals-junit-inmemoryloghandler</artifactId>
       </dependency>
       <dependency>
