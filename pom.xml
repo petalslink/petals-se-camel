@@ -104,14 +104,22 @@
             <scope>provided</scope>
          </dependency>
          <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>3.3.1</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <exclusions>
+               <exclusion>
+                  <!-- We prefer to use Hamcrest 2.1 coming with Mockito instead of Hamcrest 1.3 coming with Junit -->
+                  <!-- TODO: Must be adjusted/removed when moving to JUnit5 -->
+                  <groupId>org.hamcrest</groupId>
+                  <artifactId>hamcrest-core</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-            <version>1.3</version>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
          </dependency>
          <dependency>
             <groupId>xmlunit</groupId>
@@ -123,11 +131,6 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
-         </dependency>
-         <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>2.1</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

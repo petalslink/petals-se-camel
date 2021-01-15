@@ -17,11 +17,9 @@
  */
 package org.ow2.petals.se.camel.it;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.to;
-import static com.jayway.awaitility.Duration.TWO_SECONDS;
-import static org.hamcrest.Matchers.equalTo;
+import static org.awaitility.Awaitility.await;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -103,8 +101,8 @@ public class CamelIT extends AbstractComponentTest {
         assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
         
         // let's wait for the answer from the ServiceProvider to have been handled by the CDK
-        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getExchangesInDeliveryChannelCount(),
-                equalTo(0));
+        await().atMost(Duration.ofSeconds(2))
+                .untilAsserted(() -> assertEquals(0, COMPONENT_UNDER_TEST.getExchangesInDeliveryChannelCount()));
 
         // clear the potential errors the CDK sent back to the service that ansewered too late
         COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
