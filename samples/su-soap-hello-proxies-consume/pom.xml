@@ -29,11 +29,6 @@
    <!-- No version set -->
    <packaging>jbi-service-unit</packaging>
 
-   <properties>
-      <!-- Skip dependency check for service unit. -->
-      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -47,6 +42,23 @@
          <plugin>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-maven-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The Petals component on which this SU must run -->
+                        <usedDependency>org.ow2.petals:petals-bc-soap</usedDependency>
+                        <!-- No unit test -->
+                        <usedDependency>junit:junit</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

@@ -30,9 +30,6 @@
    <packaging>jbi-service-assembly</packaging>
 
    <properties>
-      <!-- Skip dependency check for service unit. -->
-      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-
       <jbi-sa.build.legal-dir>${project.build.directory}/legal-additionals</jbi-sa.build.legal-dir>
    </properties>
 
@@ -62,6 +59,23 @@
                         <copy file="${basedir}/LICENSE" todir="${jbi-sa.build.legal-dir}/META-INF/legal" />
                         <copy file="${basedir}/COPYRIGHT" todir="${jbi-sa.build.legal-dir}/META-INF/legal" />
                      </target>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The service units of this SA -->
+                        <usedDependency>org.ow2.petals.samples.camel:su-camel-datamapping</usedDependency>
+                        <!-- No unit tests for a SA -->
+                        <usedDependency>junit:junit</usedDependency>
+                     </usedDependencies>
                   </configuration>
                </execution>
             </executions>

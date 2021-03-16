@@ -29,11 +29,6 @@
    <!-- No version set -->
    <packaging>jbi-service-unit</packaging>
 
-   <properties>
-      <!-- Skip dependency check for service unit. -->
-      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals.samples.camel</groupId>
@@ -77,6 +72,19 @@
          </exclusions>
       </dependency>
       <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <!-- Provided by petals-se-camel -->
+         <scope>provided</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
          <groupId>org.jvnet.jaxb2_commons</groupId>
          <artifactId>jaxb2-basics-runtime</artifactId>
          <!-- Provided by petals-se-camel -->
@@ -85,8 +93,21 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-simple</artifactId>
-	 <version>${slf4j.version}</version>
+	      <version>${slf4j.version}</version>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+         <!-- We align version of Hamcrest with the one provided by petals-se-camel-junit -->
+         <!-- TODO: Must be adjusted/removed when moving to JUnit5 -->
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.13.1</version>
+         <exclusions>
+            <exclusion>
+               <groupId>org.hamcrest</groupId>
+               <artifactId>hamcrest-core</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
    </dependencies>
 
@@ -153,6 +174,25 @@
          <plugin>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-maven-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The Petals component on which this SU must run -->
+                        <usedDependency>org.ow2.petals:petals-se-camel</usedDependency>
+                        <!-- Required by unit tests at runtime -->
+                        <usedDependency>org.slf4j:slf4j-simple</usedDependency>
+                        <!-- This SU consumes the following ones -->
+                        <usedDependency>org.ow2.petals.samples.camel:su-camel-hello-proxy-java</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

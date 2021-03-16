@@ -79,12 +79,18 @@
             <version>${camel.version}</version>
             <!-- provided by petals-se-camel -->
             <scope>provided</scope>
-         </dependency>
-         <dependency>
-            <!-- Overrides petals-root-parent version to use the one from camel -->
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
+            <exclusions>
+               <exclusion>
+                  <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-core:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by petals-se-camel -->
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-core</artifactId>
+               </exclusion>
+               <exclusion>
+                  <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-impl:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by petals-se-camel -->
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-impl</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          
          <dependency>
@@ -103,7 +109,7 @@
             <plugin>
                <artifactId>petals-maven-plugin</artifactId>
                <groupId>org.ow2.petals</groupId>
-               <version>3.2.0-SNAPSHOT</version>
+               <version>3.3.0-SNAPSHOT</version>
                <extensions>true</extensions>
             </plugin>
          </plugins>

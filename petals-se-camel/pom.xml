@@ -109,6 +109,29 @@
       <dependency>
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-core</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-core:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by Petals CDK -->
+               <groupId>com.sun.xml.bind</groupId>
+               <artifactId>jaxb-core</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-impl:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by Petals CDK  -->
+               <groupId>com.sun.xml.bind</groupId>
+               <artifactId>jaxb-impl</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <!-- Code quality dependencies -->
       <dependency>
