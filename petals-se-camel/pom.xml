@@ -169,13 +169,14 @@
          <artifactId>awaitility</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jvnet.jaxb2_commons</groupId>
-         <artifactId>jaxb2-basics-runtime</artifactId>
          <!--
             This dependency is used directly in this project by unit test but it is needed
-            at runtime by CDK core, so its scope must be 'compile' instead of 'test'
+            at runtime by CDK core, so its scope must be 'provided' (by Petals ESB Container
+            bootstrap classloader) instead of 'test'
           -->
-         <scope>compile</scope>
+         <groupId>org.jvnet.jaxb2_commons</groupId>
+         <artifactId>jaxb2-basics-runtime</artifactId>
+         <scope>provided</scope>
       </dependency>
    </dependencies>
 
