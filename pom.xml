@@ -67,10 +67,10 @@
             </exclusions>
          </dependency>
          <dependency>
-            <!-- Apache Camel comes with Apache Commons IO 2.4 instead of version 2.6. We force use of version 2.6 -->
+            <!-- Apache Camel comes with Apache Commons IO 2.4 instead of version 2.6. We force use of version 2.7 -->
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
          </dependency>
          <dependency>
             <groupId>org.ow2.petals</groupId>
