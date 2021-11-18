@@ -20,7 +20,6 @@ package org.ow2.petals.se.camel;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -40,6 +39,7 @@ import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.component.framework.api.monitoring.MonitTraceLogger;
+import org.ow2.petals.component.framework.api.util.Placeholders;
 import org.ow2.petals.se.camel.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.se.camel.exceptions.PetalsCamelSEException;
 import org.ow2.petals.se.camel.impl.ServiceEndpointOperationConsumes;
@@ -258,7 +258,7 @@ public class CamelSU implements PetalsCamelContext {
      * @param placeholders
      *            New values of placeholders
      */
-    public void onPlaceHolderValuesReloaded(final Properties placeholders) {
+    public void onPlaceHolderValuesReloaded(final Placeholders placeholders) {
         for (final RouteBuilder routeBuilder : this.classRoutes) {
             assert routeBuilder != null;
             if (routeBuilder instanceof PetalsRouteBuilder) {
