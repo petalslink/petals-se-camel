@@ -170,6 +170,12 @@
             <version>5.0.3</version>
             <scope>test</scope>
          </dependency>
+         <dependency>
+            <!-- Apache MINA 2.0.16 is provided by Apache Camel, we prefer the version forced by Petals -->
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+            <version>2.1.4</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
