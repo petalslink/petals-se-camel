@@ -17,11 +17,10 @@
  */
 package org.ow2.petals.se.camel;
 
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
+import org.ow2.petals.component.framework.api.util.Placeholders;
 
 public class CamelSUTest extends AbstractComponentTest {
 
@@ -82,7 +81,7 @@ public class CamelSUTest extends AbstractComponentTest {
         }
 
         @Override
-        public void onPlaceHolderValuesReloaded(final Properties newPlaceholders) {
+        public void onPlaceHolderValuesReloaded(final Placeholders newPlaceholders) {
             onPlaceHolderValuesReloadedCalled = true;
         }
     }

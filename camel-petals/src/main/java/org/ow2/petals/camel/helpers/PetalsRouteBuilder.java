@@ -26,6 +26,7 @@ import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
 import org.ow2.petals.camel.component.PetalsCamelComponent;
+import org.ow2.petals.component.framework.api.util.Placeholders;
 
 public abstract class PetalsRouteBuilder extends RouteBuilder {
 
@@ -76,10 +77,10 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
     /**
      * Camel route definition call-back called on placeholder reloading. Placeholders have their new values.
      */
-    public void onPlaceHolderValuesReloaded(final Properties newPlaceholders) {
+    public void onPlaceHolderValuesReloaded(final Placeholders newPlaceholders) {
         synchronized (this.placeholders) {
             this.placeholders.clear();
-            this.placeholders.putAll(newPlaceholders);
+            this.placeholders.putAll(newPlaceholders.toProperties());
         }
     }
 
