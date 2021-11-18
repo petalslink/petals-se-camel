@@ -56,6 +56,6 @@
          <camel:service-id>onlyoffice-convert</camel:service-id>
       </jbi:consumes>
 
-      <camel:java-routes>org.ow2.petals.camel.junit.routes.RouteMissing</camel:java-routes>
+      <camel:java-routes>org.ow2.petals.se.camel.junit.routes.RouteMissing</camel:java-routes>
    </jbi:services>
 </jbi:jbi>

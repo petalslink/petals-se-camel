@@ -55,6 +55,6 @@
          <cdk:timeout>${onlyoffice.document-conversion.timeout}</cdk:timeout>
       </jbi:consumes>
 
-      <camel:java-routes>org.ow2.petals.samples.onlyoffice._5_3.wrapper.convert.OnlyOfficeConvertService</camel:java-routes>
+      <camel:java-routes>org.ow2.petals.se.camel.junit.routes.Nominal</camel:java-routes>
    </jbi:services>
 </jbi:jbi>

@@ -208,7 +208,7 @@ public class AssertTest {
             fail("Java route definition found");
         } catch (final InvalidJBIConfigurationException e) {
             assertEquals("Unexpected assertion",
-                    "Invalid JBI descriptor: Can't load class org.ow2.petals.camel.junit.routes.RouteMissing",
+                    "Invalid JBI descriptor: Can't load class org.ow2.petals.se.camel.junit.routes.RouteMissing",
                     e.getMessage());
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
