@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+ Copyright (c) 2021 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="FileTransfer" 
+   
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:xmime="http://www.w3.org/2005/05/xmlmime"
+   
+   xmlns:tns="http://petals.ow2.org/components/filetransfer/version-5"
+   
+   targetNamespace="http://petals.ow2.org/components/filetransfer/version-5">
+
+   <wsdl:types>
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+         targetNamespace="http://petals.ow2.org/components/filetransfer/version-5">
+         
+         <xsd:import namespace="http://www.w3.org/2005/05/xmlmime" schemaLocation="http://www.w3.org/2005/05/xmlmime.xsd" />
+         
+         <xsd:element name="file-content" type="xsd:base64Binary" xmime:expectedContentTypes="application/octet-stream" />
+         
+         <xsd:element name="get" type="tns:getType" />
+         <xsd:complexType name="getType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="1">
+               </xsd:element>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:element name="getResponse" type="tns:getResponseType" />
+         <xsd:complexType name="getResponseType">
+            <xsd:sequence>
+               <xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="getAsAttachment" type="tns:getType" />
+         <xsd:element name="getAsAttachmentResponse" type="tns:getAsAttachmentResponse" />
+         <xsd:complexType name="getAsAttachmentResponse">
+            <xsd:sequence>
+               <xsd:element ref="tns:file-content" minOccurs="1" maxOccurs="1"/>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="mget" type="tns:mgetType" />
+         <xsd:complexType name="mgetType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" maxOccurs="unbounded" minOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="mgetResponse" type="tns:mgetResponse">
+         </xsd:element>
+         <xsd:complexType name="mgetResponse">
+            <xsd:sequence>
+               <xsd:element ref="tns:file-content" minOccurs="1" maxOccurs="unbounded"/>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="put" type="tns:putRequestType" />
+         <xsd:complexType name="putRequestType">
+            <xsd:sequence>
+               <xsd:any></xsd:any>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="mput">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="attachments" type="tns:attachmentsType" minOccurs="1" maxOccurs="1">
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="dir" type="tns:dirType" />
+         <xsd:complexType name="dirType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:element name="dirResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="file" minOccurs="0" maxOccurs="unbounded">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="filename" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="creation-time" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="last-modified-time" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="last-access-time" type="xsd:dateTime" minOccurs="1" maxOccurs="1" nillable="true"/>
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="del" type="tns:delType" />
+         <xsd:complexType name="delType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="checkFile" type="tns:checkFileType" />
+         <xsd:complexType name="checkFileType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:element name="checkFileResponse" type="tns:checkFileResponse" />
+         <xsd:complexType name="checkFileResponse">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="1" />
+               <xsd:element name="exist" maxOccurs="1" minOccurs="1" type="xsd:boolean" />
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:complexType name="attachmentsType">
+            <xsd:sequence>
+               <xsd:element name="filename" type="xsd:base64Binary" xmime:expectedContentTypes="application/octet-stream" maxOccurs="unbounded" minOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         
+         <!-- Fault types -->
+         <xsd:element name="noFileFound">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="fileLocked">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="xmlFileExpected">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="filenameMissing">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="fileAttachmentExpected">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+
+	<!-- Message Part -->
+   <wsdl:message name="getRequest">
+      <wsdl:part name="getRequest" element="tns:get" />
+   </wsdl:message>
+   <wsdl:message name="getResponse">
+      <wsdl:part name="getResponse" element="tns:getResponse" />
+   </wsdl:message>
+   <wsdl:message name="mgetRequest">
+      <wsdl:part name="mgetRequest" element="tns:mget" />
+   </wsdl:message>
+   <wsdl:message name="mgetResponse">
+      <wsdl:part name="mgetResponse" element="tns:mgetResponse" />
+   </wsdl:message>
+   <wsdl:message name="putRequest">
+      <wsdl:part name="putRequest" element="tns:put" />
+   </wsdl:message>
+   <wsdl:message name="mputRequest">
+      <wsdl:part name="mputRequest" element="tns:mput" />
+   </wsdl:message>
+   <wsdl:message name="dirRequest">
+      <wsdl:part name="dirRequest" element="tns:dir" />
+   </wsdl:message>
+   <wsdl:message name="dirResponse">
+      <wsdl:part name="dirResponse" element="tns:dirResponse" />
+   </wsdl:message>
+   <wsdl:message name="delRequest">
+      <wsdl:part name="delRequest" element="tns:del" />
+   </wsdl:message>
+   <wsdl:message name="getAsAttachmentRequest">
+      <wsdl:part name="getAsAttachmentRequest" element="tns:getAsAttachment" />
+   </wsdl:message>
+   <wsdl:message name="getAsAttachmentResponse">
+      <wsdl:part name="getAsAttachmentResponse" element="tns:getAsAttachmentResponse" />
+   </wsdl:message>
+   <wsdl:message name="checkFileRequest">
+      <wsdl:part name="checkFileRequest" element="tns:checkFile" />
+   </wsdl:message>
+   <wsdl:message name="checkFileResponse">
+      <wsdl:part name="checkFileResponse" element="tns:checkFileResponse" />
+   </wsdl:message>
+
+	<!-- FAULT message section -->
+   <wsdl:message name="noFileFound">
+      <wsdl:part name="noFileFound" element="tns:noFileFound" />
+   </wsdl:message>
+   <wsdl:message name="fileLocked">
+      <wsdl:part name="fileLocked" element="tns:fileLocked" />
+   </wsdl:message>
+   <wsdl:message name="xmlFileExpected">
+      <wsdl:part name="xmlFileExpected" element="tns:xmlFileExpected" />
+   </wsdl:message>
+   <wsdl:message name="filenameMissing">
+      <wsdl:part name="filenameMissing" element="tns:filenameMissing" />
+   </wsdl:message>
+   <wsdl:message name="fileAttachmentExpected">
+      <wsdl:part name="fileAttachmentExpected" element="tns:fileAttachmentExpected" />
+   </wsdl:message>
+
+	<!-- Interface Part -->
+   <wsdl:portType name="FileTransfer">
+      <wsdl:operation name="get">
+         <wsdl:input message="tns:getRequest" />
+         <wsdl:output message="tns:getResponse" />
+         <wsdl:fault name="noFileFound" message="tns:noFileFound" />
+         <wsdl:fault name="fileLocked" message="tns:fileLocked" />
+         <wsdl:fault name="xmlFileExpected" message="tns:xmlFileExpected" />
+         <wsdl:fault name="filenameMissing" message="tns:filenameMissing" />
+      </wsdl:operation>
+      <wsdl:operation name="getAsAttachment">
+         <wsdl:input message="tns:getAsAttachmentRequest" />
+         <wsdl:output message="tns:getAsAttachmentResponse" />
+         <wsdl:fault name="noFileFound" message="tns:noFileFound" />
+         <wsdl:fault name="fileLocked" message="tns:fileLocked" />
+         <wsdl:fault name="filenameMissing" message="tns:filenameMissing" />
+      </wsdl:operation>
+      <wsdl:operation name="mget">
+         <wsdl:input message="tns:mgetRequest" />
+         <wsdl:output message="tns:mgetResponse" />
+         <wsdl:fault name="fileLocked" message="tns:fileLocked" />
+      </wsdl:operation>
+      <wsdl:operation name="put">
+         <wsdl:input message="tns:putRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="mput">
+         <wsdl:input message="tns:mputRequest" />
+         <wsdl:fault name="fileAttachmentExpected" message="tns:fileAttachmentExpected" />
+      </wsdl:operation>
+      <wsdl:operation name="dir">
+         <wsdl:input message="tns:dirRequest" />
+         <wsdl:output message="tns:dirResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="del">
+         <wsdl:input message="tns:delRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="checkFile">
+         <wsdl:input message="tns:checkFileRequest" />
+         <wsdl:output message="tns:checkFileResponse" />
+         <wsdl:fault name="filenameMissing" message="tns:filenameMissing" />
+      </wsdl:operation>
+   </wsdl:portType>
+</wsdl:definitions>

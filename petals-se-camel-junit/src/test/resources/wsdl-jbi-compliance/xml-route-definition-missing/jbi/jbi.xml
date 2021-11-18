@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
- 
+ Copyright (c) 2021 Linagora
+
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
  the Free Software Foundation, either version 2.1 of the License, or (at your
  option) any later version.
- 
+
  This program/library is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
  for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public License
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<jbi:jbi version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jbi="http://java.sun.com/xml/ns/jbi"
-   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-camel="http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0"
-   xmlns:hello="http://petals.ow2.org">
+<jbi:jbi 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:cdk="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:camel="http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0"
+   
+   xmlns:hello="http://petals.ow2.org"
+   
+   version="1.0">
 
    <jbi:services binding-component="false">
-
       <jbi:provides interface-name="hello:HelloWorldInterface" service-name="hello:HelloWorldService" endpoint-name="hello-world-camel-xml">
-         <petalsCDK:wsdl>service.wsdl</petalsCDK:wsdl>
+         <cdk:wsdl>hello.wsdl</cdk:wsdl>
       </jbi:provides>
 
       <jbi:consumes interface-name="hello:HelloInterface" service-name="hello:HelloService">
-         
-         <!-- CDK specific elements -->
-         <petalsCDK:operation>hello:sayHello</petalsCDK:operation>
-         <petalsCDK:mep>InOut</petalsCDK:mep>
-
-         <!-- Component specific elements -->
-         <petals-se-camel:service-id>theConsumesId</petals-se-camel:service-id>
+         <cdk:operation>hello:sayHello</cdk:operation>
+         <cdk:mep>InOut</cdk:mep>
+         <camel:service-id>theConsumesId</camel:service-id>
       </jbi:consumes>
 
-      <petals-se-camel:xml-routes>routes.xml</petals-se-camel:xml-routes>
-
+      <camel:xml-routes>xml-routes-missing.xml</camel:xml-routes>
    </jbi:services>
 </jbi:jbi>

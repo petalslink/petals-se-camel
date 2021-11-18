@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2020 Linagora
+ Copyright (c) 2015-2021 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -32,8 +32,13 @@
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-camel</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
          <artifactId>camel-petals</artifactId>
-	 <version>${project.version}</version>
+	      <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.apache.camel</groupId>
@@ -48,7 +53,55 @@
          <artifactId>junit</artifactId>
          <scope>compile</scope>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-jbidescriptor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easycommons</groupId>
+         <artifactId>easycommons-util</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-wsdl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-ext-wsdl4complexwsdl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-schema</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-simple</artifactId>
+      </dependency>
    </dependencies>
+   
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- These dependencies are needed for unit test -->
+                        <usedDependency>org.slf4j:slf4j-simple</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>

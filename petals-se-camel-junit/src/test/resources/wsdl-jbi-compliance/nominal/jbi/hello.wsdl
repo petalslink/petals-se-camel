@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
+ Copyright (c) 2021 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -63,8 +63,8 @@
       </wsdl:operation>
    </wsdl:binding>
    <wsdl:service name="HelloWorldService">
-      <wsdl:port name="hello-world-camel-java" binding="tns:HelloWorldServiceBinding" >
-         <soap:address location="http://localhost:9003/hello-world-camel-java" />
+      <wsdl:port name="hello-world-camel-xml" binding="tns:HelloWorldServiceBinding" >
+         <soap:address location="http://localhost:9003/hello-world-camel-xml" />
       </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>

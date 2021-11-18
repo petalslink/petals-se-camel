@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
+ Copyright (c) 2015-2021 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -18,11 +18,11 @@
 -->
 <jbi:jbi version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jbi="http://java.sun.com/xml/ns/jbi"
    xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-camel="http://petals.ow2.org/components/petals-se-camel/jbi/version-1.0"
-   xmlns:hello="http://petals.ow2.org">
+   xmlns:hello="http://petals.ow2.org" xmlns:hello2="http://petals.ow2.org/AnotherNameSpace">
 
    <jbi:services binding-component="false">
 
-      <jbi:provides interface-name="hello:HelloWorldInterface" service-name="hello:HelloWorldService" endpoint-name="hello-world-camel-java">
+      <jbi:provides interface-name="hello2:HelloWorldInterface" service-name="hello2:DatamappingService" endpoint-name="autogenerate">
          <petalsCDK:wsdl>service.wsdl</petalsCDK:wsdl>
       </jbi:provides>
 

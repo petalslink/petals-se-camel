@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
+ Copyright (c) 2015-2021 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -21,7 +21,7 @@
    <parent>
       <artifactId>petals-camel-samples-parent</artifactId>
       <groupId>org.ow2.petals.samples.camel</groupId>
-      <version>1.2.0-1.0.0-SNAPSHOT</version>
+      <version>1.2.2-1.0.0-SNAPSHOT</version>
    </parent>
 
    <artifactId>su-camel-hello-proxy-xml</artifactId>
@@ -52,10 +52,15 @@
          <groupId>org.apache.camel</groupId>
          <artifactId>camel-core</artifactId>
       </dependency>
+      
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-camel-junit</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-simple</artifactId>
-         <version>1.7.21</version>
+         <version>1.7.22</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -65,6 +70,37 @@
          <plugin>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-maven-plugin</artifactId>
+            <configuration>
+               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-no-duplicate-classes</id>
+                  <configuration>
+                     <exceptions>
+                        <exception>
+                           <conflictingDependencies>
+                              <dependency>
+                                 <groupId>org.ow2.petals</groupId>
+                                 <artifactId>petals-se-camel</artifactId>
+                                 <type>jar</type>
+                                 <scope>test</scope>
+                              </dependency>
+                           </conflictingDependencies>
+                           <!-- Current project is the actual project being checked, not this parent pom -->
+                           <currentProject>true</currentProject>
+                           <resources>
+                              <resource>jbi/jbi.xml</resource>
+                           </resources>
+                        </exception>
+                     </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

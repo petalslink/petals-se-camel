@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2020 Linagora
+ * Copyright (c) 2015-2021 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -37,6 +37,7 @@ import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.se.PetalsCamelSender;
 import org.ow2.petals.camel.se.exceptions.InvalidJBIConfigurationException;
+import org.ow2.petals.camel.se.exceptions.InvalidWSDLException;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationConsumes;
 import org.ow2.petals.camel.se.impl.ServiceEndpointOperationProvides;
 import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
@@ -77,7 +78,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
      */
     public static Map<String, ServiceEndpointOperation> extractServicesIdAndEndpointOperations(
             final ServiceUnitDataHandler suDH, final PetalsCamelSender sender)
-            throws InvalidJBIConfigurationException {
+            throws InvalidJBIConfigurationException, InvalidWSDLException {
 
         final Jbi jbiDescriptor = suDH.getDescriptor();
 
@@ -142,7 +143,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
     }
 
     public static List<OperationData> getOperationsAndServiceId(final Document doc, final Provides provides)
-            throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
+            throws URISyntaxException, XmlException, InvalidJBIConfigurationException, InvalidWSDLException {
 
         final List<OperationData> results = Lists.newArrayList();
 
@@ -196,8 +197,8 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
                 }
             }
             if (camelOperation == null) {
-                throw new InvalidJBIConfigurationException(
-                        "No " + EL_WSDL_OPERATION + " available for the operation " + qName);
+                throw new InvalidWSDLException(
+                        "No element " + EL_WSDL_OPERATION + " available for the operation " + qName + " in WSDL");
             }
 
             final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);

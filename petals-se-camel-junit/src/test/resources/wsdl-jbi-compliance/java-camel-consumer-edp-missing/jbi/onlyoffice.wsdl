@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019-2021 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="OnlyOfficeService"
+
+   targetNamespace="http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0"
+   xmlns:onlyoffice-wrapper="http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0"
+   
+   xmlns:petals-camel-wsdl="http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0"
+  
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:xmime="http://www.w3.org/2005/05/xmlmime">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0" elementFormDefault="qualified">
+
+         <xsd:element name="convert">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="filename" type="xsd:string" minOccurs="1" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>The name of file to convert</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="file" type="xsd:base64Binary" xmime:expectedContentTypes="application/octet-stream" minOccurs="1" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>The file to convert</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="code-page" type="xsd:string" minOccurs="0" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Defines the file encoding when converting from 'csv' or 'txt' format.</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="delimiter" minOccurs="0" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Defines the delimiter characters for separating values when converting from 'csv' format</xsd:documentation></xsd:annotation>
+                     <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                           <xsd:enumeration value="no-delimiter" />
+                           <xsd:enumeration value="tab" />
+                           <xsd:enumeration value="semicolon" />
+                           <xsd:enumeration value="colon" />
+                           <xsd:enumeration value="comma" />
+                           <xsd:enumeration value="space" />
+                        </xsd:restriction>
+                     </xsd:simpleType>
+                  </xsd:element>
+                  <xsd:element name="key" type="xsd:string" minOccurs="0" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Defines the document identifier used to unambiguously identify the document file. If not provided an UUID will be used as key</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="output-type" type="xsd:string" minOccurs="1" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Defines the resulting converted document type.</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="password" type="xsd:string" minOccurs="0" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Specifies the password for the document file if it is protected with a password.</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="thumbnail">
+                     <xsd:complexType>
+                        <xsd:attribute name="aspect" use="optional">
+                           <xsd:simpleType>
+                              <xsd:restriction base="xsd:string">
+                                 <xsd:enumeration value="stretch"><xsd:annotation><xsd:documentation>Stretch file to fit height and width.</xsd:documentation></xsd:annotation></xsd:enumeration>
+                                 <xsd:enumeration value="ratio"><xsd:annotation><xsd:documentation>Keep the aspect for the image.</xsd:documentation></xsd:annotation></xsd:enumeration>
+                              </xsd:restriction>
+                           </xsd:simpleType>
+                        </xsd:attribute>
+                        <xsd:attribute name="first" type="xsd:boolean" use="optional">
+                           <xsd:annotation><xsd:documentation>Specifies if the thumbnails should be generated for the first page only or for all the document pages. If 'false', the zip archive containing thumbnails for all the pages will be created. The default value is 'true'.</xsd:documentation></xsd:annotation>
+                        </xsd:attribute>
+                        <xsd:attribute name="height" type="xsd:long" use="optional">
+                           <xsd:annotation><xsd:documentation>The thumbnail height in pixels (default: 100).</xsd:documentation></xsd:annotation>
+                        </xsd:attribute>
+                        <xsd:attribute name="width" type="xsd:long" use="optional">
+                           <xsd:annotation><xsd:documentation>The thumbnail width in pixels (default: 100).</xsd:documentation></xsd:annotation>
+                        </xsd:attribute>
+                     </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>Defines the converted file name.</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="convertResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="filename" type="xsd:string" minOccurs="1" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>The name of converted file</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="file" type="xsd:base64Binary" xmime:expectedContentTypes="application/octet-stream" minOccurs="1" maxOccurs="1">
+                     <xsd:annotation><xsd:documentation>The converted file</xsd:documentation></xsd:annotation>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="invalidPassword">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="convert">
+      <wsdl:part name="parameters" element="onlyoffice-wrapper:convert" />
+   </wsdl:message>
+   <wsdl:message name="convertResponse">
+      <wsdl:part name="parameters" element="onlyoffice-wrapper:convertResponse" />
+   </wsdl:message>
+   <wsdl:message name="invalidPassword">
+      <wsdl:part name="parameters" element="onlyoffice-wrapper:invalidPassword" />
+   </wsdl:message>
+
+   <wsdl:portType name="DocumentConversionWrapper">
+      <wsdl:operation name="convert">
+         <wsdl:documentation>Synchronous document conversion</wsdl:documentation>
+         <wsdl:input message="onlyoffice-wrapper:convert" />
+         <wsdl:output message="onlyoffice-wrapper:convertResponse" />
+         <wsdl:fault message="onlyoffice-wrapper:invalidPassword" name="invalidPassword" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="DocumentConversionWrapperSoapBinding" type="onlyoffice-wrapper:DocumentConversionWrapper">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="convert">
+         <soap:operation soapAction="http://petals.ow2.org/onlyoffice/convert" />
+         <petals-camel-wsdl:operation service-id="onlyoffice-wrapper-convert" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="invalidPassword">
+            <soap:fault name="invalidPassword" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="DocumentConversionWrapperService">
+      <wsdl:port name="autogenerate" binding="onlyoffice-wrapper:DocumentConversionWrapperSoapBinding">
+         <soap:address location="http://localhost:9003/onlyoffice-wrapper" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>
