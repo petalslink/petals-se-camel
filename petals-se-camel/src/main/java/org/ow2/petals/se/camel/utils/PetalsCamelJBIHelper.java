@@ -35,6 +35,7 @@ import org.ow2.easywsdl.wsdl.api.InterfaceType;
 import org.ow2.easywsdl.wsdl.api.Service;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.ServiceEndpointOperation;
+import org.ow2.petals.se.camel.exceptions.InvalidWSDLException;
 import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
@@ -77,7 +78,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
      */
     public static Map<String, ServiceEndpointOperation> extractServicesIdAndEndpointOperations(
             final ServiceUnitDataHandler suDH, final PetalsCamelSender sender)
-            throws InvalidJBIConfigurationException {
+            throws InvalidJBIConfigurationException, InvalidWSDLException {
 
         final Jbi jbiDescriptor = suDH.getDescriptor();
 
@@ -142,7 +143,7 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
     }
 
     public static List<OperationData> getOperationsAndServiceId(final Document doc, final Provides provides)
-            throws URISyntaxException, XmlException, InvalidJBIConfigurationException {
+            throws URISyntaxException, XmlException, InvalidJBIConfigurationException, InvalidWSDLException {
 
         final List<OperationData> results = Lists.newArrayList();
 
@@ -196,8 +197,8 @@ public class PetalsCamelJBIHelper implements JbiCamelConstants {
                 }
             }
             if (camelOperation == null) {
-                throw new InvalidJBIConfigurationException(
-                        "No " + EL_WSDL_OPERATION + " available for the operation " + qName);
+                throw new InvalidWSDLException(
+                        "No element " + EL_WSDL_OPERATION + " available for the operation " + qName + " in WSDL");
             }
 
             final String serviceId = camelOperation.getAttribute(ATTR_WSDL_OPERATION_SERVICEID);
