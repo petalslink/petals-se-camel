@@ -183,7 +183,7 @@ public class Assert {
             DocumentBuilders.releaseDocumentBuilder(docBuilder);
         }
     }
-    
+
     /**
      * Check declaration of service consumers: for consumes, there is one serviceId per consumes (because it includes
      * the operation)
@@ -236,7 +236,7 @@ public class Assert {
         for (final String className : classNames) {
             assert className != null;
             final RouteBuilder routes = CamelRoutesHelper
-                    .loadRoutesFromClass(Thread.currentThread().getContextClassLoader(), className);
+                    .loadRoutesFromClass(Thread.currentThread().getContextClassLoader(), className, LOG);
             try {
                 camelCtx.addRoutes(routes);
             } catch (final Exception e) {
@@ -258,16 +258,19 @@ public class Assert {
             }
         }
 
+        assertFalse("No Camel route definition loaded. Check your service unit configuration.",
+                camelCtx.getRouteDefinitions().isEmpty());
+
         for (final Entry<String, ServiceEndpointOperation> entry : sid2seo.entrySet()) {
             if (entry.getValue() instanceof ServiceEndpointOperationProvides) {
                 final String routeId = entry.getKey();
                 final RouteDefinition routeDefinition = camelCtx.getRouteDefinition(routeId);
-                assertNotNull("Route '" + routeId + "' implementing a service provider is not declared",
+                assertNotNull("Route '" + routeId
+                        + "' defined in WSDL and implementing a service provider has no definition as Camel route.",
                         routeDefinition);
 
                 final Set<String> consumerEdpUris = RouteDefinitionHelper.gatherAllEndpointUris(camelCtx,
-                        routeDefinition,
-                        false, true, false);
+                        routeDefinition, false, true, false);
                 for (final String consumerEdpUri : consumerEdpUris) {
                     if (consumerEdpUri.startsWith("petals://")) {
                         final String consumerEdp = consumerEdpUri.replaceFirst("petals://", "");

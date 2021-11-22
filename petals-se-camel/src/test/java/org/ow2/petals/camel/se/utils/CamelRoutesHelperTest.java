@@ -32,6 +32,8 @@ import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 
 public class CamelRoutesHelperTest extends Assert {
 
+    private static final Logger LOG = Logger.getLogger(CamelRoutesHelperTest.class.getName());
+
     public static final String XML_ROUTES_OK = "tests/routes-valid.xml";
 
     public static final String XML_ROUTES_KO = "tests/routes-invalid.xml";
@@ -47,28 +49,28 @@ public class CamelRoutesHelperTest extends Assert {
 
     @Test
     public void testLoadRoutesClass_ok() throws Exception {
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_OK);
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_OK, LOG);
     }
 
     @Test
     public void testLoadRoutesClass_ko_subclass() throws InvalidJBIConfigurationException {
         thrown.expect(InvalidJBIConfigurationException.class);
         thrown.expectMessage("is not a subclass of Camel RouteBuilder");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_SUB);
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_SUB, LOG);
     }
 
     @Test
     public void testLoadRoutesClass_ko_noclass() throws InvalidJBIConfigurationException {
         thrown.expect(InvalidJBIConfigurationException.class);
         thrown.expectCause(CoreMatchers.isA(ClassNotFoundException.class));
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_NO);
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_NO, LOG);
     }
 
     @Test
     public void testLoadRoutesClass_ko_noninstantiable() throws InvalidJBIConfigurationException {
         thrown.expect(InvalidJBIConfigurationException.class);
         thrown.expectMessage("Can't instantiate");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), TestRoutesKO1.class.getName());
+        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), TestRoutesKO1.class.getName(), LOG);
     }
 
     @Test
