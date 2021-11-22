@@ -109,7 +109,7 @@ public class CamelSU implements PetalsCamelContext {
 
         for (final String className : classNames) {
             assert className != null;
-            final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className);
+            final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className, suLogger);
 
             try {
                 context.addRoutes(routes);

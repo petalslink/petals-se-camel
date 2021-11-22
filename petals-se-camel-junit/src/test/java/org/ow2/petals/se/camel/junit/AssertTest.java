@@ -271,7 +271,7 @@ public class AssertTest {
             fail("Invalid route identifier not detected");
         } catch (final AssertionError e) {
             assertEquals("Unexpected assertion",
-                    "Route 'theProvidesId' implementing a service provider is not declared",
+                    "Route 'theProvidesId' defined in WSDL and implementing a service provider has no definition as Camel route.",
                     e.getMessage());
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
@@ -303,7 +303,7 @@ public class AssertTest {
             fail("Invalid route identifier not detected");
         } catch (final AssertionError e) {
             assertEquals("Unexpected assertion",
-                    "Route 'another-onlyoffice-wrapper-convert' implementing a service provider is not declared",
+                    "Route 'another-onlyoffice-wrapper-convert' defined in WSDL and implementing a service provider has no definition as Camel route.",
                     e.getMessage());
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
@@ -370,6 +370,37 @@ public class AssertTest {
         } catch (final AssertionError e) {
             assertEquals("Unexpected assertion",
                     "Consumer endpoint URI 'petals://onlyoffice-convert' declared in route 'onlyoffice-wrapper-convert' but not declared in JBI descriptor as service consumer",
+                    e.getMessage());
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassloader);
+        }
+    }
+
+    /**
+     * Check the compliance of valid WSDL/JBI, no Camel route defined in the service unit.
+     */
+    @Test
+    public void assertWsdlCompliance_noRouteDefined() throws Exception {
+
+        final ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(new ClassLoader(oldClassloader) {
+
+            @Override
+            public URL getResource(final String name) {
+                if (name.startsWith("jbi/")) {
+                    return super.getResource(name.replaceAll("jbi/", "wsdl-jbi-compliance/no-route-defined/jbi/"));
+                } else {
+                    return super.getResource(name);
+                }
+            }
+        });
+
+        try {
+            assertWsdlCompliance();
+            fail("Camel consumer edp is not missing");
+        } catch (final AssertionError e) {
+            assertEquals("Unexpected assertion",
+                    "No Camel route definition loaded. Check your service unit configuration.",
                     e.getMessage());
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);

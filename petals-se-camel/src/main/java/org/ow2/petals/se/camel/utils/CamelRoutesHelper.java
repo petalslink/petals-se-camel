@@ -38,11 +38,12 @@ public class CamelRoutesHelper {
      * @param classLoader
      * @param className
      *            Class name containing the Camel route definitions. Not {@code null}.
+     * @param logger
      * @return
      * @throws InvalidJBIConfigurationException
      */
-    public static RouteBuilder loadRoutesFromClass(final ClassLoader classLoader, final String className)
-            throws InvalidJBIConfigurationException {
+    public static RouteBuilder loadRoutesFromClass(final ClassLoader classLoader, final String className,
+            final Logger logger) throws InvalidJBIConfigurationException {
         assert className != null;
 
         if (className.isEmpty()) {
@@ -54,6 +55,11 @@ public class CamelRoutesHelper {
             if (!(o instanceof RouteBuilder)) {
                 throw new InvalidJBIConfigurationException(className + " is not a subclass of Camel RouteBuilder");
             }
+
+            if (logger.isLoggable(Level.CONFIG)) {
+                logger.config(String.format("Route(s) loaded from class '%s'", className));
+            }
+
             return (RouteBuilder) o;
         } catch (final ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
@@ -74,6 +80,10 @@ public class CamelRoutesHelper {
         final RoutesDefinition routes;
         try {
             routes = context.loadRoutesDefinition(xml);
+
+            if (logger.isLoggable(Level.CONFIG)) {
+                logger.config(String.format("Route(s) loaded from XML definition file '%s'", xmlName));
+            }
         } catch (final Exception e) {
             throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName, e);
         } finally {
