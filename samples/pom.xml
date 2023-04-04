@@ -23,7 +23,7 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.3.0-SNAPSHOT</version>
+      <version>20.3.2</version>
       <relativePath />
    </parent>
 
