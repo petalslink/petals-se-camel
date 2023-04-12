@@ -23,7 +23,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.3.2</version>
+      <version>20.3.3</version>
    </parent>
 
    <artifactId>petals-camel-parent</artifactId>
@@ -48,7 +48,7 @@
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-cdkbased-components-parent</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.0</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -86,7 +86,7 @@
          <dependency>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-message-exchange</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.4.0</version>
          </dependency>
          <dependency>
             <groupId>org.eclipse.jdt</groupId>
