@@ -201,6 +201,11 @@
                      <usedDependencies>
                         <usedDependency>org.apache.camel:apt</usedDependency>
                      </usedDependencies>
+                     <ignoredNonTestScopedDependencies>
+						 <!-- Used directly by unit tests but required transitively at runtime -->
+						 <ignoredNonTestScopedDependency>org.ow2.easycommons:easycommons-lang</ignoredNonTestScopedDependency>
+						 <ignoredNonTestScopedDependency>org.ow2.petals:petals-cdk-jbidescriptor</ignoredNonTestScopedDependency>
+                     </ignoredNonTestScopedDependencies>
                   </configuration>
                </execution>
             </executions>
