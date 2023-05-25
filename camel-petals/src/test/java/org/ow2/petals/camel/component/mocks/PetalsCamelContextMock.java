@@ -18,6 +18,7 @@
 package org.ow2.petals.camel.component.mocks;
 
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -58,15 +59,14 @@ import org.ow2.petals.jbi.messaging.exchange.PetalsMessageExchange;
 import org.w3c.dom.DocumentFragment;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
-import com.google.common.collect.Maps;
 
 public class PetalsCamelContextMock implements PetalsCamelContext {
 
-    private final Map<ServiceEndpointOperation, PetalsChannel> channels = Maps.newHashMap();
+    private final Map<ServiceEndpointOperation, PetalsChannel> channels = new HashMap<>();
 
-    private final Map<String, ServiceEndpointOperation> seos = Maps.newHashMap();
+    private final Map<String, ServiceEndpointOperation> seos = new HashMap<>();
 
-    private final Map<ServiceEndpointOperationKey, PetalsCamelRoute> ppos = Maps.newHashMap();
+    private final Map<ServiceEndpointOperationKey, PetalsCamelRoute> ppos = new HashMap<>();
 
     private final CamelContext context;
 

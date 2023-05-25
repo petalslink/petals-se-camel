@@ -97,10 +97,6 @@
          <artifactId>petals-cdk-jbidescriptor</artifactId>
       </dependency>
       <dependency>
-         <groupId>com.google.guava</groupId>
-         <artifactId>guava</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.ow2.easycommons</groupId>
          <artifactId>easycommons-util</artifactId>
       </dependency>
