@@ -35,7 +35,7 @@
 
    <properties>
       <petals-se-camel.version>1.3.0</petals-se-camel.version>
-      <petals-bc-soap.version>5.1.0</petals-bc-soap.version>
+      <petals-bc-soap.version>5.2.0-SNAPSHOT</petals-bc-soap.version>
       <camel.version>2.20.4</camel.version>
    </properties>
 
