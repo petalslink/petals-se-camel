@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2023 Linagora
+ * Copyright (c) 2015-2024 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
