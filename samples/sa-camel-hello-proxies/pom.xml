@@ -81,7 +81,7 @@
                         <usedDependency>org.ow2.petals.samples.camel:su-camel-hello-proxy-java</usedDependency>
                         <usedDependency>org.ow2.petals.samples.camel:su-camel-hello-proxy-xml</usedDependency>
                         <!-- No unit tests for a SA -->
-                        <usedDependency>junit:junit</usedDependency>
+                        <usedDependency>org.junit.jupiter:junit-jupiter-api</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>

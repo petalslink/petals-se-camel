@@ -26,6 +26,8 @@ import org.ow2.petals.camel.ServiceEndpointOperation;
 
 public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
 
+    public static final String TEST_NS = "tests";
+
     private final @Nullable QName service;
 
     private final QName interfaceName;
@@ -41,10 +43,10 @@ public class ServiceEndpointOperationMock implements ServiceEndpointOperation {
     public ServiceEndpointOperationMock(final @Nullable String service, final String interfaceName,
             final @Nullable String endpoint, final @Nullable String operation, final ServiceType type,
             final @Nullable URI mep) {
-        this.service = service == null ? null : new QName("tests", service);
-        this.interfaceName = new QName("tests", interfaceName);
+        this.service = service == null ? null : new QName(TEST_NS, service);
+        this.interfaceName = new QName(TEST_NS, interfaceName);
         this.endpoint = endpoint;
-        this.operation = operation == null ? null : new QName("tests", operation);
+        this.operation = operation == null ? null : new QName(TEST_NS, operation);
         this.type = type;
         this.mep = mep;
     }

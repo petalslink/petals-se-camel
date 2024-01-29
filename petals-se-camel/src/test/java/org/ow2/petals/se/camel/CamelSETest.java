@@ -17,12 +17,15 @@
  */
 package org.ow2.petals.se.camel;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
@@ -37,7 +40,6 @@ import org.ow2.petals.se.camel.mocks.TestRoutesOK;
  * Tests for {@link CamelSE}, {@link CamelSU}, {@link CamelSUManager}, {@link CamelJBIListener} and co.
  * 
  * @author vnoel
- *
  */
 public class CamelSETest extends AbstractComponentTest {
 
@@ -47,14 +49,16 @@ public class CamelSETest extends AbstractComponentTest {
 
     @Test
     public void testDeploy_WSDL_KO() throws Exception {
-        thrown.expect(DeploymentException.class);
-        thrown.expectMessage("Failed to find provided service");
-        COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
-            @Override
-            public ServiceConfiguration create() {
-                return new ProvidesServiceConfiguration(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", WSDL11);
-            }
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
+            COMPONENT_UNDER_TEST.deployService(SU_NAME, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
+                    return new ProvidesServiceConfiguration(WRONG_INTERFACE, WRONG_SERVICE, "autogenerate", WSDL11);
+                }
+            });
         });
+        assertTrue(actualException.getMessage().contains(
+                String.format("Failed to find provided service '%s' in the WSDL description", WRONG_SERVICE)));
     }
 
     @Test
@@ -74,10 +78,11 @@ public class CamelSETest extends AbstractComponentTest {
 
     @Test
     public void testDeploy_XML_KO() throws Exception {
-        thrown.expect(DeploymentException.class);
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
+            deployHello(SU_NAME, WSDL11, INVALID_ROUTES);
+        });
         // the cause is in the message!
-        thrown.expectMessage(InvalidCamelRouteDefinitionException.class.getName());
-        deployHello(SU_NAME, WSDL11, INVALID_ROUTES);
+        assertTrue(actualException.getMessage().contains(InvalidCamelRouteDefinitionException.class.getName()));
     }
 
     @Test
@@ -87,11 +92,12 @@ public class CamelSETest extends AbstractComponentTest {
 
     @Test
     public void testDeploy_JAVA_KO() throws Exception {
-        thrown.expect(DeploymentException.class);
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
+            deployHello(SU_NAME, WSDL11, TestRoutesKO1.class);
+        });
         // the cause is in the message!
-        thrown.expectMessage(InvalidJBIConfigurationException.class.getName());
-        thrown.expectMessage("Can't instantiate");
-        deployHello(SU_NAME, WSDL11, TestRoutesKO1.class);
+        assertTrue(actualException.getMessage().contains(InvalidJBIConfigurationException.class.getName()));
+        assertTrue(actualException.getMessage().contains("Can't instantiate"));
     }
 
     @Test
@@ -132,15 +138,17 @@ public class CamelSETest extends AbstractComponentTest {
 
     @Test
     public void testUnknownFromServiceId() throws Exception {
-        thrown.expect(DeploymentException.class);
         // TODO better checks for the cause of the error
-        deployHello(SU_NAME, WSDL11, RouteWrongFromServiceId.class);
+        assertThrows(DeploymentException.class, () -> {
+            deployHello(SU_NAME, WSDL11, RouteWrongFromServiceId.class);
+        });
     }
 
     @Test
     public void testUnknownToServiceId() throws Exception {
-        thrown.expect(DeploymentException.class);
         // TODO better checks for the cause of the error
-        deployHello(SU_NAME, WSDL11, RouteWrongToServiceId.class);
+        assertThrows(DeploymentException.class, () -> {
+            deployHello(SU_NAME, WSDL11, RouteWrongToServiceId.class);
+        });
     }
 }

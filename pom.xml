@@ -16,139 +16,86 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-   <parent>
-      <artifactId>petals-parent</artifactId>
-      <groupId>org.ow2.petals</groupId>
-      <relativePath />
-      <version>20.4.0-SNAPSHOT</version>
-   </parent>
+	<parent>
+		<artifactId>petals-parent</artifactId>
+		<groupId>org.ow2.petals</groupId>
+		<relativePath />
+		<version>20.4.0-SNAPSHOT</version>
+	</parent>
 
-   <artifactId>petals-camel-parent</artifactId>
-   <name>Petals ESB - Components - Camel</name>
-   <version>1.4.0-SNAPSHOT</version>
-   <packaging>pom</packaging>
+	<artifactId>petals-camel-parent</artifactId>
+	<name>Petals ESB - Components - Camel</name>
+	<version>1.4.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-   <modules>
-      <module>petals-se-camel</module>
-      <module>camel-petals</module>
-      <module>petals-se-camel-junit</module>
-   </modules>
+	<modules>
+		<module>petals-se-camel</module>
+		<module>camel-petals</module>
+		<module>petals-se-camel-junit</module>
+	</modules>
 
-   <properties>
-      <camel.version>2.20.4</camel.version>
-      <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
-      <sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
-   </properties>
+	<properties>
+		<camel.version>4.0.3</camel.version>
+		<!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
+		<sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+	</properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-cdkbased-components-parent</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-parent</artifactId>
-            <version>${camel.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-            <exclusions>
-               <exclusion>
-                  <!-- Apache Camel comes with Apache Commons IO 2.4 instead of version 2.11. We choose version 2.11 -->
-                  <groupId>commons-io</groupId>
-                  <artifactId>commons-io</artifactId>
-               </exclusion>
-               <exclusion>
-                  <!-- Apache Camel comes with SLF4J 1.7.22 instead of version 1.7.32 used by Petals. We choose version 1.7.32 -->
-                  <groupId>org.slf4j</groupId>
-                  <artifactId>slf4j-simple</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <!-- Apache Camel comes with Apache Commons IO 2.4 instead of version 2.11. We force use of version 2.11 -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-         </dependency>
-         <dependency>
-            <!-- Apache Camel comes with SLF4J 1.7.22 instead of version 1.7.32 used by Petals. We choose version 1.7.32 -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-message-exchange</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-         </dependency>
-         <dependency>
-            <groupId>org.eclipse.jdt</groupId>
-            <artifactId>org.eclipse.jdt.annotation</artifactId>
-            <version>1.1.0</version>
-            <!-- Prevent the dependency from being included in distributions -->
-            <scope>provided</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>apt</artifactId>
-            <version>${camel.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-               <exclusion>
-                  <!-- Already in camel-core -->
-                  <groupId>org.apache.camel</groupId>
-                  <artifactId>spi-annotations</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>spi-annotations</artifactId>
-            <version>${camel.version}</version>
-            <scope>provided</scope>
-         </dependency>
-         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <exclusions>
-               <exclusion>
-                  <!-- We prefer to use Hamcrest 2.1 coming with Mockito instead of Hamcrest 1.3 coming with Junit -->
-                  <!-- TODO: Must be adjusted/removed when moving to JUnit5 -->
-                  <groupId>org.hamcrest</groupId>
-                  <artifactId>hamcrest-core</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>2.1</version>
-         </dependency>
-         <dependency>
-            <groupId>xmlunit</groupId>
-            <artifactId>xmlunit</artifactId>
-            <version>1.6</version>
-         </dependency>
-         <dependency>
-            <!-- Overrides petals-root-parent version to use the one from camel -->
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-cdkbased-components-parent</artifactId>
+				<version>1.3.0-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-parent</artifactId>
+				<version>${camel.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<!-- Align JUnit 5 between Camel et Petals -->
+				<groupId>org.junit.platform</groupId>
+				<artifactId>junit-platform-engine</artifactId>
+				<version>1.10.0</version>
+			</dependency>
+			<dependency>
+				<!-- Align JUnit 5 between Camel et Petals -->
+				<groupId>org.junit.platform</groupId>
+				<artifactId>junit-platform-commons</artifactId>
+				<version>1.10.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-message-exchange</artifactId>
+				<version>1.5.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jdt</groupId>
+				<artifactId>org.eclipse.jdt.annotation</artifactId>
+				<version>1.1.0</version>
+				<!-- Prevent the dependency from being included in distributions -->
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>xmlunit</groupId>
+				<artifactId>xmlunit</artifactId>
+				<version>1.6</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-   <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-     <tag>HEAD</tag>
-  </scm>
+	<scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
+		<developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>

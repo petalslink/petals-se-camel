@@ -16,8 +16,10 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<something>
-   <is>
-      <wrong />
-   </is>
-</something>
+<routes xmlns="http://camel.apache.org/schema/spring">
+   <something>
+      <is>
+         <wrong />
+      </is>
+   </something>
+</routes>

@@ -20,23 +20,25 @@ package org.ow2.petals.camel.helpers;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.activation.DataHandler;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.attachment.AttachmentMarshaller;
-import javax.xml.bind.attachment.AttachmentUnmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.camel.Message;
+import org.apache.camel.Exchange;
+import org.apache.camel.attachment.AttachmentMessage;
 
 import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 import com.ebmwebsourcing.easycommons.xml.jaxb.AbstractAttachmentMarshaller;
 import com.ebmwebsourcing.easycommons.xml.jaxb.AbstractAttachmentUnmarshaller;
+
+import jakarta.activation.DataHandler;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.attachment.AttachmentMarshaller;
+import jakarta.xml.bind.attachment.AttachmentUnmarshaller;
 
 public class MarshallingHelper {
 
@@ -51,29 +53,30 @@ public class MarshallingHelper {
 
     /**
      * <p>
-     * Unmarshal XML data extracting from the given Camel message body as the declared type.
+     * Unmarshal XML data, as the declared type, extracting from the given Camel exchange, as 'IN' message body. XOP
+     * optimization is used for attachments.
      * </p>
      * <p>
      * This method is thread-safe.
      * </p>
      * 
-     * @param msg
-     *            Camel message containing the body to unmarshall
+     * @param camelExchange
+     *            Camel exchange containing the 'IN' body to unmarshall
      * @param declaredType
      *            The expected type of the Camel message body afer unmarshalling
      * @return The Camel message body unmarshalled
      */
     @SuppressWarnings("unchecked")
-    public <T> T unmarshal(final Message msg, final Class<T> declaredType) throws JAXBException {
+    public <T> T unmarshal(final Exchange camelExchange, final Class<T> declaredType) throws JAXBException {
 
         // we can't simply use getBody(Source.class) because StAxSource are not supported by jaxb
         // and sometimes they are returned by getBody!
-        Object oBody = msg.getBody();
-        Source body;
-        if (oBody instanceof Source && !(oBody instanceof StAXSource)) {
-            body = (Source) oBody;
+        final Object oBody = camelExchange.getIn().getBody();
+        final Source body;
+        if (oBody instanceof Source bodySource && !(oBody instanceof StAXSource)) {
+            body = bodySource;
         } else {
-            body = msg.getBody(DOMSource.class);
+            body = camelExchange.getIn().getBody(DOMSource.class);
         }
 
         synchronized (this.unm) {
@@ -81,7 +84,8 @@ public class MarshallingHelper {
             this.unm.setAttachmentUnmarshaller(new AbstractAttachmentUnmarshaller() {
                 @Override
                 protected DataHandler getAttachment(final String cid) {
-                    return msg.getAttachment(cid);
+                    final AttachmentMessage am = camelExchange.getIn(AttachmentMessage.class);
+                    return am.getAttachment(cid);
                 }
             });
 
@@ -99,37 +103,39 @@ public class MarshallingHelper {
 
     /**
      * <p>
-     * Marshal the given XML data {@code t} into the given Camel message body. XOP optimization is used for attachments.
+     * Marshal the given XML data {@code t} into the given Camel exchange, as 'OUT' message body. XOP optimization is
+     * used for attachments.
      * </p>
      * <p>
      * This method is thread-safe.
      * </p>
      * 
-     * @param msg
-     *            Camel message
+     * @param camelExchange
+     *            Camel exchange
      * @param t
      *            given XML data to marshal
      */
-    public <T> void marshal(final Message msg, final T t) throws JAXBException {
-        this.marshal(msg, t, true);
+    public <T> void marshal(final Exchange camelExchange, final T t) throws JAXBException {
+        this.marshal(camelExchange, t, true);
     }
 
     /**
      * <p>
-     * Marshal the given XML data {@code t} into the given Camel message body.
+     * Marshal the given XML data {@code t} into the given Camel exchange, as 'OUT' message body. XOP optimization is
+     * used for attachments.
      * </p>
      * <p>
      * This method is thread-safe.
      * </p>
      * 
-     * @param msg
-     *            Camel message
+     * @param camelExchange
+     *            Camel exchange
      * @param t
      *            given XML data to marshal
      * @param xop
      *            If {@code true}, XOP optimization is used for attachments
      */
-    public <T> void marshal(final Message msg, final T t, final boolean xop) throws JAXBException {
+    public <T> void marshal(final Exchange camelExchange, final T t, final boolean xop) throws JAXBException {
 
         synchronized (this.m) {
             final AttachmentMarshaller oldAttachmentMarshaller = m.getAttachmentMarshaller();
@@ -137,14 +143,15 @@ public class MarshallingHelper {
                 this.m.setAttachmentMarshaller(new AbstractAttachmentMarshaller() {
                     @Override
                     protected void addAttachment(final String cid, final DataHandler data) {
-                        msg.addAttachment(cid, data);
+                        final AttachmentMessage am = camelExchange.getMessage(AttachmentMessage.class);
+                        am.addAttachment(cid, data);
                     }
                 });
             }
 
             try (final EasyByteArrayOutputStream out = new EasyByteArrayOutputStream()) {
                 this.m.marshal(t, out);
-                msg.setBody(new StreamSource(out.toByteArrayInputStream()));
+                camelExchange.getMessage().setBody(new StreamSource(out.toByteArrayInputStream()));
             } finally {
                 this.m.setAttachmentMarshaller(oldAttachmentMarshaller);
             }

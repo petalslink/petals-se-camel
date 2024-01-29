@@ -17,15 +17,26 @@
  */
 package org.ow2.petals.camel.component;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import javax.xml.namespace.QName;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.Consumer;
 import org.apache.camel.Endpoint;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.NoSuchEndpointException;
 import org.apache.camel.Producer;
 import org.apache.camel.ResolveEndpointFailedException;
-import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
@@ -34,257 +45,486 @@ import org.ow2.petals.camel.exceptions.UnknownServiceException;
 
 public class PetalsCamelComponentTest extends CamelPetalsTestSupport {
 
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
+    private static final String SERVICE_ID_1 = "serviceId1";
 
     @Test
     public void testCreateProvidesEndpoint_OK() {
-        addMockProvides("serviceId1");
-        createEndpoint("serviceId1");
+        addMockProvides(SERVICE_ID_1);
+        createEndpoint(SERVICE_ID_1);
         // synchronous must be recognised
-        createEndpoint("serviceId1?synchronous=true");
+        createEndpoint(SERVICE_ID_1 + "?synchronous=true");
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO1() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(UnknownServiceException.class));
-        createEndpoint("serviceId2");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint("serviceId2");
+        });
+        assertInstanceOf(UnknownServiceException.class, actualException.getCause());
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO2() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("The parameter timeout can't be set on a from() endpoint");
+        addMockProvides(SERVICE_ID_1);
         // timeout is not authorised for provides
-        createEndpoint("serviceId1?timeout=5");
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?timeout=5");
+        });
+        assertTrue(actualException.getMessage().contains("The parameter timeout can't be set on a from() endpoint"));
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO3() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("Unknown parameters");
-        createEndpoint("serviceId1?wrong=true");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?wrong=true");
+        });
+        assertTrue(actualException.getMessage().contains("Unknown parameters=[{wrong=true}]"));
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO4() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("The parameter serviceName can't be set on a from() endpoint");
-        createEndpoint("serviceId1?serviceName={ns}name");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?serviceName={ns}name");
+        });
+        assertTrue(
+                actualException.getMessage().contains("The parameter serviceName can't be set on a from() endpoint"));
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO5() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("The parameter endpointName can't be set on a from() endpoint");
-        createEndpoint("serviceId1?endpointName=name");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?endpointName=name");
+        });
+        assertTrue(
+                actualException.getMessage().contains("The parameter endpointName can't be set on a from() endpoint"));
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO6() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("The parameter operation can't be set on a from() endpoint");
-        createEndpoint("serviceId1?operation={ns}name");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?operation={ns}name");
+        });
+        assertTrue(actualException.getMessage().contains("The parameter operation can't be set on a from() endpoint"));
     }
 
     @Test
     public void testCreateProvidesEndpoint_KO7() {
-        addMockProvides("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("The parameter exchangePattern can't be set on a from() endpoint");
-        createEndpoint("serviceId1?exchangePattern=InOut");
+        addMockProvides(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?exchangePattern=InOut");
+        });
+        assertTrue(actualException.getMessage()
+                .contains("The parameter exchangePattern can't be set on a from() endpoint"));
+    }
+
+    private static void assertServiceEndpointOperation(final ServiceEndpointOperation expected,
+            final ServiceEndpointOperation actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.getInterface(), actual.getInterface());
+        assertEquals(expected.getService(), actual.getService());
+        assertEquals(expected.getEndpoint(), actual.getEndpoint());
+        assertEquals(expected.getOperation(), actual.getOperation());
+        assertEquals(expected.getMEP(), actual.getMEP());
+        assertEquals(expected.getType(), actual.getType());
     }
 
     @Test
     public void testCreateConsumesEndpoint_OK() {
-        addMockConsumes("serviceId1");
-        createEndpoint("serviceId1");
+        final ServiceEndpointOperation expectedService = addMockConsumes(SERVICE_ID_1);
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
+
         // synchronous must be recognised
-        createEndpoint("serviceId1?synchronous=true");
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?synchronous=true");
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertTrue(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
+
         // timeout must be recognised
-        createEndpoint("serviceId1?timeout=5");
-        createEndpoint("serviceId1?synchronous=true&timeout=5");
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?timeout=5");
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(5, edp.getTimeout());
+        }
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?synchronous=true&timeout=5");
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertTrue(edp.isSynchronous());
+            assertEquals(5, edp.getTimeout());
+        }
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoService_OK() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock(null, "Interface", "endpoint", "operation",
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        createEndpoint("serviceId1");
-        createEndpoint("serviceId1?serviceName={ns}name");
+        final ServiceEndpointOperation expectedService = new ServiceEndpointOperationMock(null, TEST_INTERFACE_NAME,
+                TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value());
+        pcc().addMockService(SERVICE_ID_1, expectedService);
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?serviceName={ns}name");
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertEquals(new QName("ns", "name"), edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoService_KO() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock(null, "Interface", "endpoint", "operation",
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(IllegalArgumentException.class));
-        createEndpoint("serviceId1?serviceName={name");
+        pcc().addMockService(SERVICE_ID_1, new ServiceEndpointOperationMock(null, TEST_INTERFACE_NAME,
+                TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?serviceName={name");
+        });
+        assertInstanceOf(IllegalArgumentException.class, actualException.getCause());
     }
-    
+
     @Test
     public void testCreateConsumesEndpoint_NoEndpoint_OK() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock("Service", "Interface", null, "operation",
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        createEndpoint("serviceId1");
-        createEndpoint("serviceId1?endpointName=name");
+        final ServiceEndpointOperation expectedService = new ServiceEndpointOperationMock(TEST_SERVICE_NAME,
+                TEST_INTERFACE_NAME, null, TEST_OPERATION_NAME, ServiceType.CONSUMES,
+                MEPPatternConstants.IN_OUT.value());
+        pcc().addMockService(SERVICE_ID_1, expectedService);
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?endpointName=name");
+
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertEquals("name", edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoEndpoint_OK2() {
         // no endpoint, no service, need service parameter!
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock(null, "Interface", null, "operation",
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        createEndpoint("serviceId1?serviceName={ns}name&endpointName=name");
+        final ServiceEndpointOperation expectedService = new ServiceEndpointOperationMock(null, TEST_INTERFACE_NAME,
+                null, TEST_OPERATION_NAME, ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value());
+        pcc().addMockService(SERVICE_ID_1, expectedService);
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?serviceName={ns}name&endpointName=name");
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertEquals(new QName("ns", "name"), edp.getServiceName());
+            assertEquals("name", edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoEndpoint_KO() {
         // no endpoint, no service, need service parameter!
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock(null, "Interface", null, "operation",
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("if the endpoint nor the corresponding Consumes declares a service name");
-        createEndpoint("serviceId1?endpointName=name");
+        pcc().addMockService(SERVICE_ID_1, new ServiceEndpointOperationMock(null, TEST_INTERFACE_NAME, null,
+                TEST_OPERATION_NAME, ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?endpointName=name");
+        });
+        assertTrue(actualException.getMessage()
+                .contains("if the endpoint nor the corresponding Consumes declares a service name"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoOperation_OK() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock("Service", "Interface", "endpoint", null,
-                ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        createEndpoint("serviceId1");
-        createEndpoint("serviceId1?operation={ns}name");
+        final ServiceEndpointOperation expectedService = new ServiceEndpointOperationMock(TEST_SERVICE_NAME,
+                TEST_INTERFACE_NAME, TEST_ENDPOINT_NAME, null, ServiceType.CONSUMES,
+                MEPPatternConstants.IN_OUT.value());
+        pcc().addMockService(SERVICE_ID_1, expectedService);
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertNull(edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
+
+        {
+            final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?operation={ns}name");
+            assertServiceEndpointOperation(expectedService, edp.getService());
+            assertNull(edp.getServiceName());
+            assertNull(edp.getEndpointName());
+            assertEquals(new QName("ns", "name"), edp.getOperation());
+            assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+            assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+            assertFalse(edp.isSynchronous());
+            assertEquals(-1, edp.getTimeout());
+        }
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoOperation_KO() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock("Service", "Interface", "endpoint", null,
+        pcc().addMockService(SERVICE_ID_1,
+                new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME, TEST_ENDPOINT_NAME, null,
                 ServiceType.CONSUMES, MEPPatternConstants.IN_OUT.value()));
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(IllegalArgumentException.class));
-        createEndpoint("serviceId1?operation={name");
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?operation={name");
+        });
+        assertInstanceOf(IllegalArgumentException.class, actualException.getCause());
     }
 
     @Test
-    public void testCreateConsumesEndpoint_NoMEP_OK() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock("Service", "Interface", "endpoint",
-                "operation", ServiceType.CONSUMES, null));
-        createEndpoint("serviceId1");
-        createEndpoint("serviceId1?exchangePattern=InOut");
+    public void testCreateConsumesEndpoint_MEPInConsumer_NotOverriden() {
+        final ServiceEndpointOperation expectedService = new ServiceEndpointOperationMock(TEST_SERVICE_NAME,
+                TEST_INTERFACE_NAME, TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES,
+                MEPPatternConstants.IN_OUT.value());
+        pcc().addMockService(SERVICE_ID_1, expectedService);
+
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+        assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+        assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+    }
+
+    @Test
+    public void testCreateConsumesEndpoint_RobustInOnlyConsumer() {
+        pcc().addMockService(SERVICE_ID_1,
+                new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME, TEST_ENDPOINT_NAME,
+                        TEST_OPERATION_NAME, ServiceType.CONSUMES, MEPPatternConstants.ROBUST_IN_ONLY.value()));
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+        assertEquals(MEPPatternConstants.ROBUST_IN_ONLY, edp.getMep());
+        // The Camel exchange pattern 'InOnly' is the closest from Petals Exchange pattern 'RobustInOnlyOut'.
+        assertEquals(ExchangePattern.InOnly, edp.getExchangePattern());
+    }
+
+    @Test
+    public void testCreateConsumesEndpoint_NoMEPInConsumer_NotOverriden() {
+        pcc().addMockService(SERVICE_ID_1, new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME,
+                TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES, null));
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+        assertEquals(MEPPatternConstants.IN_ONLY, edp.getMep());
+        assertEquals(ExchangePattern.InOnly, edp.getExchangePattern());
+    }
+
+    @Test
+    public void testCreateConsumesEndpoint_NoMEPInConsumer_Overriden() {
+        pcc().addMockService(SERVICE_ID_1, new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME,
+                TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES, null));
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1 + "?exchangePattern=InOptionalOut");
+        assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+        // The Camel exchange pattern 'InOut' is the closest from Petals Exchange pattern 'InOptionalOut'.
+        assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
     }
 
     @Test
     public void testCreateConsumesEndpoint_NoMEP_KO1() {
-        pcc().addMockService("serviceId1", new ServiceEndpointOperationMock("Service", "Interface", "endpoint",
-                "operation", ServiceType.CONSUMES, null));
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(IllegalArgumentException.class));
-        createEndpoint("serviceId1?exchangePattern=notGood");
+        final String patternNotGood = "notGood";
+        pcc().addMockService(SERVICE_ID_1, new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME,
+                TEST_ENDPOINT_NAME, TEST_OPERATION_NAME, ServiceType.CONSUMES, null));
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?exchangePattern=" + patternNotGood);
+        });
+        assertInstanceOf(IllegalArgumentException.class, actualException.getCause());
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO1() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(UnknownServiceException.class));
-        createEndpoint("serviceId2");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint("serviceId2");
+        });
+        assertInstanceOf(UnknownServiceException.class, actualException.getCause());
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO2() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("Unknown parameters");
-        createEndpoint("serviceId1?wrong=true");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?wrong=true");
+        });
+        assertTrue(actualException.getMessage().contains("Unknown parameters=[{wrong=true}]"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO3() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("corresponding Consumes already declares a service");
-        createEndpoint("serviceId1?serviceName={ns}name");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?serviceName={ns}name");
+        });
+        assertTrue(actualException.getMessage().contains("corresponding Consumes already declares a service name"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO4() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("corresponding Consumes already declares an operation");
-        createEndpoint("serviceId1?operation={ns}name");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?operation={ns}name");
+        });
+        assertTrue(actualException.getMessage().contains("corresponding Consumes already declares an operation"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO5() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("corresponding Consumes already declares an endpoint name");
-        createEndpoint("serviceId1?endpointName=name");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?endpointName=name");
+        });
+        assertTrue(actualException.getMessage().contains("corresponding Consumes already declares an endpoint name"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO6() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("corresponding Consumes already declares a MEP");
-        createEndpoint("serviceId1?exchangePattern=InOut");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            createEndpoint(SERVICE_ID_1 + "?exchangePattern=InOut");
+        });
+        assertTrue(actualException.getMessage().contains("corresponding Consumes already declares a MEP"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO_URI1() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectMessage("No component found with scheme");
-        context().getEndpoint("petalsA:serviceId1");
+        addMockConsumes(SERVICE_ID_1);
+        final CamelContext context = context();
+        final Exception actualException = assertThrows(NoSuchEndpointException.class, () -> {
+            context.getEndpoint("petalsA:" + SERVICE_ID_1);
+        });
+        assertTrue(actualException.getMessage().contains("No endpoint could be found for: petalsA://serviceId1"));
     }
 
     @Test
     public void testCreateConsumesEndpoint_KO_URI2() {
-        addMockConsumes("serviceId1");
-        thrown.expect(ResolveEndpointFailedException.class);
-        thrown.expectCause(CoreMatchers.isA(InvalidURIException.class));
-        context().getEndpoint("petals:serviceId1$$");
+        addMockConsumes(SERVICE_ID_1);
+        final Exception actualException = assertThrows(ResolveEndpointFailedException.class, () -> {
+            context().getEndpoint("petals:" + SERVICE_ID_1 + "$$");
+        });
+        assertInstanceOf(InvalidURIException.class, actualException.getCause());
     }
 
     @Test
     public void testCreateProducer_OK() throws Exception {
         // camel producers are associated to petals consumes
-        addMockConsumes("serviceId1");
-        Endpoint endpoint = createEndpoint("serviceId1");
-        Producer producer = endpoint.createProducer();
+        final ServiceEndpointOperation expectedService = addMockConsumes(SERVICE_ID_1);
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+
+        assertServiceEndpointOperation(expectedService, edp.getService());
+        assertNull(edp.getServiceName());
+        assertNull(edp.getEndpointName());
+        assertNull(edp.getOperation());
+        assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+        assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+        assertFalse(edp.isSynchronous());
+        assertEquals(-1, edp.getTimeout());
+
+        final Producer producer = edp.createProducer();
         assertNotNull(producer);
-        assertTrue(producer instanceof PetalsCamelProducer);
+        assertInstanceOf(PetalsCamelProducer.class, producer);
     }
 
-    @Test(expected = IncompatibleEndpointUsageException.class)
+    @Test
     public void testCreateProducer_KO() throws Exception {
-        addMockProvides("serviceId1");
-        Endpoint endpoint = createEndpoint("serviceId1");
-        endpoint.createProducer();
+        addMockProvides(SERVICE_ID_1);
+        final Endpoint endpoint = createEndpoint(SERVICE_ID_1);
+        assertThrows(IncompatibleEndpointUsageException.class, () -> {
+            endpoint.createProducer();
+        });
     }
 
     @Test
     public void testCreateConsumer_OK() throws Exception {
         // camel consumers are associated to petals provides
-        addMockProvides("serviceId1");
-        Endpoint endpoint = createEndpoint("serviceId1");
-        Consumer consumer = endpoint.createConsumer(emptyProcessor());
+        final ServiceEndpointOperation expectedService = addMockProvides(SERVICE_ID_1);
+        final PetalsCamelEndpoint edp = createEndpoint(SERVICE_ID_1);
+
+        assertServiceEndpointOperation(expectedService, edp.getService());
+        assertNull(edp.getServiceName());
+        assertNull(edp.getEndpointName());
+        assertNull(edp.getOperation());
+        assertEquals(MEPPatternConstants.IN_OUT, edp.getMep());
+        assertEquals(ExchangePattern.InOut, edp.getExchangePattern());
+        assertFalse(edp.isSynchronous());
+        assertEquals(-1, edp.getTimeout());
+
+        final Consumer consumer = edp.createConsumer(emptyProcessor());
         assertNotNull(consumer);
-        assertTrue(consumer instanceof PetalsCamelConsumer);
+        assertInstanceOf(PetalsCamelConsumer.class, consumer);
     }
 
-    @Test(expected = IncompatibleEndpointUsageException.class)
+    @Test
     public void testCreateConsumer_KO() throws Exception {
-        addMockConsumes("serviceId1");
-        Endpoint endpoint = createEndpoint("serviceId1");
-        endpoint.createConsumer(emptyProcessor());
+        addMockConsumes(SERVICE_ID_1);
+        final Endpoint endpoint = createEndpoint(SERVICE_ID_1);
+        assertThrows(IncompatibleEndpointUsageException.class, () -> {
+            endpoint.createConsumer(emptyProcessor());
+        });
     }
 }

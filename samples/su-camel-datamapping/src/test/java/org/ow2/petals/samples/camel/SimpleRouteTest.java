@@ -17,18 +17,19 @@
  */
 package org.ow2.petals.samples.camel;
 
+import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Arrays;
 import java.util.Collection;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.ObjectFactory;
 import org.ow2.petals.SayHello;
 import org.ow2.petals.SayHelloResponse;
@@ -38,6 +39,10 @@ import org.ow2.petals.camel.helpers.MarshallingHelper;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.camel.helpers.Step;
 import org.ow2.petals.se.camel.junit.PetalsCamelTestSupport;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 
 public class SimpleRouteTest extends PetalsCamelTestSupport {
 
@@ -69,13 +74,13 @@ public class SimpleRouteTest extends PetalsCamelTestSupport {
         mockTo.whenAnyExchangeReceived(new Step("Mock To") {
             @Override
             public void process(Exchange exchange) throws Exception {
-                SayHello body = marshalling.unmarshal(exchange.getIn(), SayHello.class);
+                SayHello body = marshalling.unmarshal(exchange, SayHello.class);
                 assertEquals("test", body.getArg0());
 
                 final SayHelloResponse sayHelloResponse = new SayHelloResponse();
                 sayHelloResponse.setReturn("ok!");
                 JAXBElement<SayHelloResponse> response = new ObjectFactory().createSayHelloResponse(sayHelloResponse);
-                marshalling.marshal(exchange.getOut(), response);
+                marshalling.marshal(exchange, response);
             }
         });
         mockTo.expectedMessageCount(1);
@@ -86,16 +91,16 @@ public class SimpleRouteTest extends PetalsCamelTestSupport {
                     public void process(Exchange exchange) throws Exception {
                         SayHello2 sayHello = new SayHello2();
                         sayHello.setArg0("test");
-                        marshalling.marshal(exchange.getIn(), sayHello);
+                        marshalling.marshal(exchange, sayHello);
                     }
                 });
 
-        assertMockEndpointsSatisfied();
+        assertIsSatisfied(context);
 
         assertFalse(PetalsRouteBuilder.isJbiFailed(exchange));
-        assertTrue(exchange.hasOut());
-        SayHelloResponse2 response = marshalling.unmarshal(exchange.getOut(), SayHelloResponse2.class);
+        assertNotNull(exchange.getMessage().getBody());
+        SayHelloResponse2 response = marshalling.unmarshal(exchange, SayHelloResponse2.class);
         assertNotNull(response);
-        assertEquals(response.getReturn(), "ok!");
+        assertEquals("ok!", response.getReturn());
     }
 }

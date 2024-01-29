@@ -18,13 +18,21 @@
 package org.ow2.petals.se.camel.it;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderFailureLog;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.logging.LogRecord;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.camel.component.PetalsCamelProducer;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
@@ -40,7 +48,6 @@ import org.ow2.petals.se.camel.mocks.TestRoutesOK;
  * Contains tests that cover both petals-se-camel and camel-petals classes.
  * 
  * @author vnoel
- *
  */
 public class CamelIT extends AbstractComponentTest {
 
@@ -98,8 +105,8 @@ public class CamelIT extends AbstractComponentTest {
                 }));
 
         assertNotNull(response.getError());
-        assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
-        
+        assertSame(PetalsCamelProducer.TIMEOUT_EXCEPTION, response.getError());
+
         // let's wait for the answer from the ServiceProvider to have been handled by the CDK
         await().atMost(Duration.ofSeconds(2))
                 .untilAsserted(() -> assertEquals(0, COMPONENT_UNDER_TEST.getExchangesInDeliveryChannelCount()));
@@ -110,7 +117,7 @@ public class CamelIT extends AbstractComponentTest {
         assertMONITFailureOK();
 
         // let's clear logs
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
 
         // and now let's send another message that should work
         sendHelloIdentity(SU_NAME);
@@ -122,8 +129,7 @@ public class CamelIT extends AbstractComponentTest {
         @Override
         public void configure() throws Exception {
 
-            from("timer://petalsTimer?delay=500&period=500&repeatCount=1")
-                    .to("petals:theConsumesId");
+            from("timer://petalsTimer?delay=500&period=500&repeatCount=1").to("petals:theConsumesId");
         }
     }
 
@@ -143,13 +149,13 @@ public class CamelIT extends AbstractComponentTest {
     }
 
     public void assertMONITFailureOK() {
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
         final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
                 HELLO_OPERATION, monitLogs.get(0));
 
-        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE,
-                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
 
         // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
         // doesn't see the timeout
@@ -160,19 +166,19 @@ public class CamelIT extends AbstractComponentTest {
     }
 
     public void assertMONITOk() {
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
         final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
                 HELLO_OPERATION, monitLogs.get(0));
         assertMonitProviderEndLog(firstLog, monitLogs.get(3));
 
-        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE,
-                HELLO_SERVICE, EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
         assertMonitProviderEndLog(secondLog, monitLogs.get(2));
     }
 
     private void assertMONITasBCOk() {
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs.size());
 
         final FlowLogData consumeExtLog = assertMonitConsumerExtBeginLog(monitLogs.get(0));

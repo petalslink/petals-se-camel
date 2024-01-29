@@ -17,19 +17,21 @@
  */
 package org.ow2.petals.se.camel.junit;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Collection;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.camel.Exchange;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockComponent;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
 import org.ow2.petals.camel.helpers.MarshallingHelper;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
+
+import jakarta.xml.bind.JAXBException;
 
 public abstract class PetalsCamelTestSupport extends CamelTestSupport {
 
@@ -50,26 +52,24 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
 
     protected abstract Collection<String> routesToMock();
 
-    @Before
+    @BeforeEach
     public void mockEndpoints() throws Exception {
 
         if (tracing) {
             context.setTracing(true);
             context.setStreamCaching(true);
-            context.getProperties().put(Exchange.LOG_DEBUG_BODY_STREAMS, Boolean.TRUE.toString());
+            context.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_STREAMS, Boolean.TRUE.toString());
         }
 
         context.removeComponent("petals");
         context.addComponent("petals", new MockComponent());
         for (final String from : routesToMock()) {
             RouteDefinition routeDef = context.getRouteDefinition(from);
-            assertNotNull("You should set the routeId of one of the routes to '" + from + "' from mocking to work",
-                    routeDef);
-            routeDef.adviceWith(context, new AdviceWithRouteBuilder() {
-                @Override
-                public void configure() throws Exception {
-                    replaceFromWith("direct:" + from);
-                }
+            assertNotNull(routeDef,
+                    "You should set the routeId of one of the routes to '" + from + "' from mocking to work");
+
+            AdviceWith.adviceWith(context, routeDef.getRouteId(), builder -> {
+                builder.replaceFromWith("direct:" + from);
             });
         }
 
@@ -89,13 +89,13 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
      */
     protected void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault)
             throws JAXBException {
-        marshalling.marshal(exchange.getOut(), fault);
+        marshalling.marshal(exchange, fault);
         // set this only after we are sure we properly marshaled the body!
         PetalsRouteBuilder.setIsJbiFault(exchange, false);
     }
 
     protected void setJbiFault(final Exchange exchange, final Object fault) {
-        exchange.getOut().setBody(fault);
+        exchange.getMessage().setBody(fault);
         PetalsRouteBuilder.setIsJbiFault(exchange, false);
     }
 }

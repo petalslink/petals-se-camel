@@ -17,9 +17,9 @@
  */
 package org.ow2.petals.se.camel.junit;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,7 +40,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RouteDefinitionHelper;
-import org.apache.camel.model.RoutesDefinition;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.WSDL4ComplexWsdlFactory;
 import org.ow2.easywsdl.extensions.wsdl4complexwsdl.api.WSDL4ComplexWsdlReader;
 import org.ow2.easywsdl.schema.api.XmlException;
@@ -75,7 +74,6 @@ import com.google.common.collect.Lists;
  * Assertions about SE Camel service units
  * 
  * @author Christophe DENEUX - Linagora
- *
  */
 public class Assert {
 
@@ -102,15 +100,15 @@ public class Assert {
     public static void assertWsdlCompliance(final Properties componentPlaceholders) throws Exception {
 
         final URL jbiDescriptorUrl = Thread.currentThread().getContextClassLoader().getResource("jbi/jbi.xml");
-        assertNotNull("SU JBI descriptor not found", jbiDescriptorUrl);
+        assertNotNull(jbiDescriptorUrl, "SU JBI descriptor not found");
 
         final File jbiDescriptorFile = new File(jbiDescriptorUrl.toURI());
         try (final FileInputStream isJbiDescr = new FileInputStream(jbiDescriptorFile)) {
             final Jbi jbiDescriptor = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(isJbiDescr);
-            assertNotNull("Invalid JBI descriptor", jbiDescriptor);
-            assertNotNull("Invalid JBI descriptor", jbiDescriptor.getServices());
-            assertNotNull("Invalid JBI descriptor", jbiDescriptor.getServices().getProvides());
-            assertFalse("Invalid JBI descriptor", jbiDescriptor.getServices().getProvides().isEmpty());
+            assertNotNull(jbiDescriptor, "Invalid JBI descriptor");
+            assertNotNull(jbiDescriptor.getServices(), "Invalid JBI descriptor");
+            assertNotNull(jbiDescriptor.getServices().getProvides(), "Invalid JBI descriptor");
+            assertFalse(jbiDescriptor.getServices().getProvides().isEmpty(), "Invalid JBI descriptor");
 
             final String installRoot = new File(jbiDescriptorUrl.toURI()).getParentFile().getAbsolutePath();
 
@@ -123,11 +121,11 @@ public class Assert {
                 final Description wsdlDescr = wsdlReader.read(wsdlFile.toURI().toURL());
                 assertNotNull(wsdlDescr);
                 final InterfaceType itf = wsdlDescr.getInterface(provides.getInterfaceName());
-                assertNotNull(String.format("Interface '%s' not found in WSDL '%s'",
-                        provides.getInterfaceName().toString(), provides.getWsdl()), itf);
+                assertNotNull(itf, String.format("Interface '%s' not found in WSDL '%s'",
+                        provides.getInterfaceName().toString(), provides.getWsdl()));
                 final Service svc = wsdlDescr.getService(provides.getServiceName());
-                assertNotNull(String.format("Service '%s' not found in WSDL '%s'", provides.getServiceName().toString(),
-                        provides.getWsdl()), svc);
+                assertNotNull(svc, String.format("Service '%s' not found in WSDL '%s'",
+                        provides.getServiceName().toString(), provides.getWsdl()));
             }
 
             // check declaration of providers
@@ -247,27 +245,18 @@ public class Assert {
 
         for (final String xmlName : xmlNames) {
             assert xmlName != null;
-            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, camelCtx,
-                    Thread.currentThread().getContextClassLoader(), LOG);
-
-            try {
-                camelCtx.addRouteDefinitions(routes.getRoutes());
-            } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException(
-                        "Can't add routes from xml file " + xmlName + " to Camel context", e);
-            }
+            CamelRoutesHelper.loadRoutesFromXML(xmlName, camelCtx, LOG);
         }
 
-        assertFalse("No Camel route definition loaded. Check your service unit configuration.",
-                camelCtx.getRouteDefinitions().isEmpty());
+        assertFalse(camelCtx.getRouteDefinitions().isEmpty(),
+                "No Camel route definition loaded. Check your service unit configuration.");
 
         for (final Entry<String, ServiceEndpointOperation> entry : sid2seo.entrySet()) {
             if (entry.getValue() instanceof ServiceEndpointOperationProvides) {
                 final String routeId = entry.getKey();
                 final RouteDefinition routeDefinition = camelCtx.getRouteDefinition(routeId);
-                assertNotNull("Route '" + routeId
-                        + "' defined in WSDL and implementing a service provider has no definition as Camel route.",
-                        routeDefinition);
+                assertNotNull(routeDefinition, "Route '" + routeId
+                        + "' defined in WSDL and implementing a service provider has no definition as Camel route.");
 
                 final Set<String> consumerEdpUris = RouteDefinitionHelper.gatherAllEndpointUris(camelCtx,
                         routeDefinition, false, true, false);
@@ -275,10 +264,9 @@ public class Assert {
                     if (consumerEdpUri.startsWith("petals://")) {
                         final String consumerEdp = consumerEdpUri.replaceFirst("petals://", "");
                         final ServiceEndpointOperation seoConsumer = sid2seo.get(consumerEdp);
-                        assertTrue(
+                        assertInstanceOf(ServiceEndpointOperationConsumes.class, seoConsumer,
                                 "Consumer endpoint URI '" + consumerEdpUri + "' declared in route '" + routeId
-                                        + "' but not declared in JBI descriptor as service consumer",
-                                seoConsumer instanceof ServiceEndpointOperationConsumes);
+                                        + "' but not declared in JBI descriptor as service consumer");
                     }
                 }
             }

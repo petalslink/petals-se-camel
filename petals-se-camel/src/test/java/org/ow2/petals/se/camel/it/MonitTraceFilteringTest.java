@@ -19,9 +19,6 @@ package org.ow2.petals.se.camel.it;
 
 import java.net.URISyntaxException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -37,6 +34,10 @@ import org.ow2.petals.se.camel.AbstractComponentTest;
 import org.ow2.petals.se.camel.mocks.TestRoutesOK;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * Unit tests about MONIT trace filtering.

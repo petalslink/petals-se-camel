@@ -19,14 +19,14 @@ package org.ow2.petals.camel.helpers;
 
 import java.util.Properties;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
-import org.ow2.petals.camel.component.PetalsCamelComponent;
+import org.ow2.petals.camel.component.PetalsConstants;
 import org.ow2.petals.component.framework.api.util.Placeholders;
+
+import jakarta.xml.bind.JAXBException;
 
 public abstract class PetalsRouteBuilder extends RouteBuilder {
 
@@ -104,7 +104,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
 
     public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault, boolean stop)
             throws JAXBException {
-        marshalling.marshal(exchange.getOut(), fault);
+        marshalling.marshal(exchange, fault);
         // set this only after we are sure we properly marshaled the body!
         setIsJbiFault(exchange, stop);
     }
@@ -132,7 +132,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
         if (stop) {
             exchange.setProperty(Exchange.ROUTE_STOP, true);
         }
-        exchange.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
+        exchange.getOut().setHeader(PetalsConstants.MESSAGE_FAULT_HEADER, true);
     }
 
     /**
@@ -141,7 +141,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * @return {@code true} if this exchange failed due to a JBI fault.
      */
     public static boolean isJbiFault(Message msg) {
-        return Boolean.TRUE.equals(msg.getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER));
+        return Boolean.TRUE.equals(msg.getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
     }
 
     /**

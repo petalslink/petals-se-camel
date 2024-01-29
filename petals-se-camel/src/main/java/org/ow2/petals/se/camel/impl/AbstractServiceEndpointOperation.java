@@ -55,7 +55,7 @@ public abstract class AbstractServiceEndpointOperation implements ServiceEndpoin
 
     protected final PetalsCamelSender sender;
 
-    public AbstractServiceEndpointOperation(final QName interfaceName, final @Nullable QName service,
+    protected AbstractServiceEndpointOperation(final QName interfaceName, final @Nullable QName service,
             final @Nullable String endpoint, final @Nullable QName operation, 
             @Nullable final URI mep, final PetalsCamelSender sender) {
         this.service = service;

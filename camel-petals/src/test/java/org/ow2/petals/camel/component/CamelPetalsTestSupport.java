@@ -17,6 +17,10 @@
  */
 package org.ow2.petals.camel.component;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -29,12 +33,10 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.ExchangeTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.custommonkey.xmlunit.Diff;
 import org.easymock.EasyMockSupport;
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Assert;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.ServiceEndpointOperation;
@@ -44,7 +46,12 @@ import org.ow2.petals.camel.component.mocks.PetalsCamelContextMock.MockSendHandl
 import org.ow2.petals.camel.component.mocks.ServiceEndpointOperationMock;
 import org.xml.sax.SAXException;
 
-public abstract class CamelPetalsTestSupport extends ExchangeTestSupport {
+public abstract class CamelPetalsTestSupport extends CamelTestSupport {
+
+    protected static final String TEST_INTERFACE_NAME = "Interface";
+    protected static final String TEST_SERVICE_NAME = "Service";
+    protected static final String TEST_ENDPOINT_NAME = "endpoint";
+    protected static final String TEST_OPERATION_NAME = "operation";
 
     protected final EasyMockSupport easyMock = new EasyMockSupport();
 
@@ -73,7 +80,7 @@ public abstract class CamelPetalsTestSupport extends ExchangeTestSupport {
         // instantiate mock endpoint and stuffs) at context start
         this.pcc = new PetalsCamelContextMock(context());
 
-        context().getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this.pcc);
+        context().getRegistry().bind(PetalsCamelContext.class.getName(), this.pcc);
         this.initializeServices();
 
         context().start();
@@ -108,13 +115,14 @@ public abstract class CamelPetalsTestSupport extends ExchangeTestSupport {
     }
 
     protected static ServiceEndpointOperation createMockSEO(final ServiceType type, final URI pattern) {
-        return new ServiceEndpointOperationMock("Service", "Interface", "endpoint", "operation", type, pattern);
+        return new ServiceEndpointOperationMock(TEST_SERVICE_NAME, TEST_INTERFACE_NAME, TEST_ENDPOINT_NAME,
+                TEST_OPERATION_NAME, type, pattern);
     }
-    
+
     protected PetalsCamelEndpoint createEndpoint(final String serviceId) {
         Endpoint endpoint = context().getEndpoint("petals:" + serviceId);
-        Assert.assertNotNull(endpoint);
-        Assert.assertTrue(endpoint instanceof PetalsCamelEndpoint);
+        assertNotNull(endpoint);
+        assertInstanceOf(PetalsCamelEndpoint.class, endpoint);
         return (PetalsCamelEndpoint) endpoint;
     }
 
@@ -144,7 +152,7 @@ public abstract class CamelPetalsTestSupport extends ExchangeTestSupport {
     }
 
     protected void assertSimilar(final Diff diff) {
-        assertTrue(diff.toString(), diff.similar());
+        assertTrue(diff.similar(), diff.toString());
     }
 
     protected String getContent(final NormalizedMessage msg) {

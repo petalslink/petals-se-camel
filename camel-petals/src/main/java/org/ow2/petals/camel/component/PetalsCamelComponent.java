@@ -17,81 +17,28 @@
  */
 package org.ow2.petals.camel.component;
 
-import java.io.Serializable;
-import java.net.URI;
 import java.util.Map;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
-
 import org.apache.camel.Endpoint;
-import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultEndpoint;
-import org.apache.camel.impl.UriEndpointComponent;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.support.DefaultEndpoint;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 
-public class PetalsCamelComponent extends UriEndpointComponent {
-
-    /**
-     * Prefix for a property that will be converted from a property in a new Petals exchange in Petals Consumers.
-     */
-    public static final String EXCHANGE_ORIGINAL_PROPERTY_PREFIX = "PetalsOriginalProperty.";
-
-    /**
-     * Prefix for a property that will be converted to a property in a new Petals exchange in Petals Producers.
-     * 
-     * Note that Petals expects {@link Serializable} properties!
-     */
-    public static final String EXCHANGE_PROPERTY_PREFIX = "PetalsProperty.";
-
-    /**
-     * Type is {@link QName}
-     */
-    public static final String EXCHANGE_ORIGINAL_INTERFACE = "PetalsOriginalInterface";
-
-    /**
-     * Type is {@link QName}
-     */
-    public static final String EXCHANGE_ORIGINAL_SERVICE = "PetalsOriginalService";
-
-    /**
-     * Type is {@link ServiceEndpoint}
-     */
-    public static final String EXCHANGE_ORIGINAL_ENDPOINT = "PetalsOriginalEndpoint";
-
-    /**
-     * Type is {@link QName}
-     */
-    public static final String EXCHANGE_ORIGINAL_OPERATION = "PetalsOriginalOperation";
-
-    /**
-     * Type is {@link URI}
-     */
-    public static final String EXCHANGE_ORIGINAL_MEP = "PetalsOriginalPattern";
-
-    /**
-     * Current flow tracing activation state on JBI exchange processing at service provider level. Type is
-     * {@link Boolean}
-     */
-    public static final String EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION = "PetalsCurrentFlowTracingActivationStateOnJBIExchangeProcessingAtServiceProviderLevel";
-
-    /**
-     * Set to <code>true</code> if the message is a fault ({@link Message#isFault()} is legacy and limited in Camel and
-     * so should not be used!)
-     * 
-     * Type is {@link Boolean}
-     */
-    public static final String MESSAGE_FAULT_HEADER = "PetalsMessageIsFault";
+/**
+ * <p>
+ * Our custom Camel component for Petals acting as service provider (receiving JBI request) or as service consumer
+ * (sending JBI request).
+ * </p>
+ */
+@Component("petals")
+public class PetalsCamelComponent extends DefaultComponent {
 
     @Nullable
     private PetalsCamelContext pcc;
-
-    public PetalsCamelComponent() {
-        super(PetalsCamelEndpoint.class);
-    }
 
     @NonNullByDefault(false)
     @Override
@@ -116,24 +63,22 @@ public class PetalsCamelComponent extends UriEndpointComponent {
     @Override
     protected void afterConfiguration(final @Nullable String uri, final @Nullable String remaining,
             final @Nullable Endpoint endpoint, @Nullable Map<String, Object> parameters) throws Exception {
-        if (endpoint instanceof PetalsCamelEndpoint) {
-            final PetalsCamelEndpoint pce = (PetalsCamelEndpoint) endpoint;
-            if (pce.getService().getType() == ServiceType.CONSUMES && pce.getMep() == null
-                    && pce.getService().getMEP() == null) {
-                getContext().getLogger()
-                        .warning("No MEP specified neither as an endpoint parameter or in the corresponding Consumes:"
-                                + " the MEP specified on the Camel exchange will be used when creating a Petals exchange");
-            }
+        if (endpoint instanceof PetalsCamelEndpoint pce && pce.getService().getType() == ServiceType.CONSUMES
+                && pce.getMep() == null && pce.getService().getMEP() == null) {
+            getContext().getLogger()
+                    .warning("No MEP specified neither as an endpoint parameter or in the corresponding Consumes:"
+                            + " the MEP specified on the Camel exchange will be used when creating a Petals exchange");
         }
     }
 
     public PetalsCamelContext getContext() {
         PetalsCamelContext result = this.pcc;
         if (result == null) {
-            final PetalsCamelContext found = getCamelContext().getRegistry().lookupByNameAndType(
-                    PetalsCamelContext.class.getName(), PetalsCamelContext.class);
+            final PetalsCamelContext found = getCamelContext().getRegistry()
+                    .lookupByNameAndType(PetalsCamelContext.class.getName(), PetalsCamelContext.class);
             if (found == null) {
-                throw new IllegalArgumentException("No instance of PetalsCamelContext available in the Camel registry.");
+                throw new IllegalArgumentException(
+                        "No instance of PetalsCamelContext available in the Camel registry.");
             }
             this.pcc = found;
             result = found;

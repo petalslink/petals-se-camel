@@ -16,225 +16,235 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
-      <artifactId>petals-camel-samples-parent</artifactId>
-      <groupId>org.ow2.petals.samples.camel</groupId>
-      <version>1.4.0-1.0.0-SNAPSHOT</version>
-   </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>petals-camel-samples-parent</artifactId>
+		<groupId>org.ow2.petals.samples.camel</groupId>
+		<version>1.4.0-1.0.0-SNAPSHOT</version>
+	</parent>
 
-   <artifactId>su-camel-datamapping</artifactId>
-   <name>Petals ESB - Samples - SE Camel - SU Data Mapping</name>
-   <!-- No version set -->
-   <packaging>jbi-service-unit</packaging>
+	<artifactId>su-camel-datamapping</artifactId>
+	<name>Petals ESB - Samples - SE Camel - SU Data Mapping</name>
+	<!-- No version set -->
+	<packaging>jbi-service-unit</packaging>
 
-   <dependencies>
-      <dependency>
-         <groupId>org.ow2.petals.samples.camel</groupId>
-         <artifactId>su-camel-hello-proxy-java</artifactId>
-         <type>jbi-service-unit</type>
-         <version>${project.version}</version>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-camel</artifactId>
-         <type>jbi-component</type>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>camel-petals</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-camel-junit</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.camel</groupId>
-         <artifactId>camel-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.camel</groupId>
-         <artifactId>camel-jaxb</artifactId>
-         <version>${camel.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- Provided by petals-se-camel -->
-               <artifactId>jaxb-core</artifactId>
-               <groupId>com.sun.xml.bind</groupId>
-            </exclusion>
-            <exclusion>
-               <!-- Provided by petals-se-camel -->
-               <artifactId>jaxb-impl</artifactId>
-               <groupId>com.sun.xml.bind</groupId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>jakarta.xml.bind</groupId>
-         <artifactId>jakarta.xml.bind-api</artifactId>
-         <!-- Provided by petals-se-camel -->
-         <scope>provided</scope>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>org.jvnet.jaxb2_commons</groupId>
-         <artifactId>jaxb2-basics-runtime</artifactId>
-         <!-- Provided by petals-se-camel -->
-         <scope>provided</scope>
-      </dependency>
-      
-      
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-camel-junit</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-simple</artifactId>
-      </dependency>
-      <dependency>
-         <!-- We align version of Hamcrest with the one provided by petals-se-camel-junit -->
-         <!-- TODO: Must be adjusted/removed when moving to JUnit5 -->
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <version>4.13.1</version>
-         <exclusions>
-            <exclusion>
-               <groupId>org.hamcrest</groupId>
-               <artifactId>hamcrest-core</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-   </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.ow2.petals.samples.camel</groupId>
+			<artifactId>su-camel-hello-proxy-java</artifactId>
+			<type>jbi-service-unit</type>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-se-camel</artifactId>
+			<type>jbi-component</type>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>camel-petals</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-se-camel-junit</artifactId>
+		</dependency>
 
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <phase>generate-resources</phase>
-                  <goals>
-                     <goal>unpack</goal>
-                  </goals>
-                  <configuration>
-                     <artifactItems>
-                        <artifactItem>
-                           <groupId>org.ow2.petals.samples.camel</groupId>
-                           <artifactId>su-camel-hello-proxy-java</artifactId>
-                           <type>jbi-service-unit</type>
-                           <version>${project.version}</version>
-                           <includes>service.wsdl</includes>
-                           <overWrite>true</overWrite>
-                        </artifactItem>
-                     </artifactItems>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
-            <executions>
-               <execution>
-                  <!-- must use the same id as in the parent if not there will be two executions of the plugin -->
-                  <id>generate</id>
-                  <goals>
-                     <goal>generate</goal>
-                  </goals>
-                  <phase>process-resources</phase>
-                  <configuration>
-                     <schemas>
-                        <schema>
-                           <fileset>
-                              <directory>${basedir}/src/main/resources/jbi</directory>
-                              <includes>
-                                 <include>service.wsdl</include>
-                              </includes>
-                           </fileset>
-                        </schema>
-                        <schema>
-                           <fileset>
-                              <directory>${basedir}/target/dependency</directory>
-                              <includes>
-                                 <include>service.wsdl</include>
-                              </includes>
-                           </fileset>
-                        </schema>
-                     </schemas>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-maven-plugin</artifactId>
-            <configuration>
-               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.basepom.maven</groupId>
-            <artifactId>duplicate-finder-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>enforce-no-duplicate-classes</id>
-                  <configuration>
-                     <exceptions>
-                        <exception>
-                           <conflictingDependencies>
-                              <dependency>
-                                 <groupId>org.ow2.petals</groupId>
-                                 <artifactId>petals-se-camel</artifactId>
-                                 <type>jar</type>
-                                 <scope>test</scope>
-                              </dependency>
-                           </conflictingDependencies>
-                           <!-- Current project is the actual project being checked, not this parent pom -->
-                           <currentProject>true</currentProject>
-                           <resources>
-                              <resource>jbi/jbi.xml</resource>
-                           </resources>
-                        </exception>
-                     </exceptions>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>analyze</id>
-                  <configuration>
-                     <usedDependencies>
-                        <!-- The Petals component on which this SU must run -->
-                        <usedDependency>org.ow2.petals:petals-se-camel</usedDependency>
-                        <!-- Required by unit tests at runtime -->
-                        <usedDependency>org.slf4j:slf4j-simple</usedDependency>
-                        <!-- This SU consumes the following ones -->
-                        <usedDependency>org.ow2.petals.samples.camel:su-camel-hello-proxy-java</usedDependency>
-                     </usedDependencies>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-mock</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jaxb</artifactId>
+			<version>${camel.version}</version>
+			<exclusions>
+				<exclusion>
+					<!-- We prefer org.glassfish.jaxb:jaxb-runtime provided by Petals CDK -->
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- We prefer org.glassfish.jaxb:jaxb-runtime provided by Petals CDK  -->
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- Provided by Petals SE Camel  -->
+					<groupId>org.apache.camel</groupId>
+					<artifactId>camel-core-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<!-- Provided by petals-se-camel -->
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<!-- Already included in com.sun.activation:jakarta.activation -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.patrodyne.jvnet</groupId>
+			<artifactId>hisrc-basicjaxb-runtime</artifactId>
+			<!-- Provided by petals-se-camel -->
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<!-- Already included in com.sun.activation:jakarta.activation -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-   <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-     <tag>HEAD</tag>
-  </scm>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ow2.petals.samples.camel</groupId>
+									<artifactId>su-camel-hello-proxy-java</artifactId>
+									<type>jbi-service-unit</type>
+									<version>${project.version}</version>
+									<includes>service.wsdl</includes>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.patrodyne.jvnet</groupId>
+				<artifactId>hisrc-higherjaxb-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- must use the same id as in the parent if not there will be two executions of the plugin -->
+						<id>generate</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>process-resources</phase>
+						<configuration>
+							<schemas>
+								<schema>
+									<fileset>
+										<directory>${basedir}/src/main/resources/jbi</directory>
+										<includes>
+											<include>service.wsdl</include>
+										</includes>
+									</fileset>
+								</schema>
+								<schema>
+									<fileset>
+										<directory>${basedir}/target/dependency</directory>
+										<includes>
+											<include>service.wsdl</include>
+										</includes>
+									</fileset>
+								</schema>
+							</schemas>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-maven-plugin</artifactId>
+				<configuration>
+					<jbiDirectory>src/main/resources/jbi</jbiDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.basepom.maven</groupId>
+				<artifactId>duplicate-finder-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-no-duplicate-classes</id>
+						<configuration>
+							<ignoredResourcePatterns combine.children="append">
+								<!-- Resource duplicated and different between Camel libraries -->
+								<ignoredResourcePattern>other.properties</ignoredResourcePattern>
+								<ignoredResourcePattern>component.properties</ignoredResourcePattern>
+								<ignoredResourcePattern>language.properties</ignoredResourcePattern>
+							</ignoredResourcePatterns>
+							<exceptions>
+								<exception>
+									<conflictingDependencies>
+										<dependency>
+											<groupId>org.ow2.petals</groupId>
+											<artifactId>petals-se-camel</artifactId>
+											<type>jar</type>
+											<scope>test</scope>
+										</dependency>
+									</conflictingDependencies>
+									<!-- Current project is the actual project being checked, not this parent pom -->
+									<currentProject>true</currentProject>
+									<resources>
+										<resource>jbi/jbi.xml</resource>
+									</resources>
+								</exception>
+							</exceptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<configuration>
+							<usedDependencies>
+								<!-- The Petals component on which this SU must run -->
+								<usedDependency>org.ow2.petals:petals-se-camel</usedDependency>
+								<!-- Required by unit tests at runtime -->
+								<usedDependency>org.slf4j:slf4j-simple</usedDependency>
+								<!-- This SU consumes the following ones -->
+								<usedDependency>org.ow2.petals.samples.camel:su-camel-hello-proxy-java</usedDependency>
+							</usedDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
+		<developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>

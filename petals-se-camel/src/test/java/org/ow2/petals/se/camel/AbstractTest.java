@@ -17,18 +17,14 @@
  */
 package org.ow2.petals.se.camel;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.net.URL;
 
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-
-public abstract class AbstractTest extends org.ow2.petals.component.framework.test.Assert {
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
+public abstract class AbstractTest {
 
     static {
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
-        assertNotNull("Logging configuration file not found", logConfig);
+        assertNotNull(logConfig, "Logging configuration file not found");
     }
 }

@@ -17,8 +17,11 @@
  */
 package org.ow2.petals.se.camel;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.component.framework.api.util.Placeholders;
 
@@ -33,7 +36,7 @@ public class CamelSUTest extends AbstractComponentTest {
 
     private static boolean onPlaceHolderValuesReloadedCalled;
 
-    @Before
+    @BeforeEach
     public void before() {
         deployCalled = false;
         initCalled = false;

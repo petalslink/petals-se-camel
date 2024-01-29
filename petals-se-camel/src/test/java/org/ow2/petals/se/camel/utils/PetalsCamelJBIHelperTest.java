@@ -17,12 +17,13 @@
  */
 package org.ow2.petals.se.camel.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription.WSDLVersionConstants;
@@ -35,7 +36,7 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.Lists;
 
-public class PetalsCamelJBIHelperTest extends Assert {
+public class PetalsCamelJBIHelperTest {
 
     private static final String WSDL20 = "/tests/service-2.0.wsdl";
 
@@ -70,10 +71,10 @@ public class PetalsCamelJBIHelperTest extends Assert {
         provides.setInterfaceName(new QName("http://petals.ow2.org", "HelloInterface"));
         final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc, provides);
 
-        assertEquals(res.size(), 3);
-        assertEquals(res.get(0).serviceId, "sayHello-provider");
-        assertEquals(res.get(1).serviceId, "sayHelloWithoutEcho-provider");
-        assertEquals(res.get(2).serviceId, "sayHelloWithoutEchoRobust-provider");
+        assertEquals(3, res.size());
+        assertEquals("sayHello-provider", res.get(0).serviceId);
+        assertEquals("sayHelloWithoutEcho-provider", res.get(1).serviceId);
+        assertEquals("sayHelloWithoutEchoRobust-provider", res.get(2).serviceId);
 
     }
 
@@ -88,14 +89,14 @@ public class PetalsCamelJBIHelperTest extends Assert {
         provides.setInterfaceName(new QName("http://petals.ow2.org", "HelloInterface"));
         final List<OperationData> res = PetalsCamelJBIHelper.getOperationsAndServiceId(doc, provides);
 
-        assertEquals(res.size(), 1);
-        assertEquals(res.get(0).serviceId, "theProvidesId");
+        assertEquals(1, res.size());
+        assertEquals("theProvidesId", res.get(0).serviceId);
 
     }
 
     private Document getWSDL(final String localPath, final WSDLVersionConstants version) throws WSDLException {
         final Description desc = WSDLUtilImpl.createWsdlDescription(this.getClass().getResource(localPath));
-        Assert.assertEquals(desc.getVersion(), version);
+        assertEquals(version, desc.getVersion());
         return WSDLUtilImpl.convertDescriptionToDocument(desc);
     }
 
@@ -110,7 +111,7 @@ public class PetalsCamelJBIHelperTest extends Assert {
 
         PetalsCamelJBIHelper.populateRouteLists(jbi.getServices(), classNames, xmlNames);
 
-        assertEquals(classNames.size(), classesSize);
-        assertEquals(xmlNames.size(), xmlSizes);
+        assertEquals(classesSize, classNames.size());
+        assertEquals(xmlSizes, xmlNames.size());
     }
 }

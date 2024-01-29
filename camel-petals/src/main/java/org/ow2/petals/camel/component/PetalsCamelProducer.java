@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.camel.component;
 
-
 import java.util.Optional;
 
 import javax.jbi.messaging.MessagingException;
@@ -26,13 +25,14 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
-import org.apache.camel.impl.DefaultAsyncProducer;
+import org.apache.camel.support.DefaultAsyncProducer;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
 import org.ow2.petals.camel.component.utils.Conversions;
+import org.ow2.petals.camel.helpers.MEPHelper;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
@@ -46,7 +46,6 @@ import org.ow2.petals.component.framework.util.exception.InvalidFlowTracingActiv
  * A PetalsProducer get messages from Camel and send them to a Petals service
  * 
  * @author vnoel
- *
  */
 public class PetalsCamelProducer extends DefaultAsyncProducer {
 
@@ -111,7 +110,6 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
      *            if this processing must be done synchronously
      * @param callback
      *            a callback to call after, can't be null but can be no-op
-     * 
      * @return <code>true</code> if the processing was done synchronously
      */
     private boolean process(final Exchange camelExchange, final boolean doSync, final AsyncCallback callback) {
@@ -195,8 +193,7 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             this.consumes.getLogger().log(Level.SEVERE,
                     "Just set an error on the Camel Exchange " + camelExchange.getExchangeId(), e);
             if (faAsBC != null) {
-                this.monitTraceLogger.logMonitTrace(
-                        StepLogHelper.getMonitExtFailureTrace(faAsBC, e, true));
+                this.monitTraceLogger.logMonitTrace(StepLogHelper.getMonitExtFailureTrace(faAsBC, e, true));
             }
             camelExchange.setException(e);
             callback.done(doneSync);
@@ -213,10 +210,10 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
 
         final MEPPatternConstants mep;
         if (getEndpoint().getService().getMEP() == null && getEndpoint().getMep() == null) {
-            mep = MEPPatternConstants.fromString(camelExchange.getPattern().getWsdlUri());
+            mep = MEPHelper.fromExchangePattern2MEPPatternConstants(camelExchange.getPattern());
             if (mep == null) {
                 throw new MessagingException(
-                        "Can't resolve MEP on the Camel exchange: " + camelExchange.getPattern().getWsdlUri());
+                        "Can't resolve MEP on the Camel exchange: " + camelExchange.getPattern().name());
             }
         } else {
             mep = getEndpoint().getMep();
@@ -288,11 +285,11 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
         assert camelExchange != null;
 
         final Object msgFlowTracingActivationObj = camelExchange
-                .getProperty(PetalsCamelComponent.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION);
+                .getProperty(PetalsConstants.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION);
         if (msgFlowTracingActivationObj == null) {
             return Optional.empty();
-        } else if (msgFlowTracingActivationObj instanceof Boolean) {
-            return Optional.of((Boolean) msgFlowTracingActivationObj);
+        } else if (msgFlowTracingActivationObj instanceof Boolean msgFlowTracingActivation) {
+            return Optional.of(msgFlowTracingActivation);
         } else {
             // Here because msgFlowTracingActivationObj == null or is not an instance of Boolean
             throw new InvalidFlowTracingActivationExchangePropertyValueException(msgFlowTracingActivationObj);
@@ -311,8 +308,8 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             if (faAsBC != null) {
                 // we should log the trace ourselves without touching the message here because we don't have the
                 // ownership!
-                this.monitTraceLogger.logMonitTrace(new ConsumeExtFlowStepFailureLogData(
-                        faAsBC.getFlowInstanceId(), faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
+                this.monitTraceLogger.logMonitTrace(new ConsumeExtFlowStepFailureLogData(faAsBC.getFlowInstanceId(),
+                        faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
             }
 
         } else {

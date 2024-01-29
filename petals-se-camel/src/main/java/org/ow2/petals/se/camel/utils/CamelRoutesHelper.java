@@ -17,14 +17,15 @@
  */
 package org.ow2.petals.se.camel.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.model.RoutesDefinition;
+import org.apache.camel.spi.Resource;
+import org.apache.camel.spi.RoutesLoader;
+import org.apache.camel.support.ResourceHelper;
 import org.ow2.petals.se.camel.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.se.camel.exceptions.PetalsCamelSEException;
@@ -51,8 +52,8 @@ public class CamelRoutesHelper {
         }
         try {
             final Class<?> clazz = classLoader.loadClass(className.trim());
-            final Object o = clazz.newInstance();
-            if (!(o instanceof RouteBuilder)) {
+            final Object o = clazz.getConstructor().newInstance();
+            if (!(o instanceof RouteBuilder routeBuilder)) {
                 throw new InvalidJBIConfigurationException(className + " is not a subclass of Camel RouteBuilder");
             }
 
@@ -60,44 +61,32 @@ public class CamelRoutesHelper {
                 logger.config(String.format("Route(s) loaded from class '%s'", className));
             }
 
-            return (RouteBuilder) o;
+            return routeBuilder;
         } catch (final ClassNotFoundException e) {
             throw new InvalidJBIConfigurationException("Can't load class " + className, e);
-        } catch (final InstantiationException | IllegalAccessException e) {
+        } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException
+                | IllegalArgumentException | InvocationTargetException | SecurityException e) {
             throw new InvalidJBIConfigurationException("Can't instantiate " + className, e);
         }
     }
 
-    public static RoutesDefinition loadRoutesFromXML(final String xmlName, final ModelCamelContext context,
-            final ClassLoader classLoader, final Logger logger) throws PetalsCamelSEException {
+    public static void loadRoutesFromXML(final String xmlName, final ModelCamelContext context,
+            final Logger logger) throws PetalsCamelSEException {
 
-        final InputStream xml = classLoader.getResourceAsStream(xmlName);
-
-        if (xml == null) {
+        final Resource resource = ResourceHelper.resolveResource(context, xmlName);
+        if (resource == null || !resource.exists()) {
             throw new InvalidJBIConfigurationException("Can't find xml routes definition " + xmlName);
         }
 
-        final RoutesDefinition routes;
+        final RoutesLoader loader = context.getCamelContextExtension().getContextPlugin(RoutesLoader.class);
         try {
-            routes = context.loadRoutesDefinition(xml);
+            loader.loadRoutes(resource);
 
             if (logger.isLoggable(Level.CONFIG)) {
                 logger.config(String.format("Route(s) loaded from XML definition file '%s'", xmlName));
             }
         } catch (final Exception e) {
             throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName, e);
-        } finally {
-            try {
-                xml.close();
-            } catch (final IOException e) {
-                logger.log(Level.WARNING, "Can't close the xml stream for xml " + xmlName, e);
-            }
         }
-
-        if (routes == null) {
-            throw new InvalidCamelRouteDefinitionException("Can't load routes from xml " + xmlName);
-        }
-
-        return routes;
     }
 }

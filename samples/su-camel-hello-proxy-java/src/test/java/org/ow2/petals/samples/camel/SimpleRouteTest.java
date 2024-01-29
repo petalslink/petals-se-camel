@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.samples.camel;
 
+import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -24,7 +29,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
 import org.ow2.petals.camel.helpers.Step;
 import org.ow2.petals.se.camel.junit.PetalsCamelTestSupport;
@@ -57,7 +62,7 @@ public class SimpleRouteTest extends PetalsCamelTestSupport {
             public void process(Exchange exchange) throws Exception {
                 String body = exchange.getIn().getBody(String.class);
                 assertEquals("test", body);
-                exchange.getOut().setBody("ok!");
+                exchange.getMessage().setBody("ok!");
             }
         });
         mockTo.expectedMessageCount(1);
@@ -70,10 +75,10 @@ public class SimpleRouteTest extends PetalsCamelTestSupport {
                     }
                 });
 
-        assertMockEndpointsSatisfied();
+        assertIsSatisfied(context);
 
         assertFalse(PetalsRouteBuilder.isJbiFailed(exchange));
-        assertTrue(exchange.hasOut());
-        assertEquals(exchange.getOut().getBody(String.class), "ok!");
+        assertNotNull(exchange.getMessage().getBody());
+        assertEquals("ok!", exchange.getMessage().getBody(String.class));
     }
 }

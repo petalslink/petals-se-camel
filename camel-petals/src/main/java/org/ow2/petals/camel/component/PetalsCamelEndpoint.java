@@ -23,17 +23,18 @@ import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.ResolveEndpointFailedException;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -41,11 +42,18 @@ import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.component.exceptions.IncompatibleEndpointUsageException;
 import org.ow2.petals.camel.component.exceptions.InvalidURIException;
+import org.ow2.petals.camel.helpers.MEPHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@UriEndpoint(scheme = "petals", syntax = "petals:serviceId", title = "Petals ESB", label = "jbi,soa,esb", consumerClass = PetalsCamelConsumer.class)
+@UriEndpoint(
+        firstVersion = "1.0.0", scheme = "petals", syntax = "petals:serviceId", title = "Petals ESB", category = {
+                Category.WEBSERVICE }, headersClass = PetalsConstants.class
+)
 public class PetalsCamelEndpoint extends DefaultEndpoint {
 
-    @SuppressWarnings("null")
+    private static final Logger LOG = LoggerFactory.getLogger(PetalsCamelEndpoint.class);
+
     private static final Pattern URI_PATTERN = Pattern.compile("^[a-zA-Z][\\w.-]*$");
 
     private static final String PARAMETER_TIMEOUT = "timeout";
@@ -66,28 +74,43 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
 
     private final ServiceEndpointOperation service;
 
-    @UriPath
-    @Metadata(required = "true")
+    @UriPath(
+            description = "service identifier part of the endpoint to retrieve its associated Petals service consumer in the JBI descriptor"
+    )
+    @Metadata(required = true)
     private String serviceId;
-    
-    @UriParam(defaultValue = "-1", name = PARAMETER_TIMEOUT, description = "If 0 then no timeout, if <0 then use the default timeout from the component else specify the timeout in milliseconds")
+
+    @UriParam(
+            name = PARAMETER_TIMEOUT, defaultValue = "-1", label = "consumer,advanced", description = "If 0 then no timeout, if <0 then use the default timeout from the component else specify the timeout in milliseconds"
+    )
     private long timeout = -1;
 
     @Nullable
-    @UriParam(name = PARAMETER_OPERATION, description = "If set and the Consumes does not declare any operation, this will be used as the operation of created Exchanges for this endpoint")
+    @UriParam(
+            name = PARAMETER_OPERATION, label = "consumer,advanced", description = "If set and the Consumes does not declare any operation, this will be used as the operation of created Exchanges for this endpoint"
+    )
     private QName operation;
 
     @Nullable
-    @UriParam(name = PARAMETER_MEP, description = "If set and the Consumes does not declare any MEP, this will be used as the MEP of created Exchanges for this endpoint")
+    @UriParam(
+            name = PARAMETER_MEP, label = "consumer,advanced", description = "If set and the Consumes does not declare any MEP, this will be used as the MEP of created Exchanges for this endpoint"
+    )
     private MEPPatternConstants mep;
 
     @Nullable
-    @UriParam(name = PARAMETER_SERVICE, description = "If set and the Consumes does not declare any service name, this will be used as the service of created Exchanges for this endpoint")
+    @UriParam(
+            name = PARAMETER_SERVICE, label = "consumer,advanced", description = "If set and the Consumes does not declare any service name, this will be used as the service of created Exchanges for this endpoint"
+    )
     private QName serviceName;
 
     @Nullable
-    @UriParam(name = PARAMETER_ENDPOINT, description = "If set and the Consumes does not declare any endpoint name, this will be used as the endpoint name of created Exchanges for this endpoint. A service name must also be set.")
+    @UriParam(
+            name = PARAMETER_ENDPOINT, label = "consumer,advanced", description = "If set and the Consumes does not declare any endpoint name, this will be used as the endpoint name of created Exchanges for this endpoint. A service name must also be set."
+    )
     private String endpointName;
+
+    // option to allow end user to force whether async processing should be used or not (if possible)
+    private boolean synchronous;
 
     public PetalsCamelEndpoint(final String endpointUri, final PetalsCamelComponent component, final String remaining)
             throws Exception {
@@ -100,27 +123,53 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         }
 
         this.serviceId = remaining;
-        
-        this.service = component.getContext().getService(serviceId);
+
+        this.service = component.getContext().getService(this.serviceId);
 
         if (this.service.getType() == ServiceType.PROVIDES) {
             final URI serviceMEP = this.service.getMEP();
             assert serviceMEP != null;
 
             // this will be used to set the Camel Exchange MEP
-            setExchangePattern(ExchangePattern.fromWsdlUri(serviceMEP.toString()));
+            setExchangePattern(MEPHelper.fromURI2ExchangePattern(serviceMEP));
         }
     }
 
     /**
-     * If there is parameters left in options, then Camel will complain, this serves as syntax checking
-     * 
-     * Optionally, we can throw an exception to customize the error (it will be wrapped in a
-     * {@link ResolveEndpointFailedException} by Camel).
+     * If there is parameters left in options, then Camel will complain, this serves as syntax checking Optionally, we
+     * can throw an exception to customize the error (it will be wrapped in a {@link ResolveEndpointFailedException} by
+     * Camel).
      */
     @NonNullByDefault(false)
     @Override
     public void configureProperties(final Map<String, Object> options) {
+
+        final String mepParameter = (String) options.remove(PARAMETER_MEP);
+        if (mepParameter != null) {
+            if (this.service.getType() == ServiceType.PROVIDES) {
+                // TODO instead, we should handle these cases with some kind of subtyping...
+                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_MEP));
+            }
+
+            if (this.service.getMEP() != null) {
+                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_MEP)
+                        + " if the corresponding Consumes already declares a MEP");
+            }
+
+            // The Camel exchange pattern 'InOnly' is the closest from Petals Exchange pattern 'RobustInOnlyOut'.
+            // The Camel exchange pattern 'InOut' is the closest from Petals Exchange pattern 'InOptionalOut'.
+            this.setExchangePattern(ExchangePattern.valueOf("InOptionalOut".equals(mepParameter) ? "InOut"
+                    : "RobustInOnlyOut".equals(mepParameter) ? "InOnly" : mepParameter));
+            this.mep = MEPHelper.fromExchangePattern2MEPPatternConstants(this.getExchangePattern());
+        } else {
+            if (this.service.getMEP() != null) {
+                this.mep = MEPPatternConstants.fromURI(this.service.getMEP());
+                this.setExchangePattern(MEPHelper.fromURI2ExchangePattern(this.service.getMEP()));
+            } else {
+                this.mep = MEPHelper.fromExchangePattern2MEPPatternConstants(this.getExchangePattern());
+            }
+        }
+
         // this will setup some specific properties...
         super.configureProperties(options);
 
@@ -138,7 +187,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         // for debugging...)
         final String synchronousParameter = (String) options.remove(PARAMETER_SYNCHRONOUS);
         if (synchronousParameter != null) {
-            this.setSynchronous(Boolean.parseBoolean(synchronousParameter));
+            this.synchronous = Boolean.parseBoolean(synchronousParameter);
         }
 
         final String serviceParameter = (String) options.remove(PARAMETER_SERVICE);
@@ -174,23 +223,6 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
             this.endpointName = endpointParameter;
         }
 
-        final String mepParameter = (String) options.remove(PARAMETER_MEP);
-        if (mepParameter != null) {
-            if (this.service.getType() == ServiceType.PROVIDES) {
-                // TODO instead, we should handle these cases with some kind of subtyping...
-                throw new RuntimeCamelException(String.format(FORBIDDEN_FROM_FORMAT, PARAMETER_MEP));
-            }
-
-            if (this.service.getMEP() != null) {
-                throw new RuntimeCamelException(String.format(FORBIDDEN_TO_FORMAT, PARAMETER_MEP)
-                        + " if the corresponding Consumes already declares a MEP");
-            }
-
-            this.mep = MEPPatternConstants.fromString(ExchangePattern.valueOf(mepParameter).getWsdlUri());
-        } else {
-            // see PetalsCamelComponent.afterConfiguration()
-        }
-        
         final String operation = (String) options.remove(PARAMETER_OPERATION);
         if (operation != null) {
             if (this.service.getType() == ServiceType.PROVIDES) {
@@ -205,7 +237,6 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
             this.operation = QName.valueOf(operation);
         }
     }
-
 
     public long getTimeout() {
         return timeout;
@@ -223,6 +254,10 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
         return endpointName;
     }
 
+    /**
+     * Message exchange pattern to use at JBI level combining the MEP defined at the service consumer and the MEP
+     * defined at Petals Camel endpoint
+     */
     public @Nullable MEPPatternConstants getMep() {
         return mep;
     }
@@ -232,9 +267,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * It's a to()
-     * 
-     * It can be one of our jbi-consumes
+     * It's a to() It can be one of our jbi-consumes
      */
     @Override
     public Producer createProducer() throws IncompatibleEndpointUsageException {
@@ -245,9 +278,7 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * It's a from()
-     * 
-     * It can be one of our jbi-provides
+     * It's a from() It can be one of our jbi-provides
      */
     @NonNullByDefault(false)
     @Override
@@ -280,5 +311,12 @@ public class PetalsCamelEndpoint extends DefaultEndpoint {
     @Override
     public PetalsCamelComponent getComponent() {
         return (PetalsCamelComponent) super.getComponent();
+    }
+
+    /**
+     * Returns whether synchronous processing should be strictly used
+     */
+    public boolean isSynchronous() {
+        return this.synchronous;
     }
 }

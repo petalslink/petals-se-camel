@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.samples.camel;
 
-import javax.xml.bind.JAXBContext;
-
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -29,6 +27,8 @@ import org.ow2.petals.SayHelloResponse;
 import org.ow2.petals.anothernamespace.SayHello2;
 import org.ow2.petals.anothernamespace.SayHelloResponse2;
 import org.ow2.petals.camel.helpers.PetalsRouteBuilder;
+
+import jakarta.xml.bind.JAXBContext;
 
 public class SimpleRoute extends PetalsRouteBuilder {
 
@@ -41,7 +41,8 @@ public class SimpleRoute extends PetalsRouteBuilder {
     @Override
     public void configure() throws Exception {
         // it is also possible to use org.ow2.petals.camel.helpers.MarshallingHelper
-        final DataFormat jaxb = new JaxbDataFormat(JAXBContext.newInstance(org.ow2.petals.ObjectFactory.class,
+        final DataFormat jaxb = new JaxbDataFormat(JAXBContext.newInstance(
+                org.ow2.petals.ObjectFactory.class,
                 org.ow2.petals.anothernamespace.ObjectFactory.class));
 
         fromPetals(THE_PROVIDES_ID).streamCaching()
@@ -66,13 +67,13 @@ public class SimpleRoute extends PetalsRouteBuilder {
         public void transformIn(Exchange exchange, @Body SayHello2 body) {
             final SayHello sayHello = new SayHello();
             sayHello.setArg0(body.getArg0());
-            exchange.getOut().setBody(new ObjectFactory().createSayHello(sayHello));
+            exchange.getMessage().setBody(new ObjectFactory().createSayHello(sayHello));
         }
 
         public void transformOut(Exchange exchange, @Body SayHelloResponse body) {
             final SayHelloResponse2 response = new SayHelloResponse2();
             response.setReturn(body.getReturn());
-            exchange.getOut().setBody(response);
+            exchange.getMessage().setBody(response);
         }
     }
 

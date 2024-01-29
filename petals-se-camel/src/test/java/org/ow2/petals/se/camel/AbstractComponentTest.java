@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.se.camel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,19 +32,19 @@ import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Constants;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
-import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.JbiConstants;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
+import org.ow2.petals.component.framework.junit.extensions.ComponentUnderTestExtension;
+import org.ow2.petals.component.framework.junit.extensions.api.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
@@ -49,9 +52,8 @@ import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguratio
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
+import org.ow2.petals.junit.extensions.log.handler.InMemoryLogHandlerExtension;
 import org.ow2.petals.se.camel.utils.JbiCamelConstants;
 
 public abstract class AbstractComponentTest extends AbstractTest implements JbiCamelConstants, JbiConstants {
@@ -63,10 +65,10 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
             .getResource("tests/service-2.0.wsdl");
 
     protected static final URL VALID_ROUTES_11 = Thread.currentThread().getContextClassLoader()
-            .getResource("tests/routes-valid-1.1.xml");
+            .getResource("tests/routes-valid-1-1.xml");
 
     protected static final URL VALID_ROUTES_20 = Thread.currentThread().getContextClassLoader()
-            .getResource("tests/routes-valid-2.0.xml");
+            .getResource("tests/routes-valid-2-0.xml");
 
     protected static final URL INVALID_ROUTES = Thread.currentThread().getContextClassLoader()
             .getResource("tests/routes-invalid.xml");
@@ -93,31 +95,29 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
 
     protected static final long DEFAULT_TIMEOUT_FOR_COMPONENT_SEND = 2000;
 
-    protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
+    @ComponentUnderTestExtension(inMemoryLogHandler = @InMemoryLogHandlerExtension, explicitPostInitialization = true)
+    protected static ComponentUnderTest COMPONENT_UNDER_TEST;
 
-    protected static final Component COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            // we need faster checks for our tests, 2000 is too long!
-            .setParameter(new QName(CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
-            .registerExternalServiceProvider(EXTERNAL_ENDPOINT_NAME, HELLO_SERVICE, HELLO_INTERFACE)
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
-
-    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
-
-    /**
-     * We use a class rule (i.e. static) so that the component lives during all the tests, this enables to test also
-     * that successive deploy and undeploy do not create problems.
-     * 
-     */
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
+    protected static SimpleComponent COMPONENT;
+    
+    @BeforeAll
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST
+                // we need faster checks for our tests, 2000 is too long!
+                .setParameter(new QName(CDK_NAMESPACE_URI, "time-beetween-async-cleaner-runs"), "100")
+                .registerExternalServiceProvider(EXTERNAL_ENDPOINT_NAME, HELLO_SERVICE, HELLO_INTERFACE)
+                .postInitComponentUnderTest();
+        
+        COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
+    }
 
     /**
      * All log traces must be cleared before starting a unit test (because the log handler is static and lives during
      * the whole suite of tests)
      */
-    @Before
+    @BeforeEach
     public void clearLogTraces() {
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         // we want to clear them inbetween tests
         COMPONENT_UNDER_TEST.clearRequestsFromConsumer();
         COMPONENT_UNDER_TEST.clearResponsesFromProvider();
@@ -130,16 +130,16 @@ public abstract class AbstractComponentTest extends AbstractTest implements JbiC
     /**
      * We undeploy services after each test (because the component is static and lives during the whole suite of tests)
      */
-    @After
+    @AfterEach
     public void after() {
 
         COMPONENT_UNDER_TEST.undeployAllServices();
 
         // asserts are ALWAYS a bug!
         final Formatter formatter = new SimpleFormatter();
-        for (final LogRecord r : IN_MEMORY_LOG_HANDLER.getAllRecords()) {
-            assertFalse("Got a log with an assertion: " + formatter.format(r), r.getThrown() instanceof AssertionError
-                    || r.getMessage().contains("AssertionError"));
+        for (final LogRecord r : COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords()) {
+            assertFalse(r.getThrown() instanceof AssertionError
+                    || r.getMessage().contains("AssertionError"), "Got a log with an assertion: " + formatter.format(r));
         }
     }
 

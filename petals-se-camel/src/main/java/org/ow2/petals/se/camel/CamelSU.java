@@ -28,9 +28,7 @@ import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.model.RoutesDefinition;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.PetalsCamelRoute;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
@@ -51,19 +49,14 @@ import com.google.common.collect.ImmutableMap;
 
 /**
  * This handles the mapping between what is declared in a SU and a PetalsComponent (which is a Camel component for
- * communicating with Petals)
- * 
- * It dispatches messages to the correct route based on the ServiceEnpointOperation
+ * communicating with Petals) It dispatches messages to the correct route based on the ServiceEnpointOperation
  * 
  * @author vnoel
- *
  */
 public class CamelSU implements PetalsCamelContext {
 
     /**
-     * Mapping from serviceId to operations
-     * 
-     * Needed by the camel endpoint to resolve the URI in a from() or a to()
+     * Mapping from serviceId to operations Needed by the camel endpoint to resolve the URI in a from() or a to()
      */
     private final ImmutableMap<String, ServiceEndpointOperation> sid2seo;
 
@@ -105,33 +98,26 @@ public class CamelSU implements PetalsCamelContext {
 
         // register us as the PetalsCamelContext for this CamelContext, it will be used by the PetalsCamelComponent to
         // initialise itself
-        this.context.getRegistry(JndiRegistry.class).bind(PetalsCamelContext.class.getName(), this);
+        this.context.getRegistry().bind(PetalsCamelContext.class.getName(), this);
 
         for (final String className : classNames) {
             assert className != null;
             final RouteBuilder routes = CamelRoutesHelper.loadRoutesFromClass(classLoader, className, suLogger);
 
             try {
-                context.addRoutes(routes);
+                this.context.addRoutes(routes);
             } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException("Can't add routes from class " + className
-                        + " to Camel context", e);
+                throw new InvalidCamelRouteDefinitionException(
+                        "Can't add routes from class " + className + " to Camel context", e);
             }
-            
+
             this.classRoutes.add(routes);
         }
 
         for (final String xmlName : xmlNames) {
             assert xmlName != null;
-            final RoutesDefinition routes = CamelRoutesHelper.loadRoutesFromXML(xmlName, this.context, classLoader,
-                    getLogger());
 
-            try {
-                this.context.addRouteDefinitions(routes.getRoutes());
-            } catch (final Exception e) {
-                throw new InvalidCamelRouteDefinitionException("Can't add routes from xml file " + xmlName
-                        + " to Camel context", e);
-            }
+            CamelRoutesHelper.loadRoutesFromXML(xmlName, this.context, getLogger());
         }
 
         try {
@@ -299,7 +285,7 @@ public class CamelSU implements PetalsCamelContext {
         assert seo instanceof ServiceEndpointOperationProvides : "This can't happen";
         return (PetalsProvidesChannel) seo;
     }
-    
+
     @Override
     public CamelContext getCamelContext() {
         return this.context;

@@ -17,13 +17,14 @@
  */
 package org.ow2.petals.se.camel.junit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.ow2.petals.se.camel.junit.Assert.assertWsdlCompliance;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.se.camel.exceptions.InvalidWSDLException;
 
@@ -76,12 +77,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Service names aligned");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Service '{http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0}DocumentConversionWrapperServiceNotAligned' not found in WSDL 'onlyoffice.wsdl'",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Service names aligned");
+            assertTrue(actualException.getMessage().contains(
+                    "Service '{http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0}DocumentConversionWrapperServiceNotAligned' not found in WSDL 'onlyoffice.wsdl'"),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -108,12 +109,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Interface names aligned");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Interface '{http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0}DocumentConversionWrapperNotAligned' not found in WSDL 'onlyoffice.wsdl'",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Interface names aligned");
+            assertTrue(actualException.getMessage().contains(
+                    "Interface '{http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0}DocumentConversionWrapperNotAligned' not found in WSDL 'onlyoffice.wsdl'"),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -140,12 +141,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Route definition found into the service provider");
-        } catch (final InvalidWSDLException e) {
-            assertEquals("Unexpected assertion",
+            final Exception actualException = assertThrows(InvalidWSDLException.class, () -> {
+                assertWsdlCompliance();
+            }, "Route definition found into the service provider");
+            assertEquals(
                     "Invalid WSDL: No element {http://petals.ow2.org/components/petals-se-camel/wsdl/version-1.0}operation available for the operation {http://petals.ow2.org/onlyoffice-5.3/wrapper/1.0}convert in WSDL",
-                    e.getMessage());
+                    actualException.getMessage(), "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -172,12 +173,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Route definition found into the service consumer");
-        } catch (final InvalidJBIConfigurationException e) {
-            assertEquals("Unexpected assertion",
+            final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+                assertWsdlCompliance();
+            }, "Route definition found into the service consumer");
+            assertEquals(
                     "Invalid JBI descriptor: No service-id defined for the consumes {http://petals.ow2.org/onlyoffice-5.3/1.0}DocumentConversionService",
-                    e.getMessage());
+                    actualException.getMessage(), "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -204,12 +205,11 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Java route definition found");
-        } catch (final InvalidJBIConfigurationException e) {
-            assertEquals("Unexpected assertion",
-                    "Invalid JBI descriptor: Can't load class org.ow2.petals.se.camel.junit.routes.RouteMissing",
-                    e.getMessage());
+            final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+                assertWsdlCompliance();
+            }, "Java route definition found");
+            assertEquals("Invalid JBI descriptor: Can't load class org.ow2.petals.se.camel.junit.routes.RouteMissing",
+                    actualException.getMessage(), "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -236,11 +236,11 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("XML route definition found");
-        } catch (final InvalidJBIConfigurationException e) {
-            assertEquals("Unexpected assertion",
-                    "Invalid JBI descriptor: Can't find xml routes definition xml-routes-missing.xml", e.getMessage());
+            final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+                assertWsdlCompliance();
+            }, "XML route definition found");
+            assertEquals("Invalid JBI descriptor: Can't find xml routes definition xml-routes-missing.xml",
+                    actualException.getMessage(), "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -267,12 +267,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Invalid route identifier not detected");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Route 'theProvidesId' defined in WSDL and implementing a service provider has no definition as Camel route.",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Invalid route identifier not detected");
+            assertTrue(actualException.getMessage().contains(
+                    "Route 'theProvidesId' defined in WSDL and implementing a service provider has no definition as Camel route."),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -299,12 +299,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Invalid route identifier not detected");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Route 'another-onlyoffice-wrapper-convert' defined in WSDL and implementing a service provider has no definition as Camel route.",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Invalid route identifier not detected");
+            assertTrue(actualException.getMessage().contains(
+                    "Route 'another-onlyoffice-wrapper-convert' defined in WSDL and implementing a service provider has no definition as Camel route."),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -332,12 +332,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Camel consumer edp is not missing");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Consumer endpoint URI 'petals://theConsumesId' declared in route 'theProvidesId' but not declared in JBI descriptor as service consumer",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Camel consumer edp is not missing");
+            assertTrue(actualException.getMessage().contains(
+                    "Consumer endpoint URI 'petals://theConsumesId' declared in route 'theProvidesId' but not declared in JBI descriptor as service consumer"),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -365,12 +365,12 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Camel consumer edp is not missing");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "Consumer endpoint URI 'petals://onlyoffice-convert' declared in route 'onlyoffice-wrapper-convert' but not declared in JBI descriptor as service consumer",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Camel consumer edp is not missing");
+            assertTrue(actualException.getMessage().contains(
+                    "Consumer endpoint URI 'petals://onlyoffice-convert' declared in route 'onlyoffice-wrapper-convert' but not declared in JBI descriptor as service consumer"),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }
@@ -396,12 +396,13 @@ public class AssertTest {
         });
 
         try {
-            assertWsdlCompliance();
-            fail("Camel consumer edp is not missing");
-        } catch (final AssertionError e) {
-            assertEquals("Unexpected assertion",
-                    "No Camel route definition loaded. Check your service unit configuration.",
-                    e.getMessage());
+            final Error actualException = assertThrows(AssertionError.class, () -> {
+                assertWsdlCompliance();
+            }, "Camel consumer edp is not missing");
+            assertTrue(
+                    actualException.getMessage()
+                            .contains("No Camel route definition loaded. Check your service unit configuration."),
+                    "Unexpected assertion");
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassloader);
         }

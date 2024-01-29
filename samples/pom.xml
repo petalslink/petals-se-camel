@@ -36,7 +36,7 @@
    <properties>
       <petals-se-camel.version>1.4.0-SNAPSHOT</petals-se-camel.version>
       <petals-bc-soap.version>5.2.0-SNAPSHOT</petals-bc-soap.version>
-      <camel.version>2.20.4</camel.version>
+      <camel.version>4.0.3</camel.version>
    </properties>
 
    <modules>
@@ -73,24 +73,26 @@
             <scope>provided</scope>
             <version>${petals-se-camel.version}</version>
          </dependency>
+         
          <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-api</artifactId>
             <version>${camel.version}</version>
             <!-- provided by petals-se-camel -->
             <scope>provided</scope>
-            <exclusions>
-               <exclusion>
-                  <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-core:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by petals-se-camel -->
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-core</artifactId>
-               </exclusion>
-               <exclusion>
-                  <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-impl:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by petals-se-camel -->
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-impl</artifactId>
-               </exclusion>
-            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core-model</artifactId>
+            <version>${camel.version}</version>
+            <!-- provided by petals-se-camel -->
+            <scope>provided</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-mock</artifactId>
+            <version>${camel.version}</version>
+            <scope>test</scope>
          </dependency>
          
          <dependency>
@@ -99,13 +101,6 @@
             <scope>provided</scope>
             <type>jbi-component</type>
             <version>${petals-bc-soap.version}</version>
-         </dependency>
-         
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-camel-junit</artifactId>
-            <version>${petals-se-camel.version}</version>
-            <scope>test</scope>
          </dependency>
          
          <dependency>

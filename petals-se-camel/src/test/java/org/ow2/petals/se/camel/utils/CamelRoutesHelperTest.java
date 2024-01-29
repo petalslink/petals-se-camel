@@ -17,24 +17,24 @@
  */
 package org.ow2.petals.se.camel.utils;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.logging.Logger;
 
 import org.apache.camel.impl.DefaultCamelContext;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.se.camel.exceptions.InvalidCamelRouteDefinitionException;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
 import org.ow2.petals.se.camel.mocks.TestRoutesKO1;
 import org.ow2.petals.se.camel.mocks.TestRoutesOK;
 
-public class CamelRoutesHelperTest extends Assert {
+public class CamelRoutesHelperTest {
 
     private static final Logger LOG = Logger.getLogger(CamelRoutesHelperTest.class.getName());
 
-    private static final String XML_ROUTES_OK = "tests/routes-valid-1.1.xml";
+    private static final String XML_ROUTES_OK = "tests/routes-valid-1-1.xml";
 
     private static final String XML_ROUTES_KO = "tests/routes-invalid.xml";
 
@@ -43,9 +43,6 @@ public class CamelRoutesHelperTest extends Assert {
     private static final String CLASS_ROUTES_KO_SUB = CamelRoutesHelperTest.class.getName();
 
     private static final String CLASS_ROUTES_KO_NO = "fakefakefake.fake";
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testLoadRoutesClass_ok() throws Exception {
@@ -59,51 +56,57 @@ public class CamelRoutesHelperTest extends Assert {
 
     @Test
     public void testLoadRoutesClass_ko_subclass() throws InvalidJBIConfigurationException {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("is not a subclass of Camel RouteBuilder");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_SUB, LOG);
+        final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_SUB, LOG);
+        });
+        assertTrue(actualException.getMessage().contains("is not a subclass of Camel RouteBuilder"));
     }
 
     @Test
     public void testLoadRoutesClass_ko_noclass() throws InvalidJBIConfigurationException {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectCause(CoreMatchers.isA(ClassNotFoundException.class));
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_NO, LOG);
+        final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), CLASS_ROUTES_KO_NO, LOG);
+        });
+        assertInstanceOf(ClassNotFoundException.class, actualException.getCause());
     }
 
     @Test
     public void testLoadRoutesClass_ko_noninstantiable() throws InvalidJBIConfigurationException {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("Can't instantiate");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), TestRoutesKO1.class.getName(), LOG);
+        final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), TestRoutesKO1.class.getName(), LOG);
+        });
+        assertTrue(actualException.getMessage().contains("Can't instantiate"));
     }
 
     @Test
     public void testLoadRoutesXML_ok() throws Exception {
-        CamelRoutesHelper.loadRoutesFromXML(XML_ROUTES_OK, new DefaultCamelContext(), getClass().getClassLoader(),
+        CamelRoutesHelper.loadRoutesFromXML(XML_ROUTES_OK, new DefaultCamelContext(),
                 Logger.getLogger("TEST"));
     }
 
     @Test
     public void testLoadRoutesXML_ko_nofile() throws Exception {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("Can't find xml routes definition");
-        CamelRoutesHelper.loadRoutesFromXML("fakefakefake.xml", new DefaultCamelContext(), getClass().getClassLoader(),
+        final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromXML("fakefakefake.xml", new DefaultCamelContext(),
                 Logger.getLogger("TEST"));
+        });
+        assertTrue(actualException.getMessage().contains("Can't find xml routes definition"));
     }
 
     @Test
     public void testLoadRoutesClass_ko_nonloadable() throws Exception {
-        thrown.expect(InvalidCamelRouteDefinitionException.class);
-        thrown.expectMessage("Can't load routes from xml");
-        CamelRoutesHelper.loadRoutesFromXML(XML_ROUTES_KO, new DefaultCamelContext(), getClass().getClassLoader(),
+        final Exception actualException = assertThrows(InvalidCamelRouteDefinitionException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromXML(XML_ROUTES_KO, new DefaultCamelContext(),
                 Logger.getLogger("TEST"));
+        });
+        assertTrue(actualException.getMessage().contains("Can't load routes from xml"));
     }
 
     @Test
     public void testLoadRoutesClass_ko_empty_className() throws InvalidJBIConfigurationException {
-        thrown.expect(InvalidJBIConfigurationException.class);
-        thrown.expectMessage("className must be not empty");
-        CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), "", LOG);
+        final Exception actualException = assertThrows(InvalidJBIConfigurationException.class, () -> {
+            CamelRoutesHelper.loadRoutesFromClass(getClass().getClassLoader(), "", LOG);
+        });
+        assertTrue(actualException.getMessage().contains("className must be not empty"));
     }
 }

@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.camel.component.mocks;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +38,6 @@ import org.apache.camel.CamelContext;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Assert;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsCamelContext;
 import org.ow2.petals.camel.PetalsCamelRoute;
@@ -93,9 +97,9 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         final PetalsChannel pC = this.channels.put(seo,
                 seo.getType() == ServiceType.CONSUMES ? new MockConsumesChannel(serviceId, handler)
                         : new MockProvidesChannel(handler));
-        Assert.assertNull(pC);
+        assertNull(pC);
         final ServiceEndpointOperation pS = this.seos.put(serviceId, seo);
-        Assert.assertNull(pS);
+        assertNull(pS);
     }
 
     @Override
@@ -110,22 +114,22 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
     @Override
     public PetalsConsumesChannel getConsumesChannel(final ServiceEndpointOperation seo) {
         final PetalsChannel channel = this.channels.get(seo);
-        Assert.assertNotNull(channel);
-        Assert.assertTrue(channel instanceof PetalsConsumesChannel);
+        assertNotNull(channel);
+        assertInstanceOf(PetalsConsumesChannel.class, channel);
         return (PetalsConsumesChannel) channel;
     }
 
     @Override
     public PetalsProvidesChannel getProvidesChannel(final ServiceEndpointOperation seo) {
         final PetalsChannel channel = this.channels.get(seo);
-        Assert.assertNotNull(channel);
-        Assert.assertTrue(channel instanceof PetalsProvidesChannel);
+        assertNotNull(channel);
+        assertInstanceOf(PetalsProvidesChannel.class, channel);
         return (PetalsProvidesChannel) channel;
     }
 
     @Override
     public void registerRoute(final ServiceEndpointOperation seo, final PetalsCamelRoute ppo) {
-        Assert.assertEquals(ServiceType.PROVIDES, seo.getType());
+        assertEquals(ServiceType.PROVIDES, seo.getType());
         final ServiceEndpointOperationKey key = getEOK(seo);
         final PetalsCamelRoute put = this.ppos.put(key, ppo);
         assert put == null;
@@ -133,7 +137,7 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
 
     @Override
     public void unregisterRoute(final ServiceEndpointOperation seo) {
-        Assert.assertEquals(ServiceType.PROVIDES, seo.getType());
+        assertEquals(ServiceType.PROVIDES, seo.getType());
         final ServiceEndpointOperationKey key = getEOK(seo);
         final PetalsCamelRoute removed = this.ppos.remove(key);
         assert removed != null;

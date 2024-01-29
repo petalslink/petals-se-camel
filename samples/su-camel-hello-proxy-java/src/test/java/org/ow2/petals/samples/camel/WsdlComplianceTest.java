@@ -19,8 +19,6 @@ package org.ow2.petals.samples.camel;
 
 import static org.ow2.petals.se.camel.junit.Assert.assertWsdlCompliance;
 
-import org.junit.Test;
-
 /**
  * Unit test of the compliance between service WSDL, JBI descriptor and Camel route definitions
  * 
@@ -29,7 +27,7 @@ import org.junit.Test;
  */
 public class WsdlComplianceTest {
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void validate() throws Exception {
         assertWsdlCompliance();
     }

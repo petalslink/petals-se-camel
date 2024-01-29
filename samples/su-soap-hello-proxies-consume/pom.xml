@@ -54,7 +54,7 @@
                         <!-- The Petals component on which this SU must run -->
                         <usedDependency>org.ow2.petals:petals-bc-soap</usedDependency>
                         <!-- No unit test -->
-                        <usedDependency>junit:junit</usedDependency>
+                        <usedDependency>org.junit.jupiter:junit-jupiter-api</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>

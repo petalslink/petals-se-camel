@@ -74,7 +74,7 @@
                         <!-- The service units of this SA -->
                         <usedDependency>org.ow2.petals.samples.camel:su-camel-datamapping</usedDependency>
                         <!-- No unit tests for a SA -->
-                        <usedDependency>junit:junit</usedDependency>
+                        <usedDependency>org.junit.jupiter:junit-jupiter-api</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>

@@ -16,245 +16,301 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
 
-   <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-   <parent>
-      <artifactId>petals-cdkbased-components-parent</artifactId>
-      <groupId>org.ow2.petals</groupId>
-      <version>1.3.0-SNAPSHOT</version>
-      <relativePath />
-   </parent>
+	<parent>
+		<artifactId>petals-cdkbased-components-parent</artifactId>
+		<groupId>org.ow2.petals</groupId>
+		<version>1.3.0-SNAPSHOT</version>
+		<relativePath />
+	</parent>
 
-   <name>Petals ESB - Components - SE Camel</name>
-   <artifactId>petals-se-camel</artifactId>
-   <packaging>jbi-component</packaging>
-   <version>1.4.0-SNAPSHOT</version>
-   <description>Service Engine based on Apache Camel</description>
+	<name>Petals ESB - Components - SE Camel</name>
+	<artifactId>petals-se-camel</artifactId>
+	<packaging>jbi-component</packaging>
+	<version>1.4.0-SNAPSHOT</version>
+	<description>Service Engine based on Apache Camel</description>
 
-   <properties>
-      <camel.version>2.20.4</camel.version>
-      <!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
-      <sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
-   </properties>
+	<properties>
+		<!-- This is used by child projects to have multi-project integration test coverage report on sonar -->
+		<sonar.jacoco.itReportPath>${basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+	</properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-camel-parent</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-            <!-- Apache MINA 2.0.16 is provided by Apache Camel, we prefer the version forced by Petals -->
-            <groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
-            <version>2.1.4</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-camel-parent</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-   <dependencies>
-      <!-- Petals Camel dependencies -->
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>camel-petals</artifactId>
-         <version>${project.version}</version>
-      </dependency>
-      <!-- JBI and CDK dependencies -->
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-jbi</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-jbidescriptor</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-commons-log</artifactId>
-      </dependency>
-      <!-- Other dependencies -->
-      <dependency>
-         <groupId>org.ow2.easycommons</groupId>
-         <artifactId>easycommons-lang</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.easywsdl</groupId>
-         <artifactId>easywsdl-wsdl</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.easywsdl</groupId>
-         <artifactId>easywsdl-ext-wsdl4complexwsdl</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.easywsdl</groupId>
-         <artifactId>easywsdl-schema</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>com.google.guava</groupId>
-         <artifactId>guava</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.camel</groupId>
-         <artifactId>camel-core</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-core:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by Petals CDK -->
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-core</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- Moving to Java 11 we must move com.sun.xml.bind:jaxb-impl:jar:2.2.11 to org.glassfish.jaxb:jaxb-runtime provided by Petals CDK  -->
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-impl</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>jakarta.xml.bind</groupId>
-         <artifactId>jakarta.xml.bind-api</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <!-- Code quality dependencies -->
-      <dependency>
-         <groupId>org.eclipse.jdt</groupId>
-         <artifactId>org.eclipse.jdt.annotation</artifactId>
-      </dependency>
-      <!-- CDK Test dependencies -->
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-message-exchange</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-junit-inmemoryloghandler</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-test-utils</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <!-- Other test dependencies -->
-      <dependency>
-         <groupId>org.hamcrest</groupId>
-         <artifactId>hamcrest</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.awaitility</groupId>
-         <artifactId>awaitility</artifactId>
-      </dependency>
-      <dependency>
-         <!--
-            This dependency is used directly in this project by unit test but it is needed
-            at runtime by CDK core, so its scope must be 'provided' (by Petals ESB Container
-            bootstrap classloader) instead of 'test'
-          -->
-         <groupId>org.jvnet.jaxb2_commons</groupId>
-         <artifactId>jaxb2-basics-runtime</artifactId>
-         <scope>provided</scope>
-      </dependency>
-   </dependencies>
+	<dependencies>
+		<!-- Petals Camel dependencies -->
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>camel-petals</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- JBI and CDK dependencies -->
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-jbi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-jbidescriptor</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-commons-log</artifactId>
+		</dependency>
+		<!-- Other dependencies -->
+		<dependency>
+			<groupId>org.ow2.easycommons</groupId>
+			<artifactId>easycommons-lang</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.easywsdl</groupId>
+			<artifactId>easywsdl-wsdl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.easywsdl</groupId>
+			<artifactId>easywsdl-ext-wsdl4complexwsdl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.easywsdl</groupId>
+			<artifactId>easywsdl-schema</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+					<!-- We prefer org.glassfish.jaxb:jaxb-runtime provided by Petals CDK -->
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- We prefer org.glassfish.jaxb:jaxb-runtime provided by Petals CDK  -->
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core-engine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-support</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-xml-io-dsl</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- Already included in com.sun.activation:jakarta.activation -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Code quality dependencies -->
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>org.eclipse.jdt.annotation</artifactId>
+		</dependency>
+		<!-- CDK Test dependencies -->
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-message-exchange</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-junit-inmemoryloghandler</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-test-utils</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Other test dependencies -->
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+		</dependency>
+		<dependency>
+			<!--
+               This dependency is used directly in this project by unit test but it is needed
+               at runtime by CDK core, so its scope must be 'provided' (by Petals ESB Container
+               bootstrap classloader) instead of 'test'
+             -->
+			<groupId>org.patrodyne.jvnet</groupId>
+			<artifactId>hisrc-basicjaxb-runtime</artifactId>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<!-- Already included in com.sun.activation:jakarta.activation -->
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
 
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>generate</id>
-                  <goals>
-                     <goal>generate</goal>
-                  </goals>
-                  <phase>generate-test-sources</phase>
-                  <configuration>
-                     <addCompileSourceRoot>false</addCompileSourceRoot>
-                     <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
-                     <schemaDirectory>${basedir}/src/test/resources/tests/</schemaDirectory>
-                     <schemaIncludes>
-                        <include>service-1.1.wsdl</include>
-                     </schemaIncludes>
-                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>attach-test-javadocs</id>
-                  <goals>
-                     <goal>test-jar</goal>
-                  </goals>
-                  <configuration>
-                     <excludePackageNames>org.ow2.petals</excludePackageNames>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.patrodyne.jvnet</groupId>
+				<artifactId>hisrc-higherjaxb-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>generate-test-sources</phase>
+						<configuration>
+							<addCompileSourceRoot>false</addCompileSourceRoot>
+							<addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+							<schemaDirectory>${basedir}/src/test/resources/tests/</schemaDirectory>
+							<schemaIncludes>
+								<include>service-1.1.wsdl</include>
+							</schemaIncludes>
+							<generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<configuration>
+							<usedDependencies>
+								<!-- Required at runtime by Camel engine -->
+								<usedDependency>org.apache.camel:camel-core</usedDependency>
+								<usedDependency>org.apache.camel:camel-xml-io-dsl</usedDependency>
+							</usedDependencies>
+							<ignoredNonTestScopedDependencies>
+								<!-- Used directly by unit tests but required transitively at runtime -->
+								<ignoredNonTestScopedDependency>org.ow2.easycommons:easycommons-lang</ignoredNonTestScopedDependency>
+								<ignoredNonTestScopedDependency>org.ow2.petals:petals-cdk-jbidescriptor</ignoredNonTestScopedDependency>
+							</ignoredNonTestScopedDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.basepom.maven</groupId>
+				<artifactId>duplicate-finder-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-no-duplicate-classes</id>
+						<configuration>
+							<ignoredResourcePatterns combine.children="append">
+								<!-- Resource duplicated and different between Camel libraries -->
+								<ignoredResourcePattern>other.properties</ignoredResourcePattern>
+								<ignoredResourcePattern>component.properties</ignoredResourcePattern>
+								<ignoredResourcePattern>language.properties</ignoredResourcePattern>
+							</ignoredResourcePatterns>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-test-javadocs</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+						<configuration>
+							<excludePackageNames>org.ow2.petals</excludePackageNames>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
-   <profiles>
-      <profile>
-         <!-- Complete the jacoco profile from root-parent -->
-         <id>jacoco-profile</id>
-         <build>
-            <pluginManagement>
-               <plugins>
-                  <plugin>
-                     <groupId>org.jacoco</groupId>
-                     <artifactId>jacoco-maven-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>prepare-agent-integration</id>
-                           <configuration>
-                              <!-- We output the results in the path shared by all submodules -->
-                              <destFile>${sonar.jacoco.itReportPath}</destFile>
-                           </configuration>
-                        </execution>
-                     </executions>
-                  </plugin>
-               </plugins>
-            </pluginManagement>
-         </build>
-      </profile>
-   </profiles>
+	<profiles>
+		<profile>
+			<!-- Complete the jacoco profile from root-parent -->
+			<id>jacoco-profile</id>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.jacoco</groupId>
+							<artifactId>jacoco-maven-plugin</artifactId>
+							<executions>
+								<execution>
+									<id>prepare-agent-integration</id>
+									<configuration>
+										<!-- We output the results in the path shared by all submodules -->
+										<destFile>${sonar.jacoco.itReportPath}</destFile>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
 
-   <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
-     <tag>HEAD</tag>
-  </scm>
+	<scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-camel.git</connection>
+		<developerConnection>scm:git:https://github.com/petalslink/petals-se-camel.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>

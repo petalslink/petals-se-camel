@@ -17,12 +17,12 @@
  */
 package org.ow2.petals.camel.component.utils;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.activation.DataHandler;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -30,20 +30,21 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
-import org.ow2.petals.camel.component.PetalsCamelComponent;
+import org.apache.camel.attachment.AttachmentMessage;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.camel.component.PetalsConstants;
 import org.ow2.petals.jbi.xml.BytesSource;
 
+import jakarta.activation.DataHandler;
+
 /**
- * Utils to convert between petals exchange and camel exchange.
- * 
- * Important: Some of this code makes the assumption that an inoptionalout camel exchange MUST have an out message, even
- * though camel allows for modifying inline the IN message. This is needed because we can't know if an inoutoptional has
- * no out because it's in is modified or because the exchange is finished!
+ * Utils to convert between petals exchange and camel exchange. Important: Some of this code makes the assumption that
+ * an inoptionalout camel exchange MUST have an out message, even though camel allows for modifying inline the IN
+ * message. This is needed because we can't know if an inoutoptional has no out because it's in is modified or because
+ * the exchange is finished!
  * 
  * @author vnoel
- *
  */
 public class Conversions {
 
@@ -74,7 +75,7 @@ public class Conversions {
     }
 
     /**
-     * To populate a new camel exchange with an exchange coming from petals
+     * Populates a new camel exchange with an exchange coming from petals
      * 
      * @param from
      *            JBI exchange received by the service provider implemented with Camel route.
@@ -89,24 +90,24 @@ public class Conversions {
         to.setExchangeId(from.getExchangeId());
 
         // let's first copy properties that were potentially in the new created exchange
-        copyProperties(to, from, PetalsCamelComponent.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
+        copyProperties(to, from, PetalsConstants.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
 
-        copyProperties(from, to, PetalsCamelComponent.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
+        copyProperties(from, to, PetalsConstants.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
 
-        to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_INTERFACE, from.getInterfaceName());
-        to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_SERVICE, from.getService());
-        to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_ENDPOINT, from.getEndpoint());
-        to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_OPERATION, from.getOperation());
-        to.setProperty(PetalsCamelComponent.EXCHANGE_ORIGINAL_MEP, from.getPattern());
-        
-        to.setProperty(PetalsCamelComponent.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION,
+        to.setProperty(PetalsConstants.EXCHANGE_ORIGINAL_INTERFACE, from.getInterfaceName());
+        to.setProperty(PetalsConstants.EXCHANGE_ORIGINAL_SERVICE, from.getService());
+        to.setProperty(PetalsConstants.EXCHANGE_ORIGINAL_ENDPOINT, from.getEndpoint());
+        to.setProperty(PetalsConstants.EXCHANGE_ORIGINAL_OPERATION, from.getOperation());
+        to.setProperty(PetalsConstants.EXCHANGE_ORIGINAL_MEP, from.getPattern());
+
+        to.setProperty(PetalsConstants.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION,
                 Boolean.valueOf(currentFlowTracingActivation));
 
         populateCamelMessage(from.getInMessage(), to.getIn());
     }
 
     /**
-     * To populate a camel exchange from the answer we got through petals
+     * Populates a camel exchange from the answer we got through petals
      */
     public static void populateAnswerCamelExchange(final org.ow2.petals.component.framework.api.message.Exchange from,
             final Exchange to) {
@@ -114,83 +115,85 @@ public class Conversions {
         // let's first clean the previous properties before copying those of the answer
         final Iterator<String> it = to.getProperties().keySet().iterator();
         while (it.hasNext()) {
-            if (it.next().startsWith(PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX)) {
+            if (it.next().startsWith(PetalsConstants.EXCHANGE_PROPERTY_PREFIX)) {
                 it.remove();
             }
         }
 
-        copyProperties(from, to, PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX);
+        copyProperties(from, to, PetalsConstants.EXCHANGE_PROPERTY_PREFIX);
 
         if (from.isErrorStatus()) {
             // there has been a technical error
             final Exception error = from.getError();
             to.setException(
                     error == null ? new Exception("Status ERROR returned without no more explanations !!") : error);
+            // The request message body is removed
+            to.getMessage().setBody(null);
         } else if (from.getFault() != null) {
             // there has been a fault
-            populateCamelMessage(from.getFault(), to.getOut());
-            to.getOut().setHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER, true);
+            populateCamelMessage(from.getFault(), to.getMessage());
+            to.setProperty(PetalsConstants.MESSAGE_FAULT_HEADER, true);
             // TODO add test of conversions in both direction to be sure everything is correct!
         } else if (from.isOutMessage()) {
             // this is a response
-            populateCamelMessage(from.getOutMessage(), to.getOut());
+            populateCamelMessage(from.getOutMessage(), to.getMessage());
         } else {
             // the exchange is finished! it corresponds to done for petals exchange, but in Camel there is
             // nothing specific to do...
         }
     }
 
-    private static void populateCamelMessage(final NormalizedMessage from, final Message to) {
+    private static void populateCamelMessage(final NormalizedMessage from, final Message toMessage) {
 
         // Normally, it is an empty message that is populated...
 
-        @SuppressWarnings("unchecked")
         final Set<String> props = from.getPropertyNames();
         for (String prop : props) {
-            to.setHeader(prop, from.getProperty(prop));
+            toMessage.setHeader(prop, from.getProperty(prop));
         }
 
-        @SuppressWarnings("unchecked")
-        final Set<String> attachs = from.getAttachmentNames();
-        for (String attach : attachs) {
-            to.addAttachment(attach, from.getAttachment(attach));
+        if (toMessage instanceof AttachmentMessage toAttachmentMessage) {
+            final Set<String> attachs = from.getAttachmentNames();
+            for (String attach : attachs) {
+                toAttachmentMessage.addAttachment(attach, from.getAttachment(attach));
+            }
         }
 
         final Source content = from.getContent();
 
         // let's take advantage of petals's BytesSource to avoid unneeded conversions
         final Source body;
-        if (content instanceof BytesSource) {
-            body = new org.apache.camel.BytesSource(((BytesSource) content).getData(), content.getSystemId());
+        if (content instanceof BytesSource byteSource) {
+            body = new org.apache.camel.util.xml.BytesSource(byteSource.getData(), content.getSystemId());
         } else {
             body = content;
         }
 
-        to.setBody(body);
+        toMessage.setBody(body);
     }
 
     /**
-     * To populate a new petals exchange with an exchange coming from camel
+     * Populates a new petals exchange with an exchange coming from camel
      */
     public static void populateNewPetalsExchange(final Exchange from,
-            final org.ow2.petals.component.framework.api.message.Exchange to)
-            throws MessagingException {
+            final org.ow2.petals.component.framework.api.message.Exchange to) throws MessagingException {
 
         // let's first copy properties that were potentially in the new created exchange
         // (such as flow attributes or other CDK things)
-        copyProperties(to, from, PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX);
+        copyProperties(to, from, PetalsConstants.EXCHANGE_PROPERTY_PREFIX);
 
-        copyProperties(from, to, PetalsCamelComponent.EXCHANGE_PROPERTY_PREFIX);
+        copyProperties(from, to, PetalsConstants.EXCHANGE_PROPERTY_PREFIX);
 
         Conversions.populateNormalizedMessage(from.getIn(), to.getInMessage());
     }
 
     /**
-     * To populate a petals exchange from the answer we got through camel
+     * <p>
+     * Populates a Petals exchange from the answer we got through Camel.
+     * </p>
      */
     public static void populateAnswerPetalsExchange(final Exchange from,
-            final org.ow2.petals.component.framework.api.message.Exchange to)
-            throws MessagingException {
+            final org.ow2.petals.component.framework.api.message.Exchange to) throws MessagingException {
 
         // let's clean what was in the Exchange before copying from the answer
         final Set<String> oldProps = new HashSet<>(to.getPropertyNames());
@@ -198,32 +201,27 @@ public class Conversions {
             to.setProperty(oldProp, null);
         }
 
-        copyProperties(from, to, PetalsCamelComponent.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
+        copyProperties(from, to, PetalsConstants.EXCHANGE_ORIGINAL_PROPERTY_PREFIX);
 
         // Note: the Petals exchange checks that all is correct w.r.t. to MEP and status
 
-        if (from.hasOut() && Boolean.TRUE.equals(from.getOut().getHeader(PetalsCamelComponent.MESSAGE_FAULT_HEADER))) {
+        final Message outMessage = from.getMessage();
+        if (Boolean.TRUE.equals(from.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER))) {
             final Fault fault = to.createFault();
-            Conversions.populateNormalizedMessage(from.getOut(), fault);
+            Conversions.populateNormalizedMessage(outMessage, fault);
             to.setFault(fault);
         } else if (from.getException() != null) {
             to.setError(from.getException());
         } else {
-            final ExchangePattern mep = from.getPattern();
+            MEPPatternConstants mep = MEPPatternConstants
+                    .fromURI(from.getProperty(PetalsConstants.EXCHANGE_ORIGINAL_MEP, URI.class));
 
             // TODO maybe we should be able to handle situations when the exchanges have different MEP
-            if (mep == ExchangePattern.InOut) {
-                final Message out;
-                // sometimes camel exchange out is stored inplace of the in by Camel processors...
-                if (!from.hasOut()) {
-                    out = from.getIn();
-                } else {
-                    out = from.getOut();
-                }
-                Conversions.populateNormalizedMessage(out, to.getOutMessage());
-            } else if (mep == ExchangePattern.InOptionalOut) {
-                if (from.hasOut()) {
-                    Conversions.populateNormalizedMessage(from.getOut(), to.getOutMessage());
+            if (mep == MEPPatternConstants.IN_OUT) {
+                Conversions.populateNormalizedMessage(outMessage, to.getOutMessage());
+            } else if (mep == MEPPatternConstants.IN_OPTIONAL_OUT) {
+                if (outMessage != null) {
+                    Conversions.populateNormalizedMessage(outMessage, to.getOutMessage());
                 } else {
                     // the exchange is finished
                     to.setDoneStatus();
@@ -246,19 +244,21 @@ public class Conversions {
             to.setProperty(e.getKey(), e.getValue());
         }
 
-        for (final Entry<String, DataHandler> e : from.getAttachments().entrySet()) {
-            to.addAttachment(e.getKey(), e.getValue());
+        if (from instanceof AttachmentMessage fromAttachmentMessage) {
+            for (final Entry<String, DataHandler> e : fromAttachmentMessage.getAttachments().entrySet()) {
+                to.addAttachment(e.getKey(), e.getValue());
+            }
         }
 
         final Object body = from.getBody();
         final Source content;
         // TODO maybe replace all of that with type converters registered to Camel?
-        if (body instanceof org.apache.camel.BytesSource) {
+        if (body instanceof org.apache.camel.util.xml.BytesSource bodyByteSource) {
             // let's apply the inverse transformation applied earlier
-            content = new BytesSource(((org.apache.camel.BytesSource) body).getData(), ((Source) body).getSystemId());
-        } else if (body instanceof Source) {
+            content = new BytesSource(bodyByteSource.getData(), ((Source) body).getSystemId());
+        } else if (body instanceof Source bodySource) {
             // let's continue with a Source then
-            content = (Source) body;
+            content = bodySource;
         } else {
             // TODO provide an endpoint option to force the use of a desired Source implementation?
             // This uses available converters (see http://camel.apache.org/type-converter.html)
