@@ -20,7 +20,6 @@ package org.ow2.petals.camel.helpers;
 import java.util.Properties;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
 import org.ow2.petals.camel.component.PetalsConstants;
@@ -117,7 +116,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
     }
 
     public static void setJbiFault(Exchange exchange, Object fault, boolean stop) {
-        exchange.getOut().setBody(fault);
+        exchange.getMessage().setBody(fault);
         setIsJbiFault(exchange, stop);
     }
 
@@ -132,7 +131,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
         if (stop) {
             exchange.setProperty(Exchange.ROUTE_STOP, true);
         }
-        exchange.getOut().setHeader(PetalsConstants.MESSAGE_FAULT_HEADER, true);
+        exchange.setProperty(PetalsConstants.MESSAGE_FAULT_HEADER, true);
     }
 
     /**
@@ -140,8 +139,8 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * 
      * @return {@code true} if this exchange failed due to a JBI fault.
      */
-    public static boolean isJbiFault(Message msg) {
-        return Boolean.TRUE.equals(msg.getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
+    public static boolean isJbiFault(final Exchange exchange) {
+        return Boolean.TRUE.equals(exchange.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER));
     }
 
     /**
@@ -150,7 +149,6 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * @return {@code true} if this exchange failed due to either an exception or a JBI fault.
      */
     public static boolean isJbiFailed(final Exchange exchange) {
-        return exchange.isFailed()
-                || (exchange.hasOut() ? isJbiFault(exchange.getOut()) : isJbiFault(exchange.getIn()));
+        return exchange.isFailed() || isJbiFault(exchange);
     }
 }
