@@ -30,7 +30,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.component.PetalsConstants;
@@ -103,7 +102,7 @@ public class Conversions {
         to.setProperty(PetalsConstants.EXCHANGE_CURRENT_FLOW_TRACING_ACTIVATION,
                 Boolean.valueOf(currentFlowTracingActivation));
 
-        populateCamelMessage(from.getInMessage(), to.getIn());
+        populateCamelMessage(from.getInMessage(), to.getIn(AttachmentMessage.class));
     }
 
     /**
@@ -131,32 +130,31 @@ public class Conversions {
             to.getMessage().setBody(null);
         } else if (from.getFault() != null) {
             // there has been a fault
-            populateCamelMessage(from.getFault(), to.getMessage());
+            populateCamelMessage(from.getFault(), to.getMessage(AttachmentMessage.class));
             to.setProperty(PetalsConstants.MESSAGE_FAULT_HEADER, true);
             // TODO add test of conversions in both direction to be sure everything is correct!
         } else if (from.isOutMessage()) {
             // this is a response
-            populateCamelMessage(from.getOutMessage(), to.getMessage());
+            populateCamelMessage(from.getOutMessage(), to.getMessage(AttachmentMessage.class));
         } else {
             // the exchange is finished! it corresponds to done for petals exchange, but in Camel there is
             // nothing specific to do...
         }
     }
 
-    private static void populateCamelMessage(final NormalizedMessage from, final Message toMessage) {
+    private static void populateCamelMessage(final NormalizedMessage from,
+            final AttachmentMessage toAttachmentMessage) {
 
         // Normally, it is an empty message that is populated...
 
         final Set<String> props = from.getPropertyNames();
         for (String prop : props) {
-            toMessage.setHeader(prop, from.getProperty(prop));
+            toAttachmentMessage.setHeader(prop, from.getProperty(prop));
         }
 
-        if (toMessage instanceof AttachmentMessage toAttachmentMessage) {
-            final Set<String> attachs = from.getAttachmentNames();
-            for (String attach : attachs) {
-                toAttachmentMessage.addAttachment(attach, from.getAttachment(attach));
-            }
+        final Set<String> attachs = from.getAttachmentNames();
+        for (String attach : attachs) {
+            toAttachmentMessage.addAttachment(attach, from.getAttachment(attach));
         }
 
         final Source content = from.getContent();
@@ -169,7 +167,7 @@ public class Conversions {
             body = content;
         }
 
-        toMessage.setBody(body);
+        toAttachmentMessage.setBody(body);
     }
 
     /**
@@ -184,7 +182,7 @@ public class Conversions {
 
         copyProperties(from, to, PetalsConstants.EXCHANGE_PROPERTY_PREFIX);
 
-        Conversions.populateNormalizedMessage(from.getIn(), to.getInMessage());
+        populateNormalizedMessage(from.getIn(AttachmentMessage.class), to.getInMessage());
     }
 
     /**
@@ -205,10 +203,10 @@ public class Conversions {
 
         // Note: the Petals exchange checks that all is correct w.r.t. to MEP and status
 
-        final Message outMessage = from.getMessage();
+        final AttachmentMessage outMessage = from.getMessage(AttachmentMessage.class);
         if (Boolean.TRUE.equals(from.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER))) {
             final Fault fault = to.createFault();
-            Conversions.populateNormalizedMessage(outMessage, fault);
+            populateNormalizedMessage(outMessage, fault);
             to.setFault(fault);
         } else if (from.getException() != null) {
             to.setError(from.getException());
@@ -218,10 +216,10 @@ public class Conversions {
 
             // TODO maybe we should be able to handle situations when the exchanges have different MEP
             if (mep == MEPPatternConstants.IN_OUT) {
-                Conversions.populateNormalizedMessage(outMessage, to.getOutMessage());
+                populateNormalizedMessage(outMessage, to.getOutMessage());
             } else if (mep == MEPPatternConstants.IN_OPTIONAL_OUT) {
                 if (outMessage != null) {
-                    Conversions.populateNormalizedMessage(outMessage, to.getOutMessage());
+                    populateNormalizedMessage(outMessage, to.getOutMessage());
                 } else {
                     // the exchange is finished
                     to.setDoneStatus();
@@ -235,22 +233,23 @@ public class Conversions {
         }
     }
 
-    private static void populateNormalizedMessage(final Message from, final NormalizedMessage to)
+    private static void populateNormalizedMessage(final AttachmentMessage fromAttachmentMessage,
+            final NormalizedMessage to)
             throws MessagingException {
 
         // Normally, it is an empty message that is populated...
 
-        for (final Entry<String, Object> e : from.getHeaders().entrySet()) {
+        for (final Entry<String, Object> e : fromAttachmentMessage.getHeaders().entrySet()) {
             to.setProperty(e.getKey(), e.getValue());
         }
 
-        if (from instanceof AttachmentMessage fromAttachmentMessage) {
+        if (fromAttachmentMessage.hasAttachments()) {
             for (final Entry<String, DataHandler> e : fromAttachmentMessage.getAttachments().entrySet()) {
                 to.addAttachment(e.getKey(), e.getValue());
             }
         }
 
-        final Object body = from.getBody();
+        final Object body = fromAttachmentMessage.getBody();
         final Source content;
         // TODO maybe replace all of that with type converters registered to Camel?
         if (body instanceof org.apache.camel.util.xml.BytesSource bodyByteSource) {
@@ -262,7 +261,7 @@ public class Conversions {
         } else {
             // TODO provide an endpoint option to force the use of a desired Source implementation?
             // This uses available converters (see http://camel.apache.org/type-converter.html)
-            content = from.getBody(DOMSource.class);
+            content = fromAttachmentMessage.getBody(DOMSource.class);
         }
         to.setContent(content);
     }
