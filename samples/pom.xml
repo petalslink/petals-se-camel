@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2021 Linagora
+ Copyright (c) 2015-2024 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -23,18 +23,18 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.2.8.3</version>
+      <version>20.2.8.5-SNAPSHOT</version>
       <relativePath />
    </parent>
 
    <groupId>org.ow2.petals.samples.camel</groupId>
    <artifactId>petals-camel-samples-parent</artifactId>
    <name>Petals ESB - Samples - SE Camel</name>
-   <version>1.2.2-1.0.0-SNAPSHOT</version>
+   <version>1.2.3-1.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-camel.version>1.2.2-SNAPSHOT</petals-se-camel.version>
+      <petals-se-camel.version>1.2.3-SNAPSHOT</petals-se-camel.version>
       <petals-bc-soap.version>5.0.1</petals-bc-soap.version>
       <camel.version>2.20.3</camel.version>
    </properties>
