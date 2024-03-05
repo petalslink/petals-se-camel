@@ -77,6 +77,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-steplog</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
 			<artifactId>petals-commons-log</artifactId>
 		</dependency>
 		<!-- Other dependencies -->

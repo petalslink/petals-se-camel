@@ -119,6 +119,9 @@ public class CamelJBIListener extends AbstractJBIListener {
     public void onExpiredAsyncJBIMessage(final Exchange originalExchange, final AsyncContext asyncContext) {
         assert originalExchange != null;
         assert asyncContext != null;
+
+        super.onExpiredAsyncJBIMessage(originalExchange, asyncContext);
+
         // this is when I sent something asynchronously but it timeouted!
         // let's call the callback, the one that sent this message will take care of doing what it has to do
         handleAsyncJBIMessage(originalExchange, asyncContext, true);

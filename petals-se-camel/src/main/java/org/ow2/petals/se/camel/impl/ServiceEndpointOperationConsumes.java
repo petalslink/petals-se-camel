@@ -28,8 +28,10 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
+import org.ow2.petals.component.framework.logger.StepLogHelper;
 import org.ow2.petals.component.framework.util.ServiceUnitUtil;
 import org.ow2.petals.se.camel.PetalsCamelSender;
 import org.ow2.petals.se.camel.exceptions.InvalidJBIConfigurationException;
@@ -61,6 +63,22 @@ public class ServiceEndpointOperationConsumes extends AbstractServiceEndpointOpe
     @Override
     public @Nullable ServiceEndpoint resolveEndpoint(final QName serviceName, final String endpointName) {
         return sender.getComponent().getContext().getEndpoint(serviceName, endpointName);
+    }
+
+    @Override
+    public String buildTimeoutErrorMsg(final long timeout, final FlowAttributes currentFlowAttributes) {
+
+        final String interfaceName = this.getInterface().toString();
+        final String serviceName = this.getService() == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                : this.getService().toString();
+        final String endpointName = this.getEndpoint() == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                : this.getEndpoint();
+        final String operationName = this.getOperation() == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                : this.getOperation().toString();
+
+        return String.format(StepLogHelper.TIMEOUT_ERROR_MSG_PATTERN,
+                timeout < 0 ? this.sender.getTimeout(this.consumes) : timeout, interfaceName, serviceName, endpointName,
+                operationName, currentFlowAttributes.getFlowInstanceId(), currentFlowAttributes.getFlowStepId());
     }
 
     private static @Nullable URI toMEP(final Consumes c) throws InvalidJBIConfigurationException {

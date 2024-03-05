@@ -31,6 +31,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.camel.PetalsChannel.PetalsConsumesChannel;
 import org.ow2.petals.camel.PetalsChannel.SendAsyncCallback;
+import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.component.utils.Conversions;
 import org.ow2.petals.camel.helpers.MEPHelper;
 import org.ow2.petals.commons.log.FlowAttributes;
@@ -48,15 +49,6 @@ import org.ow2.petals.component.framework.util.exception.InvalidFlowTracingActiv
  * @author vnoel
  */
 public class PetalsCamelProducer extends DefaultAsyncProducer {
-
-    // this is not really used as an exception for knowing where it happened
-    // we can thus reuse it and avoid the overhead of creating the exception
-    public static final MessagingException TIMEOUT_EXCEPTION = new MessagingException(
-            "A timeout happened while Camel sent an exchange to a JBI service");
-
-    static {
-        TIMEOUT_EXCEPTION.setStackTrace(new StackTraceElement[0]);
-    }
 
     private final PetalsConsumesChannel consumes;
 
@@ -300,16 +292,34 @@ public class PetalsCamelProducer extends DefaultAsyncProducer {
             final org.ow2.petals.component.framework.api.message.Exchange exchange, final boolean timedOut,
             final boolean doneSync, final AsyncCallback callback, @Nullable final FlowAttributes faAsBC) {
         if (timedOut) {
-            this.consumes.getLogger().warning(
+            // A timeout warning message is already log by Petals CDK Core
+            this.consumes.getLogger().fine(
                     "The exchange I sent to the NMR never got acknowledged, it timed out: " + exchange.getExchangeId());
 
-            camelExchange.setException(TIMEOUT_EXCEPTION);
+            final FlowAttributes currentFlowAttributes;
+            if (faAsBC != null) {
+                // The component is acting as a binding component.
+                currentFlowAttributes = faAsBC;
+            } else {
+                // The component is acting as a service engine
+                currentFlowAttributes = PetalsExecutionContext.getFlowAttributes();
+            }
+
+            final Exception timeoutException = new TimeoutException(
+                    this.consumes.buildTimeoutErrorMsg(this.getEndpoint().getTimeout(), currentFlowAttributes));
+            camelExchange.setException(timeoutException);
 
             if (faAsBC != null) {
-                // we should log the trace ourselves without touching the message here because we don't have the
+                // The component is acting as a binding component.
+
+                // We should log the trace ourselves without touching the message here because we don't have the
                 // ownership!
                 this.monitTraceLogger.logMonitTrace(new ConsumeExtFlowStepFailureLogData(faAsBC.getFlowInstanceId(),
-                        faAsBC.getFlowStepId(), TIMEOUT_EXCEPTION.getMessage()));
+                        faAsBC.getFlowStepId(), timeoutException.getMessage()));
+            } else {
+                // The component is acting as a service engine
+
+                // The processing of the timeout exception is delegated to the Camel route
             }
 
         } else {
