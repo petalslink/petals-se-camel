@@ -42,6 +42,7 @@ import org.ow2.petals.camel.PetalsChannel.PetalsProvidesChannel;
 import org.ow2.petals.camel.ServiceEndpointOperation;
 import org.ow2.petals.camel.ServiceEndpointOperation.ServiceType;
 import org.ow2.petals.camel.exceptions.UnknownServiceException;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
@@ -333,6 +334,11 @@ public class PetalsCamelContextMock implements PetalsCamelContext {
         @Override
         public void revertRole(Exchange exchange) {
             PetalsCamelContextMock.setRole(exchange, Role.CONSUMER);
+        }
+
+        @Override
+        public String buildTimeoutErrorMsg(final long timeout, final FlowAttributes currentFlowAttributes) {
+            return "A timeout occurs";
         }
     }
 
