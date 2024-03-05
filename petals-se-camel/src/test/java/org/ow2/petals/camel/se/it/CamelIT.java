@@ -25,17 +25,22 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.List;
 import java.util.logging.LogRecord;
 
+import javax.jbi.messaging.ExchangeStatus;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
-import org.ow2.petals.camel.component.PetalsCamelProducer;
+import org.ow2.petals.camel.component.exceptions.TimeoutException;
 import org.ow2.petals.camel.se.AbstractComponentTest;
 import org.ow2.petals.camel.se.mocks.TestRoutesOK;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.Message;
+import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
+import org.ow2.petals.component.framework.junit.impl.message.ResponseToConsumerMessage;
+import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.jbi.messaging.PetalsDeliveryChannel;
 
 /**
@@ -91,7 +96,6 @@ public class CamelIT extends AbstractComponentTest {
 
         final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
                 ServiceProviderImplementation.outMessage("<bb/>").with(new MessageChecks() {
-                    @SuppressWarnings("squid:S2925")
                     @Override
                     public void checks(final Message message) throws Exception {
                         // let's wait more than the configured timeout duration
@@ -100,8 +104,8 @@ public class CamelIT extends AbstractComponentTest {
                 }));
 
         assertNotNull(response.getError());
-        assertTrue(response.getError() == PetalsCamelProducer.TIMEOUT_EXCEPTION);
-        
+        assertTrue(response.getError() instanceof TimeoutException);
+
         // let's wait for the answer from the ServiceProvider to have been handled by the CDK
         await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getExchangesInDeliveryChannelCount(),
                 equalTo(0));
@@ -142,6 +146,143 @@ public class CamelIT extends AbstractComponentTest {
 
         assertMONITasBCOk();
 
+    }
+
+    @Test
+    public void timeoutAsyncAsSE() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
+                slowProvider("<bb/>"));
+
+        assertNotNull(response.getError());
+        assertTrue(response.getError() instanceof TimeoutException);
+
+        // let's wait for the answer from the ServiceProvider to have been handled by the CDK
+        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getExchangesInDeliveryChannelCount(),
+                equalTo(0));
+
+        assertTimeoutProviderLogWARNandMONIT(false);
+    }
+
+    @Test
+    public void timeoutSyncAsSE() throws Exception {
+        deployHello(SU_NAME, WSDL11, RouteSyncTo.class);
+
+        final StatusMessage response = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
+                slowProvider("<bb/>"));
+
+        assertNotNull(response.getError());
+        assertTrue(response.getError() instanceof TimeoutException);
+
+        // let's wait for the answer from the ServiceProvider to have been handled by the CDK
+        await().atMost(TWO_SECONDS).untilCall(to(COMPONENT_UNDER_TEST).getExchangesInDeliveryChannelCount(),
+                equalTo(0));
+
+        assertTimeoutProviderLogWARNandMONIT(true);
+    }
+
+    @Test
+    public void timeoutAsyncAsBC() throws Exception {
+        // we won't be using the provides, but it's ok
+        deployHello(SU_NAME, WSDL11, RouteBC.class);
+
+        // TODO for now we have to disable acknoledgement check (with the null parameter) because we don't forward DONE
+        // in Camel (see PetalsCamelConsumer)
+        // Note: we need to wait for the end of the processing of the message by the component to be sure all the logs
+        // are here.
+        COMPONENT.receiveAsExternalProvider(slowProvider("<bb/>", null), true);
+
+        assertTimeoutConsumerLogWARNandMONIT();
+
+    }
+
+    private static ServiceProviderImplementation slowProvider(final String content) {
+        return slowProvider(content, MessageChecks.status(ExchangeStatus.DONE));
+    }
+
+    private static ServiceProviderImplementation slowProvider(final String content, final MessageChecks statusChecks) {
+        return new ServiceProviderImplementation() {
+            @Override
+            public Message provides(final RequestMessage request) throws Exception {
+                final Message response = new ResponseToConsumerMessage(request, content);
+                Thread.sleep(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND + 1000);
+                return response;
+            }
+
+            @Override
+            public void handleStatus(final StatusMessage status) throws Exception {
+                assert statusChecks != null;
+                statusChecks.checks(status);
+            }
+
+            @Override
+            public boolean statusExpected() {
+                return statusChecks != null;
+            }
+        };
+    }
+
+    private void assertTimeoutProviderLogWARNandMONIT(final boolean isSyncCall) {
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(4, monitLogs.size());
+        final FlowLogData firstLog = assertMonitProviderBeginLog(HELLO_INTERFACE, HELLO_SERVICE, HELLO_ENDPOINT,
+                HELLO_OPERATION, monitLogs.get(0));
+
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+
+        // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
+        // doesn't see the timeout
+        assertMonitProviderTimeoutLog(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, firstLog, monitLogs.get(2));
+
+        if (isSyncCall) {
+            // The instance message exchanges between the Camel service consumer and the Camel service provider (not the
+            // external service provider) is the same for synchronous call, so the end status of the Camel service
+            // provider can not be DONE because set as ERROR by the timeout processing.
+            // TODO: Fix this problem in the Petals CDK Junit
+        } else {
+            // the provider answers, but too late, so it happens AFTER the failure of the consumer
+            assertMonitProviderEndLog(secondLog, monitLogs.get(3));
+        }
+
+        // Assertion about the timeout warning message
+        assertTimeoutWarnLog(1, 0, firstLog);
+    }
+
+    private void assertTimeoutConsumerLogWARNandMONIT() {
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(4, monitLogs.size());
+        final FlowLogData firstLog = assertMonitConsumerExtBeginLog(monitLogs.get(0));
+
+        final FlowLogData secondLog = assertMonitProviderBeginLog(firstLog, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, monitLogs.get(1));
+
+        // it must be the third one (idx 2) because the fourth one (idx 3) is the monit end from the provider that
+        // doesn't see the timeout
+        assertMonitConsumerExtTimeoutLog(DEFAULT_TIMEOUT_FOR_COMPONENT_SEND, HELLO_INTERFACE, HELLO_SERVICE,
+                EXTERNAL_ENDPOINT_NAME, HELLO_OPERATION, firstLog, monitLogs.get(2));
+
+        // the provider answers, but too late, so it happens AFTER the failure of the consumer
+        assertMonitProviderEndLog(secondLog, monitLogs.get(3));
+
+        // Assertion about the timeout warning message (Caution, another warning message about missing flow attributes
+        // exists)
+        assertTimeoutWarnLog(2, 1, firstLog);
+    }
+
+    private void assertTimeoutWarnLog(final int expectedWarnLogMsgNb, final int expectedWarnLogMsgPos,
+            final FlowLogData firstLog) {
+        assert expectedWarnLogMsgPos < expectedWarnLogMsgNb;
+
+        final List<LogRecord> warnRecords = IN_MEMORY_LOG_HANDLER.getAllRecords(java.util.logging.Level.WARNING);
+        assertEquals(expectedWarnLogMsgNb, warnRecords.size());
+        assertEquals(String.format(AbstractListener.TIMEOUT_WARN_LOG_MSG_PATTERN, DEFAULT_TIMEOUT_FOR_COMPONENT_SEND,
+                HELLO_INTERFACE.toString(), HELLO_SERVICE.toString(), EXTERNAL_ENDPOINT_NAME,
+                HELLO_OPERATION.toString(), firstLog.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                firstLog.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME)),
+                warnRecords.get(expectedWarnLogMsgPos).getMessage());
     }
 
     public void assertMONITFailureOK() {

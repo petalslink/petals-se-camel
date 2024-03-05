@@ -25,6 +25,7 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.api.message.Exchange;
 
 /**
@@ -72,6 +73,16 @@ public interface PetalsChannel {
         public @Nullable ServiceEndpoint resolveEndpoint(QName serviceName, String endpointName);
 
         public Exchange newExchange(@Nullable MEPPatternConstants mep) throws MessagingException;
+
+        /**
+         * Build a timeout error message
+         * 
+         * @param timeout
+         *            If timeout is less than 0 then we use the consumes or provides default timeout value
+         * @param currentFlowAttributes
+         *            The current flow attributes
+         */
+        public String buildTimeoutErrorMsg(final long timeout, final FlowAttributes currentFlowAttributes);
 
     }
 
