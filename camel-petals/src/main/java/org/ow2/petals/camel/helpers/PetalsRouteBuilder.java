@@ -129,7 +129,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
 
     public static void setIsJbiFault(Exchange exchange, boolean stop) {
         if (stop) {
-            exchange.setProperty(Exchange.ROUTE_STOP, true);
+            exchange.setRouteStop(true);
         }
         exchange.setProperty(PetalsConstants.MESSAGE_FAULT_HEADER, true);
     }
