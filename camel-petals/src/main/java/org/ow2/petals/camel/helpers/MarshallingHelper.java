@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.camel.helpers;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -27,6 +28,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.attachment.AttachmentMessage;
+import org.apache.camel.util.xml.StreamSourceCache;
 
 import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 import com.ebmwebsourcing.easycommons.xml.jaxb.AbstractAttachmentMarshaller;
@@ -115,7 +117,7 @@ public class MarshallingHelper {
      * @param t
      *            given XML data to marshal
      */
-    public <T> void marshal(final Exchange camelExchange, final T t) throws JAXBException {
+    public <T> void marshal(final Exchange camelExchange, final T t) throws JAXBException, IOException {
         this.marshal(camelExchange, t, true);
     }
 
@@ -135,7 +137,8 @@ public class MarshallingHelper {
      * @param xop
      *            If {@code true}, XOP optimization is used for attachments
      */
-    public <T> void marshal(final Exchange camelExchange, final T t, final boolean xop) throws JAXBException {
+    public <T> void marshal(final Exchange camelExchange, final T t, final boolean xop)
+            throws JAXBException, IOException {
 
         synchronized (this.m) {
             final AttachmentMarshaller oldAttachmentMarshaller = m.getAttachmentMarshaller();
@@ -151,7 +154,14 @@ public class MarshallingHelper {
 
             try (final EasyByteArrayOutputStream out = new EasyByteArrayOutputStream()) {
                 this.m.marshal(t, out);
-                camelExchange.getMessage().setBody(new StreamSource(out.toByteArrayInputStream()));
+
+                // We use a 'StreamSourceCache' instead of 'StreamSource' to workaround a problem of Apache Camel 4.0.x
+                // about its message logging in unit test through PetalsCamelTestSupport(true). The property
+                // LOG_DEBUG_BODY_STREAMS should not log body based on java.xml.transform.stream.StreamSource (see
+                // https://camel.apache.org/manual/faq/how-do-i-enable-streams-when-debug-logging-messages-in-camel.html)
+                // but they are logged, and next the stream can not be read.
+                camelExchange.getMessage()
+                        .setBody(new StreamSourceCache(new StreamSource(out.toByteArrayInputStream()), camelExchange));
             } finally {
                 this.m.setAttachmentMarshaller(oldAttachmentMarshaller);
             }

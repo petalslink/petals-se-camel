@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.camel.helpers;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.camel.Exchange;
@@ -97,12 +98,12 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * Sets the fault on the exchange's out and mark it for immediate return
      */
     public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault)
-            throws JAXBException {
+            throws JAXBException, IOException {
         setJbiFault(marshalling, exchange, fault, true);
     }
 
     public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault, boolean stop)
-            throws JAXBException {
+            throws JAXBException, IOException {
         marshalling.marshal(exchange, fault);
         // set this only after we are sure we properly marshaled the body!
         setIsJbiFault(exchange, stop);

@@ -19,6 +19,7 @@ package org.ow2.petals.se.camel.junit;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.camel.Exchange;
@@ -88,7 +89,7 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
      * Sets the fault on the exchange's out
      */
     protected void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault)
-            throws JAXBException {
+            throws JAXBException, IOException {
         marshalling.marshal(exchange, fault);
         // set this only after we are sure we properly marshaled the body!
         PetalsRouteBuilder.setIsJbiFault(exchange, false);
