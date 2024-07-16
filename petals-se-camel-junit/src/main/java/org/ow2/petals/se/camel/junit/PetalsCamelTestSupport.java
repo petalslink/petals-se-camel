@@ -86,17 +86,21 @@ public abstract class PetalsCamelTestSupport extends CamelTestSupport {
     }
 
     /**
-     * Sets the fault on the exchange's out
+     * Sets the fault on the exchange's out.
+     * 
+     * @see PetalsRouteBuilder#setJbiFault(MarshallingHelper, Exchange, Object, boolean)
      */
     protected void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault)
             throws JAXBException, IOException {
-        marshalling.marshal(exchange, fault);
-        // set this only after we are sure we properly marshaled the body!
-        PetalsRouteBuilder.setIsJbiFault(exchange, false);
+        PetalsRouteBuilder.setJbiFault(marshalling, exchange, fault, false);
     }
 
+    /**
+     * Sets the fault on the exchange's out.
+     * 
+     * @see PetalsRouteBuilder#setJbiFault(Exchange, Object, boolean)
+     */
     protected void setJbiFault(final Exchange exchange, final Object fault) {
-        exchange.getMessage().setBody(fault);
-        PetalsRouteBuilder.setIsJbiFault(exchange, false);
+        PetalsRouteBuilder.setJbiFault(exchange, fault, false);
     }
 }

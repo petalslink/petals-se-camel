@@ -50,6 +50,7 @@ import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.jbi.messaging.PetalsDeliveryChannel;
 import org.ow2.petals.se.camel.AbstractComponentTest;
 import org.ow2.petals.se.camel.mocks.TestRoutesOK;
+import org.ow2.petals.se.camel.mocks.TestRoutesOK.SampleException;
 
 /**
  * Contains tests that cover both petals-se-camel and camel-petals classes.
@@ -95,6 +96,76 @@ public class CamelIT extends AbstractComponentTest {
         sendHelloIdentity(SU_NAME, MessageChecks.propertyExists(PetalsDeliveryChannel.PROPERTY_SENDSYNC));
 
         assertMONITOk();
+    }
+
+    @Test
+    public void faultReplacedByResponse() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        COMPONENT.sendAndCheckResponseAndSendStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.faultMessage("<a-fault-to-skiped/>"),
+                MessageChecks.noError().andThen(MessageChecks.noFault()).andThen(MessageChecks.hasOut())
+                        .andThen(MessageChecks.hasXmlContent("<nothing-to-say/>")),
+                ExchangeStatus.DONE);
+    }
+
+    @Test
+    public void faultReplacedByAnotherOne() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        COMPONENT.sendAndCheckResponseAndSendStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.faultMessage("<voiceless-fault/>"),
+                MessageChecks.noError().andThen(MessageChecks.hasFault()).andThen(MessageChecks.noOut())
+                        .andThen(MessageChecks.hasXmlContent("<voiceless/>")),
+                ExchangeStatus.DONE);
+    }
+
+    @Test
+    public void faultReplacedByError() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        final StatusMessage status = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.faultMessage("<error-fault/>"));
+
+        assertEquals(ExchangeStatus.ERROR, status.getStatus());
+        assertEquals(TestRoutesOK.ERROR_INVOKING_SERVICE_PROVIDER_MSG, status.getError().getMessage());
+    }
+
+    @Test
+    public void errorReplacedByResponse() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        COMPONENT.sendAndCheckResponseAndSendStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.errorMessage(
+                        new SampleException(TestRoutesOK.ERROR_INVOKING_SERVICE_PROVIDER_MSG_MINOR_ERR)),
+                MessageChecks.noError().andThen(MessageChecks.noFault()).andThen(MessageChecks.hasOut())
+                        .andThen(MessageChecks.hasXmlContent("<nothing-to-say/>")),
+                ExchangeStatus.DONE);
+    }
+
+    @Test
+    public void errorReplacedByFault() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        COMPONENT.sendAndCheckResponseAndSendStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation
+                        .errorMessage(
+                                new SampleException(TestRoutesOK.ERROR_INVOKING_SERVICE_PROVIDER_MSG_VOICE_ERR)),
+                MessageChecks.noError().andThen(MessageChecks.hasFault()).andThen(MessageChecks.noOut())
+                        .andThen(MessageChecks.hasXmlContent("<voiceless/>")),
+                ExchangeStatus.DONE);
+    }
+
+    @Test
+    public void errorReplacedByAnotherError() throws Exception {
+        deployHello(SU_NAME, WSDL11, TestRoutesOK.class);
+
+        final StatusMessage status = COMPONENT.sendAndGetStatus(helloRequest(SU_NAME, "<aa/>"),
+                ServiceProviderImplementation.errorMessage(
+                        new SampleException(TestRoutesOK.ERROR_INVOKING_SERVICE_PROVIDER_MSG_NETWORK_ERR)));
+
+        assertEquals(ExchangeStatus.ERROR, status.getStatus());
+        assertEquals(TestRoutesOK.ERROR_INVOKING_SERVICE_PROVIDER_MSG, status.getError().getMessage());
     }
 
     @Test

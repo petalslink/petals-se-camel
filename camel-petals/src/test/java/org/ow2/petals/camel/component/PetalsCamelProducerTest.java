@@ -233,11 +233,11 @@ public class PetalsCamelProducerTest extends CamelPetalsTestSupport {
             final String expect;
             if (isFault(isFault)) {
                 expect = FAULT;
-                assertEquals(true, exchange.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER));
+                assertEquals(true, exchange.getMessage().getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
             } else {
                 expect = OUT;
-                assertNotEquals(true, exchange.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER));
-                assertNull(exchange.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER));
+                assertNotEquals(true, exchange.getMessage().getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
+                assertNull(exchange.getMessage().getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
             }
             assertSimilar(new Diff(expect, getContent(exchange.getMessage())));
         } else if (c instanceof Exception) {

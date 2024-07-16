@@ -160,7 +160,7 @@ public class MarshallingHelper {
                 // LOG_DEBUG_BODY_STREAMS should not log body based on java.xml.transform.stream.StreamSource (see
                 // https://camel.apache.org/manual/faq/how-do-i-enable-streams-when-debug-logging-messages-in-camel.html)
                 // but they are logged, and next the stream can not be read.
-                camelExchange.getMessage()
+                camelExchange.getOut()
                         .setBody(new StreamSourceCache(new StreamSource(out.toByteArrayInputStream()), camelExchange));
             } finally {
                 this.m.setAttachmentMarshaller(oldAttachmentMarshaller);

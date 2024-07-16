@@ -90,19 +90,20 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
         }
     }
 
-    protected RouteDefinition fromPetals(String service) {
+    protected RouteDefinition fromPetals(final String service) {
         return from("petals:" + service).routeId(service);
     }
 
     /**
      * Sets the fault on the exchange's out and mark it for immediate return
      */
-    public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault)
+    public static void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault)
             throws JAXBException, IOException {
         setJbiFault(marshalling, exchange, fault, true);
     }
 
-    public static void setJbiFault(MarshallingHelper marshalling, Exchange exchange, Object fault, boolean stop)
+    public static void setJbiFault(final MarshallingHelper marshalling, final Exchange exchange, final Object fault,
+            final boolean stop)
             throws JAXBException, IOException {
         marshalling.marshal(exchange, fault);
         // set this only after we are sure we properly marshaled the body!
@@ -112,27 +113,27 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
     /**
      * Sets the fault on the exchange's out and mark it for immediate return
      */
-    public static void setJbiFault(Exchange exchange, Object fault) {
+    public static void setJbiFault(final Exchange exchange, final Object fault) {
         setJbiFault(exchange, fault, true);
     }
 
-    public static void setJbiFault(Exchange exchange, Object fault, boolean stop) {
-        exchange.getMessage().setBody(fault);
+    public static void setJbiFault(final Exchange exchange, final Object fault, final boolean stop) {
+        exchange.getOut().setBody(fault);
         setIsJbiFault(exchange, stop);
     }
 
     /**
      * Mark the out message as fault and mark it for immediate return
      */
-    public static void setIsJbiFault(Exchange exchange) {
+    public static void setIsJbiFault(final Exchange exchange) {
         setIsJbiFault(exchange, true);
     }
 
-    public static void setIsJbiFault(Exchange exchange, boolean stop) {
+    public static void setIsJbiFault(final Exchange exchange, final boolean stop) {
         if (stop) {
             exchange.setRouteStop(true);
         }
-        exchange.setProperty(PetalsConstants.MESSAGE_FAULT_HEADER, true);
+        exchange.getOut().setHeader(PetalsConstants.MESSAGE_FAULT_HEADER, true);
     }
 
     /**
@@ -141,7 +142,7 @@ public abstract class PetalsRouteBuilder extends RouteBuilder {
      * @return {@code true} if this exchange failed due to a JBI fault.
      */
     public static boolean isJbiFault(final Exchange exchange) {
-        return Boolean.TRUE.equals(exchange.getProperty(PetalsConstants.MESSAGE_FAULT_HEADER));
+        return Boolean.TRUE.equals(exchange.getMessage().getHeader(PetalsConstants.MESSAGE_FAULT_HEADER));
     }
 
     /**
