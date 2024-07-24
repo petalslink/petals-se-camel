@@ -73,12 +73,12 @@ public class MarshallingHelper {
 
         // we can't simply use getBody(Source.class) because StAxSource are not supported by jaxb
         // and sometimes they are returned by getBody!
-        final Object oBody = camelExchange.getIn().getBody();
+        final Object oBody = camelExchange.getMessage().getBody();
         final Source body;
         if (oBody instanceof Source bodySource && !(oBody instanceof StAXSource)) {
             body = bodySource;
         } else {
-            body = camelExchange.getIn().getBody(DOMSource.class);
+            body = camelExchange.getMessage().getBody(DOMSource.class);
         }
 
         synchronized (this.unm) {
