@@ -119,7 +119,7 @@
             <plugin>
                <artifactId>petals-maven-plugin</artifactId>
                <groupId>org.ow2.petals</groupId>
-               <version>3.3.0</version>
+               <version>3.4.0-SNAPSHOT</version>
                <extensions>true</extensions>
             </plugin>
          </plugins>
