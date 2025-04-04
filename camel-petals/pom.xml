@@ -45,32 +45,18 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-attachments</artifactId>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-xml-jaxp</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.activation</groupId>
-			<artifactId>jakarta.activation</artifactId>
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
